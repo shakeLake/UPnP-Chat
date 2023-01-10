@@ -1,6 +1,9 @@
 #ifndef UPNP_HPP_
 #define UPNP_HPP_
 
+// DEBUG or RELEASE
+#define DEBUG
+
 #include <iostream>
 
 /* MINIUPNPc */
@@ -11,12 +14,31 @@
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
 #include "../build/miniupnpc-build/miniupnpcstrings.h"
 
-class Upnp
+namespace shakeLake
 {
-private:
+    class Upnp
+    {
+        private:
+            int error;
 
-public:
+            // upnpDiscover
+            struct UPNPDev * devlist;
 
-};
+        private:
+            // deletes redirected port
+            // - external port
+            void DeletePortForwarding(const char*);
+        public:
+            Upnp();
+            ~Upnp();
+
+            // redirects port
+            void PortForwarding
+            (
+                const char*, // internal_port
+                const char*, // external_port
+            );
+    };
+}
 
 #endif /* UPNP_HPP_ */
