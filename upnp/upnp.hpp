@@ -19,25 +19,37 @@ namespace shakeLake
     class Upnp
     {
         private:
+            const char* external_port;
+            const char* internal_port;
+
+            struct UPNPUrls urls;
+		    struct IGDdatas data;
+
             int error;
 
             // upnpDiscover
             struct UPNPDev * devlist;
 
+            // UPNP_GetValidIGD 
+            char LAN_addr[64];
+
+            // UPNP_GetExternalIPAddress
+            char externalIPAddress[40];
+
+            // UPNP_GetSpecificPortMappingEntry
+            char intClient[40];
+            char intPort[6];
+            char duration[16];
         private:
             // deletes redirected port
-            // - external port
-            void DeletePortForwarding(const char*);
+            void DeletePortForwarding();
         public:
-            Upnp();
+            // internal port and external port
+            Upnp(const char*, const char*);
             ~Upnp();
 
             // redirects port
-            void PortForwarding
-            (
-                const char*, // internal_port
-                const char*, // external_port
-            );
+            void PortForwarding();
     };
 }
 
