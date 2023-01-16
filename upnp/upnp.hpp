@@ -4,7 +4,14 @@
 // DEBUG or RELEASE
 #define DEBUG
 
+// I / O
 #include <iostream>
+
+// winsock
+#ifdef _WIN32
+#include <winsock2.h>
+#include "../third-party/miniupnpc-2.2.4/src/win32_snprintf.h"
+#endif
 
 /* MINIUPNPc */
 #include "../third-party/miniupnpc-2.2.4/include/miniupnpc.h"
@@ -12,7 +19,7 @@
 #include "../third-party/miniupnpc-2.2.4/include/portlistingparse.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnpcommands.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
-#include "../build/miniupnpc-build/miniupnpcstrings.h"
+#include "../build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
 
 namespace shakeLake
 {
@@ -28,10 +35,14 @@ namespace shakeLake
             int error;
 
             // upnpDiscover
-            struct UPNPDev * devlist;
+            struct UPNPDev* devlist;
+            int localport;
+            
+            // UPNP_GetIGDFromUrl
+            const char* rootdescurl = 0;   
 
             // UPNP_GetValidIGD 
-            char LAN_addr[64];
+            char LAN_addr[64] = "unset";
 
             // UPNP_GetExternalIPAddress
             char externalIPAddress[40];
@@ -40,6 +51,10 @@ namespace shakeLake
             char intClient[40];
             char intPort[6];
             char duration[16];
+
+            // _WIN32
+            WSADATA wsaData;
+            int nResult;
         private:
             // deletes redirected port
             void DeletePortForwarding();

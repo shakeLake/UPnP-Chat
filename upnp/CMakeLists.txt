@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.2)
 
 project(upnp)
 
-add_library(upnp upnp.cpp upnp.hpp)
+add_subdirectory("../third-party/miniupnpc-2.2.4" miniupnpc-build)
 
-get_filename_component(ROOT_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
-target_link_libraries(upnp "${ROOT_DIR}/build/miniupnpc-build/libminiupnpc.a")
+add_library(upnp-static upnp.cpp upnp.hpp)
+
+target_link_libraries(upnp-static libminiupnpc-static)
