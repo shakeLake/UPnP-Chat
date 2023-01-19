@@ -1,6 +1,6 @@
 #include "upnp.hpp"
 
-shakeLake::Upnp::Upnp(const char* extport, const char* intport)
+SL_upnp::Upnp::Upnp(const char* extport, const char* intport)
 {
     #ifdef _WIN32
         nResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -42,7 +42,7 @@ shakeLake::Upnp::Upnp(const char* extport, const char* intport)
     #endif
 }
 
-shakeLake::Upnp::~Upnp()
+SL_upnp::Upnp::~Upnp()
 {   
     freeUPNPDevlist(devlist);
 
@@ -57,7 +57,7 @@ shakeLake::Upnp::~Upnp()
     #endif /* _WIN32 */
 }
 
-void shakeLake::Upnp::PortForwarding()
+void SL_upnp::Upnp::PortForwarding()
 {
     error = UPNP_GetExternalIPAddress(urls.controlURL, data.first.servicetype, externalIPAddress);
     #ifdef DEBUG
@@ -90,7 +90,7 @@ void shakeLake::Upnp::PortForwarding()
     #endif
 }
 
-void shakeLake::Upnp::DeletePortForwarding()
+void SL_upnp::Upnp::DeletePortForwarding()
 {
     error = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, external_port, "tcp", nullptr);
     #ifdef DEBUG

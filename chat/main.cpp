@@ -1,16 +1,11 @@
-#include <iostream>
-
-//#include "../third-party/asio-1.24.0/include/asio.hpp"
-
-#include "../upnp/upnp.hpp"
+// chat
+#include "include/default.hpp"
 
 int main()
 {
-    shakeLake::Upnp client("50001", "50001");
-
-    client.PortForwarding();
-
-    std::cin.get();
+    /* port mapping */
+    //shakeLake::Upnp client("50001", "50001");
+    //client.PortForwarding();
 
     return 0;
 }
