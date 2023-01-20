@@ -11,6 +11,9 @@
 #include "client.hpp"
 #include "server.hpp"
 
+// data
+#include "data.hpp"
+
 // interface
 #include "ui.hpp"
 
