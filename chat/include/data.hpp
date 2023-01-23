@@ -7,48 +7,59 @@
 // std::string
 #include <cstring>
 
-namespace sL_data
+// asio
+#include "../../third-party/asio-1.24.0/include/asio.hpp"
+
+namespace ucd
 {
     class User
     {
-        private:
+        protected:
             std::string name;
             std::string ipaddr;
         public:
             User(std::string, std::string);
             ~User() = default;
+
+            std::string GetUsername();
+            std::string GetIpaddr();
     };
 
     class Message
     {
-        private:
+        protected:
             std::string msg;
         public:
             Message() = default;
             ~Message() = default;
             
             // cin.getline()
-            void setMessage();
+            void SetMessage();
 
             // just returns "msg" 
-            void getMessage();
+            std::string GetMessage();
     };
 
     class Data : public User, public Message
     {
+        private:
+            // username + ipaddr + msg
+            std::string data;
+
+            asio::streambuf message;
         public:
             Data(std::string username, std::string ipaddr) : User(username, ipaddr)
             {
                 /* 
                     "Useless information..."
-                    "Who knows but mb this constructor won't be empty in the future ;)"
+                    "Who knows but mb this constructor won't be empty in the future :|"
                 */
             }
 
             ~Data() = default;
             
             // creates full message form
-            void construction();
+            asio::streambuf::const_buffers_type Construction();
     };
 }
 

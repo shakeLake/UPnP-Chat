@@ -1,27 +1,54 @@
 #include "include/data.hpp"
 
 // USER class
-User::User(std::string username, std::string ip)
+ucd::User::User(std::string username, std::string ip)
 {
     name = username;
     ip = ipaddr;
 }
 
-// MESSAGE class
-
-void Message::setMessage()
+std::string ucd::User::GetUsername()
 {
-    std::cout << "Enter message: " << std::endl;
-    std::std::getline(std::cin, msg);
+    return name;
 }
 
-std::string Message::getMessage()
+std::string ucd::User::GetIpaddr()
+{
+    return ipaddr;
+}
+
+// MESSAGE class
+void ucd::Message::SetMessage()
+{
+    std::cout << "Enter message: " << std::endl;
+    std::getline(std::cin, msg);
+}
+
+std::string ucd::Message::GetMessage()
 {
     return msg;
 }
 
 // DATA class
-void Data::construction()
+asio::streambuf::const_buffers_type ucd::Data::Construction()
 {
+    // username ... ...
+    data += GetUsername();
+    data += ' ';
 
+    // ... ip ...
+    data += GetIpaddr();
+    data += ' ';
+
+    // ... ... text
+    data += GetMessage();
+    data += '\n';
+
+    // save message to streambuffer
+    std::ostream os_msg(&message);
+    os_msg << data;
+
+    std::cout << data;
+
+    return message.data();
 }

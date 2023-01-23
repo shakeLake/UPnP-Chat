@@ -1,6 +1,9 @@
 #ifndef DEF_INCLUDE_HPP_
 #define DEF_INCLUDE_HPP_
 
+// DEBUG or RELEASE
+#define DEBUG
+
 // I / O
 #include <iostream>
 
@@ -8,13 +11,13 @@
 #include "../../upnp/upnp.hpp"
 
 // net
-#include "client.hpp"
-#include "server.hpp"
+//#include "client.hpp"
+//#include "server.hpp"
 
 // data
 #include "data.hpp"
 
 // interface
-#include "ui.hpp"
+//#include "ui.hpp"
 
 #endif /* DEF_INCLUDE_HPP_ */
