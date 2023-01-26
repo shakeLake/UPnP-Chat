@@ -2,6 +2,6 @@
 #define CONFIG_HPP
 
 // DEBUG or RELEASE
-#define DEBUG
+#define RELEASE
 
 #endif /* CONFIG_HPP */

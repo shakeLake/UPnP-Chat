@@ -30,8 +30,10 @@ namespace ucd
             User(std::string, std::string);
             ~User() = default;
 
+            /*
             std::string GetUsername();
             std::string GetIpaddr();
+            */
     };
 
     class Message
@@ -45,8 +47,10 @@ namespace ucd
             // cin.getline()
             void SetMessage();
 
+            /*
             // just returns "msg" 
             std::string GetMessage();
+            */
     };
 
     class Data : public User, public Message

@@ -16,13 +16,13 @@ namespace sL_client
             asio::ip::tcp::socket sckt;
         private:
             /* this function sends message to connected ip */
-            void send();
+            void SendTo();
         public:
             Client();
             ~Client();
 
             /* connects to specific ip address */
-            void connect();
+            void Connect();
     };
 }
 
