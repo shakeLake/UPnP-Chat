@@ -1,0 +1,3 @@
+C:\msys64\mingw64\bin\cmake.exe -E rm -f CMakeFiles\chatStart.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\chatStart.dir/objects.a @CMakeFiles\chatStart.dir\objects1
+C:\msys64\mingw64\bin\c++.exe -O2 -g -DNDEBUG -Wl,--whole-archive CMakeFiles\chatStart.dir/objects.a -Wl,--no-whole-archive -o chatStart.exe -Wl,--out-implib,libchatStart.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\chatStart.dir\linkLibs.rsp

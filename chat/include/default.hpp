@@ -1,9 +1,6 @@
 #ifndef DEF_INCLUDE_HPP_
 #define DEF_INCLUDE_HPP_
 
-// DEBUG or RELEASE
-#define DEBUG
-
 // I / O
 #include <iostream>
 

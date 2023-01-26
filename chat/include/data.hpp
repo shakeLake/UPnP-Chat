@@ -1,13 +1,22 @@
 #ifndef DATA_HPP_
 #define DATA_HPP_
 
+// DEBUG or RELEASE
+#include "../../config.hpp"
+
 // I / O
 #include <iostream>
 
 // std::string
 #include <cstring>
 
-// asio
+/*  
+    asio
+
+    error:
+    Cygwin doesn't work 
+    (winsock conflict)
+*/
 #include "../../third-party/asio-1.24.0/include/asio.hpp"
 
 namespace ucd
@@ -44,7 +53,7 @@ namespace ucd
     {
         private:
             // username + ipaddr + msg
-            std::string data;
+            std::string full_message;
 
             asio::streambuf message;
         public:

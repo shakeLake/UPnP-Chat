@@ -2,15 +2,15 @@
 #define UPNP_HPP_
 
 // DEBUG or RELEASE
-#define DEBUG
+#include "../config.hpp"
 
 // I / O
 #include <iostream>
 
 // WSAStartup and WSACleanup
 #ifdef _WIN32
-#include <winsock2.h>
-#include "../third-party/miniupnpc-2.2.4/src/win32_snprintf.h"
+    #include <winsock2.h>
+    #include "../third-party/miniupnpc-2.2.4/src/win32_snprintf.h"
 #endif
 
 // MINIUPNPc
@@ -19,7 +19,12 @@
 #include "../third-party/miniupnpc-2.2.4/include/portlistingparse.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnpcommands.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
-#include "../build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+
+#ifdef DEBUG
+    #include "../build-debug/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+#else
+    #include "../build-release/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+#endif
 
 namespace SL_upnp
 {

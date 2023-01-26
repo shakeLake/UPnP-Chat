@@ -21,7 +21,7 @@ std::string ucd::User::GetIpaddr()
 void ucd::Message::SetMessage()
 {
     std::cout << "Enter message: " << std::endl;
-    std::getline(std::cin, msg);
+    //std::getline(std::cin, msg);
 }
 
 std::string ucd::Message::GetMessage()
@@ -33,22 +33,22 @@ std::string ucd::Message::GetMessage()
 asio::streambuf::const_buffers_type ucd::Data::Construction()
 {
     // username ... ...
-    data += GetUsername();
-    data += ' ';
+    full_message += GetUsername();
+    full_message += ' ';
 
     // ... ip ...
-    data += GetIpaddr();
-    data += ' ';
+    full_message += GetIpaddr();
+    full_message += ' ';
 
     // ... ... text
-    data += GetMessage();
-    data += '\n';
+    full_message += GetMessage();
+    full_message += '\n';
 
     // save message to streambuffer
     std::ostream os_msg(&message);
-    os_msg << data;
+    os_msg << full_message;
 
-    std::cout << data;
+    std::cout << full_message;
 
     return message.data();
 }
