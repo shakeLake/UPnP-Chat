@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libupnp-static.a "CMakeFiles/upnp-static.dir/upnp.cpp.obj"
-C:\msys64\mingw64\bin\ranlib.exe libupnp-static.a

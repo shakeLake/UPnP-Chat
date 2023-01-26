@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libupnp_chat-static.a "CMakeFiles/upnp_chat-static.dir/data.cpp.obj"
-C:\msys64\mingw64\bin\ranlib.exe libupnp_chat-static.a
