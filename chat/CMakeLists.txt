@@ -11,8 +11,8 @@ target_include_directories(asio SYSTEM INTERFACE "${CMAKE_SOURCE_DIR}/third-part
 target_compile_definitions(asio INTERFACE ASIO_STANDALONE ASIO_NO_DEPRECATED)
 target_link_libraries(asio INTERFACE Threads::Threads)
 
-# client.cpp server.cpp ui.cpp
-set(CHAT_SOURCE data.cpp)
+# client.cpp server.cpp
+set(CHAT_SOURCE data.cpp ui.cpp)
 add_library(upnp_chat-static STATIC ${CHAT_SOURCE})
 target_link_libraries(upnp_chat-static asio)
 

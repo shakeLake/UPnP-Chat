@@ -15,6 +15,6 @@
 #include "data.hpp"
 
 // interface
-//#include "ui.hpp"
+#include "ui.hpp"
 
 #endif /* DEF_INCLUDE_HPP_ */

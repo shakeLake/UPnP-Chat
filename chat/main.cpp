@@ -9,8 +9,11 @@ int main()
 
     /* data test */
     //ucd::Data test("Name", "192.168.0.1");
-    //test.SetMessage();
-    //asio::streambuf::const_buffers_type t_message = test.Construction();
+    
+    //std::string* name = new std::string("Name1");
+    //ucu::Ui testUI(name, name);
+
+    //test.SetMessage(testUI.EnterMessage());
 
     return 0;
 }

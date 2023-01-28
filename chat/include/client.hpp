@@ -4,7 +4,7 @@
 // I / O
 #include <iostream>
 
-namespace sL_client
+namespace ucc
 {
     class Client
     {

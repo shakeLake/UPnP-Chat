@@ -7,7 +7,6 @@ ucd::User::User(std::string username, std::string ip)
     ipaddr = ip;
 }
 
-/*
 std::string ucd::User::GetUsername()
 {
     return name;
@@ -17,25 +16,17 @@ std::string ucd::User::GetIpaddr()
 {
     return ipaddr;
 }
-*/
 
 // MESSAGE class
-void ucd::Message::SetMessage()
+void ucd::Message::SetMessage(std::string* message)
 {
-    std::cout << "Enter message: " << std::endl;
-
-    /* gdb stucks here without */
-    #ifdef RELEASE
-        std::getline(std::cin, msg);
-    #endif
+    msg = *message;
 }
 
-/*
 std::string ucd::Message::GetMessage()
 {
     return msg;
 }
-*/
 
 // DATA class
 asio::streambuf::const_buffers_type ucd::Data::Construction()
@@ -55,8 +46,6 @@ asio::streambuf::const_buffers_type ucd::Data::Construction()
     // save message to streambuffer
     std::ostream os_msg(&message);
     os_msg << full_message;
-
-    std::cout << full_message;
 
     return message.data();
 }
