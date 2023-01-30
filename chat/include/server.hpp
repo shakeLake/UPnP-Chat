@@ -4,17 +4,37 @@
 // I / O
 #include <iostream>
 
-namespace sL_server
+// assert
+#include ""
+
+namespace ucs
 {
     class Server
     {
         private:
-            
-        private:
+            // entry
+            asio::io_context io_c;
 
+            // socket
+            asio::ip::tcp::socket sckt;
+
+            asio::error_code error;
+
+            asio::ip::tcp::endpoint endpnt;
+            asio::ip::tcp::acceptor accptr;
+        private:
+            // funcs
         public:
-            Server();
-            ~Server();
+            Server(std::string port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), port), accptr(io_c, endpnt)
+            {
+                /*
+                    invisibility
+                */
+            }             
+            
+            ~Server() = default;
+
+            void Listening();
     };
 }
 

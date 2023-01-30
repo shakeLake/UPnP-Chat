@@ -4,8 +4,8 @@
 int main()
 {
     /* port mapping */
-    //shakeLake::Upnp client("50001", "50001");
-    //client.PortForwarding();
+    SL_upnp::Upnp client("50001", "50001");
+    client.PortForwarding();
 
     /* data test */
     //ucd::Data test("Name", "192.168.0.1");

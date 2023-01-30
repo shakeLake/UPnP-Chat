@@ -15,11 +15,13 @@ namespace ucc
             // data
             ucd::Data* info;
 
+            // entry
             asio::io_context io_c;
 
             // .resolve
             asio::ip::tcp::resolver rslvr;
 
+            // socket
             asio::ip::tcp::socket sckt;
 
             // endpoint

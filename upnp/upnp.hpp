@@ -43,8 +43,12 @@ namespace SL_upnp
             struct UPNPDev* devlist;
             int localport;
             
-            // UPNP_GetIGDFromUrl
-            const char* rootdescurl = 0;   
+            /* 
+                only for miniupnpd
+
+                UPNP_GetIGDFromUrl 
+                const char* rootdescurl = 0; 
+            */  
 
             // UPNP_GetValidIGD 
             char LAN_addr[64] = "unset";

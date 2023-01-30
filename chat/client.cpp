@@ -38,7 +38,7 @@ bool ucc::Client::Connect()
             }
         }
     );
-
+    
     std::cout << "Connected" << std::endl;
 
     return sckt.is_open();
