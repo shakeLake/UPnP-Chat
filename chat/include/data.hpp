@@ -57,6 +57,9 @@ namespace ucd
 
             asio::streambuf message;
         public:
+            // port
+            constexpr unsigned std::string port = "50001";
+
             Data(std::string username, std::string ipaddr) : User(username, ipaddr)
             {
                 /* 
