@@ -5,7 +5,10 @@
 #include <iostream>
 
 // assert
-#include ""
+#include <cassert>
+
+// asio
+#include "../../third-party/asio-1.24.0/include/asio.hpp"
 
 namespace ucs
 {
@@ -13,7 +16,7 @@ namespace ucs
     {
         private:
             // entry
-            asio::io_context io_c;
+            // asio::io_context io_c;
 
             // socket
             asio::ip::tcp::socket sckt;
@@ -25,7 +28,7 @@ namespace ucs
         private:
             // funcs
         public:
-            Server(std::string port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), port), accptr(io_c, endpnt)
+            Server(asio::io_context& io_c, std::string port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), port), accptr(io_c, endpnt)
             {
                 /*
                     invisibility

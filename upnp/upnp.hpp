@@ -31,9 +31,6 @@ namespace SL_upnp
     class Upnp
     {
         private:
-            const char* external_port;
-            const char* internal_port;
-
             struct UPNPUrls urls;
 		    struct IGDdatas data;
 

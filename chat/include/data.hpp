@@ -24,13 +24,13 @@ namespace ucd
     class User
     {
         protected:
-            std::string name;
+            //std::string name;
             std::string ipaddr;
         public:
             User(std::string, std::string);
             ~User() = default;
 
-            std::string GetUsername();
+            //std::string GetUsername();
             std::string GetIpaddr();
     };
 
@@ -57,16 +57,16 @@ namespace ucd
 
             asio::streambuf message;
         public:
-            // port
-            const std::string port = "50001";
-
-            Data(std::string username, std::string ipaddr) : User(username, ipaddr)
+            Data(/*std::string username,*/ std::string ipaddr) : User(/*username,*/ ipaddr)
             {
                 /* 
                     "Useless information..."
                     "Who knows but mb this constructor won't be empty in the future :|"
                 */
             }
+
+            // default constructor
+            Data() = default;
 
             ~Data() = default;
             

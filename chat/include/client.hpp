@@ -7,6 +7,12 @@
 // data
 #include "data.hpp"
 
+// assert
+#include <cassert>
+
+// asio
+#include "../../third-party/asio-1.24.0/include/asio.hpp"
+
 namespace ucc
 {
     class Client
@@ -16,7 +22,7 @@ namespace ucc
             ucd::Data* info;
 
             // entry
-            asio::io_context io_c;
+            //asio::io_context io_c;
 
             // .resolve
             asio::ip::tcp::resolver rslvr;
@@ -35,7 +41,7 @@ namespace ucc
             // error handler
             void ErrorHandler(asio::error_code);
         public:
-            Client(ucd::Data&);
+            Client(asio::io_context&, ucd::Data&);
             ~Client() = default;
 
             /* connects to specific ip address */

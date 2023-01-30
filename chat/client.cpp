@@ -1,6 +1,6 @@
 #include "client.hpp"
 
-ucc::Client::Client(ucd::Data& d)
+ucc::Client::Client(asio::io_context& io_c, ucd::Data& d)
 {
     info = d;
 
@@ -13,11 +13,11 @@ ucc::Client::Client(ucd::Data& d)
 
 void ucc::Client::ErrorHandler(asio::error_code er)
 {
-    if (ec)
+    if (er)
     {
         std::cerr << "Error: ";
         std::cerr << ec.message() << std::endl;
-        return;
+        assert(er);
     }
 }
 
@@ -38,7 +38,7 @@ bool ucc::Client::Connect()
             }
         }
     );
-    
+     
     std::cout << "Connected" << std::endl;
 
     return sckt.is_open();

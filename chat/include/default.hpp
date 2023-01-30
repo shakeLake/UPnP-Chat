@@ -8,13 +8,18 @@
 #include "../../upnp/upnp.hpp"
 
 // net
-//#include "client.hpp"
-//#include "server.hpp"
+#include "client.hpp"
+#include "server.hpp"
 
 // data
 #include "data.hpp"
 
 // interface
 #include "ui.hpp"
+
+// threads
+#include <thread>
+
+// config
 
 #endif /* DEF_INCLUDE_HPP_ */

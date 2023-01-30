@@ -1,6 +1,6 @@
 #include "upnp.hpp"
 
-SL_upnp::Upnp::Upnp(const char* extport, const char* intport)
+SL_upnp::Upnp::Upnp()
 {
     #ifdef _WIN32
         nResult = WSAStartup(MAKEWORD(2,2), &wsaData);
@@ -10,9 +10,6 @@ SL_upnp::Upnp::Upnp(const char* extport, const char* intport)
             // assert
         }
     #endif /* _WIN32 */
-
-    external_port = extport;
-    internal_port = intport;
 
     // discover UPnP devices on the network.
     localport = UPNP_LOCAL_PORT_ANY;

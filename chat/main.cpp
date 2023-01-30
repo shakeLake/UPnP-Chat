@@ -4,16 +4,33 @@
 int main()
 {
     /* port mapping */
-    SL_upnp::Upnp client("50001", "50001");
-    client.PortForwarding();
+    //SL_upnp::Upnp client;
+    //client.PortForwarding();
 
-    /* data test */
-    //ucd::Data test("Name", "192.168.0.1");
-    
-    //std::string* name = new std::string("Name1");
-    //ucu::Ui testUI(name, name);
+    /*
+    asio::io_context client_context;
+    ucc::Client cli(client_context, );
 
-    //test.SetMessage(testUI.EnterMessage());
+    std::thread cli_thread( 
+        [&]()
+        {
+            clinet_context.run();
+        }
+    );
+
+    asio::io_context server_context;
+    ucs::Server srv;
+
+    std::thread srv_thread( 
+        [&]()
+        {
+            server_context.run();
+        }
+    );
+
+    cli_thread.join();
+    srv_thread.join();
+    */
 
     return 0;
 }

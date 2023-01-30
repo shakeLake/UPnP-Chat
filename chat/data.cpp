@@ -1,16 +1,18 @@
 #include "include/data.hpp"
 
 // USER class
-ucd::User::User(std::string username, std::string ip)
+ucd::User::User(/*std::string username,*/ std::string ip)
 {
-    name = username;
+    // name = username;
     ipaddr = ip;
 }
 
+/*
 std::string ucd::User::GetUsername()
 {
     return name;
 }
+*/
 
 std::string ucd::User::GetIpaddr()
 {
@@ -31,9 +33,10 @@ std::string ucd::Message::GetMessage()
 // DATA class
 asio::streambuf::const_buffers_type ucd::Data::Construction()
 {
-    // username ... ...
-    full_message += name;
-    full_message += ' ';
+    /* username ... ...
+        full_message += name;
+        full_message += ' '; 
+    */
 
     // ... ip ...
     full_message += ipaddr;

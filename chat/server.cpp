@@ -8,6 +8,6 @@ void ucs::Server::Listening()
     {
         std::cerr << "Acceptor error: ";
         std::cerr << error.message() << std::endl;
-        // assert
+        assert(error);
     }
 }
