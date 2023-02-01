@@ -13,6 +13,9 @@
 // asio
 #include "../../third-party/asio-1.24.0/include/asio.hpp"
 
+// std::string
+#include <cstring>
+
 namespace ucc
 {
     class Client

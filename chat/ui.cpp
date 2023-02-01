@@ -1,15 +1,5 @@
 #include "include/ui.hpp"
 
-ucu::Ui::Ui(std::string* usrname, std::string* ipaddr)
-{
-    std::cout << "Connection established" << std::endl;
-    std::cout << '\n';
-    
-    std::cout << "User: " << *usrname;
-    std::cout << " | IP: " << *ipaddr << std::endl;
-    std::cout << '\n';
-}
-
 std::string* ucu::Ui::EnterMessage()
 {
     std::cout << "Enter message: " << std::endl;
@@ -19,7 +9,17 @@ std::string* ucu::Ui::EnterMessage()
     return message;
 }
 
+std::string* ucu::Ui::AskIpAddress()
+{
+    std::cout << "Where to connect (ip address): ";
+
+    std::getline(std::cin, *ip);
+
+    return ip;
+}
+
 ucu::Ui::~Ui()
 {
     delete message;
+    delete ip;
 }

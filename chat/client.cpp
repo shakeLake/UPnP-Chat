@@ -7,7 +7,7 @@ ucc::Client::Client(asio::io_context& io_c, ucd::Data& d)
     rslvr = io_c;
     sckt = io_c;
 
-    endpnt = rslvr.resolve(info->GetIpaddr(), info->port, error);
+    endpnt = rslvr.resolve(info->GetIpaddr(), internal_port, error);
     ErrorHandler(error);
 }
 

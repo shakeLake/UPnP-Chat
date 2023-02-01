@@ -24,21 +24,20 @@ namespace ucd
     class User
     {
         protected:
-            //std::string name;
             std::string ipaddr;
-        public:
-            User(std::string, std::string);
+        protected:
+            User(std::string);
             ~User() = default;
 
-            //std::string GetUsername();
-            std::string GetIpaddr();
+            std::string GetIpAddr();
+            void SetIpAddr(std::string*);
     };
 
     class Message
     {
         protected:
             std::string msg;
-        public:
+        protected:
             Message() = default;
             ~Message() = default;
             
@@ -57,7 +56,7 @@ namespace ucd
 
             asio::streambuf message;
         public:
-            Data(/*std::string username,*/ std::string ipaddr) : User(/*username,*/ ipaddr)
+            Data(std::string ipaddr) : User(ipaddr)
             {
                 /* 
                     "Useless information..."
@@ -65,13 +64,15 @@ namespace ucd
                 */
             }
 
-            // default constructor
-            Data() = default;
+            Data()
+            {
+            }
 
             ~Data() = default;
             
             // creates full message form
             asio::streambuf::const_buffers_type Construction();
+
     };
 }
 

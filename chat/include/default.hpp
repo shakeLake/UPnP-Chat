@@ -8,8 +8,8 @@
 #include "../../upnp/upnp.hpp"
 
 // net
-#include "client.hpp"
-#include "server.hpp"
+//#include "client.hpp"
+//#include "server.hpp"
 
 // data
 #include "data.hpp"
@@ -21,5 +21,6 @@
 #include <thread>
 
 // config
+#include "../../config.hpp"
 
 #endif /* DEF_INCLUDE_HPP_ */

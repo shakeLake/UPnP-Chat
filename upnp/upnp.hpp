@@ -66,7 +66,7 @@ namespace SL_upnp
             void DeletePortForwarding();
         public:
             // internal port and external port
-            Upnp(const char*, const char*);
+            Upnp();
             ~Upnp();
 
             // redirects port

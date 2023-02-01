@@ -1,7 +1,11 @@
 #ifndef UI_HPP_
 #define UI_HPP_
 
+// I / O
 #include <iostream>
+
+// std::string
+#include <cstring>
 
 namespace ucu
 {
@@ -9,11 +13,14 @@ namespace ucu
     {
         private:
             std::string* message = new std::string;
+
+            std::string* ip = new std::string;
         public:
-            Ui(std::string*, std::string*);
+            Ui() = default;
             ~Ui();
 
             std::string* EnterMessage();
+            std::string* AskIpAddress();
     };
 }
 
