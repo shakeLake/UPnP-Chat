@@ -1,6 +1,7 @@
 #include "include/data.hpp"
 
 // USER class
+
 ucd::User::User(std::string ip)
 {
     ipaddr = ip;
@@ -17,6 +18,7 @@ void ucd::User::SetIpAddr(std::string* ip)
 }
 
 // MESSAGE class
+
 void ucd::Message::SetMessage(std::string* message)
 {
     msg = *message;
@@ -28,6 +30,7 @@ std::string ucd::Message::GetMessage()
 }
 
 // DATA class
+
 asio::streambuf::const_buffers_type ucd::Data::Construction()
 {
     // ip ...

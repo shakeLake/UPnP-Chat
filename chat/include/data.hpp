@@ -27,9 +27,12 @@ namespace ucd
             std::string ipaddr;
         protected:
             User(std::string);
+
+            User() = default;
             ~User() = default;
 
             std::string GetIpAddr();
+        public:
             void SetIpAddr(std::string*);
     };
 
@@ -40,12 +43,13 @@ namespace ucd
         protected:
             Message() = default;
             ~Message() = default;
-            
-            // ucu::Ui sets message
-            void SetMessage(std::string*);
 
             // just returns "msg" 
             std::string GetMessage();
+
+        public:
+            // ucu::Ui sets message
+            void SetMessage(std::string*);
     };
 
     class Data : public User, public Message
@@ -64,10 +68,7 @@ namespace ucd
                 */
             }
 
-            Data()
-            {
-            }
-
+            Data() = default;
             ~Data() = default;
             
             // creates full message form

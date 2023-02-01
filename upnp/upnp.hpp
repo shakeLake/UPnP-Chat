@@ -61,6 +61,10 @@ namespace SL_upnp
             // _WIN32
             WSADATA wsaData;
             int nResult;
+
+            // ports
+            const char* external_port = "50001";
+            const char* internal_port = "50001";
         private:
             // deletes redirected port
             void DeletePortForwarding();
