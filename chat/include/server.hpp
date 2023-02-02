@@ -18,9 +18,6 @@ namespace ucs
     class Server
     {
         private:
-            // entry
-            // asio::io_context io_c;
-
             // socket
             asio::ip::tcp::socket sckt;
 

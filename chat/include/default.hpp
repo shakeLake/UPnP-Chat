@@ -8,7 +8,7 @@
 #include "../../upnp/upnp.hpp"
 
 // net
-//#include "client.hpp"
+#include "client.hpp"
 //#include "server.hpp"
 
 // data
@@ -22,5 +22,11 @@
 
 // config
 #include "../../config.hpp"
+
+// external port
+const char* ext_port = "50001";
+
+// internal port
+const char* int_port = "50001";
 
 #endif /* DEF_INCLUDE_HPP_ */

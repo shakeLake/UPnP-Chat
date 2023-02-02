@@ -7,26 +7,16 @@ ucd::User::User(std::string ip)
     ipaddr = ip;
 }
 
-std::string ucd::User::GetIpAddr()
+void ucd::User::SetIpAddr(std::string& ip)
 {
-    return ipaddr;
-}
-
-void ucd::User::SetIpAddr(std::string* ip)
-{
-    ipaddr = *ip;
+    ipaddr = ip;
 }
 
 // MESSAGE class
 
-void ucd::Message::SetMessage(std::string* message)
+void ucd::Message::SetMessage(std::string& message)
 {
-    msg = *message;
-}
-
-std::string ucd::Message::GetMessage()
-{
-    return msg;
+    msg = message;
 }
 
 // DATA class

@@ -12,15 +12,14 @@ namespace ucu
     class Ui
     {
         private:
-            std::string* message = new std::string;
-
-            std::string* ip = new std::string;
+            std::string message;
+            std::string ip;
         public:
             Ui() = default;
-            ~Ui();
+            ~Ui() = default;
 
-            std::string* EnterMessage();
-            std::string* AskIpAddress();
+            std::string& EnterMessage();
+            std::string& AskIpAddress();
     };
 }
 

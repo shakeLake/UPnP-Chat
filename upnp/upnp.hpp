@@ -63,14 +63,14 @@ namespace SL_upnp
             int nResult;
 
             // ports
-            const char* external_port = "50001";
-            const char* internal_port = "50001";
+            char* external_port;
+            char* internal_port;
         private:
             // deletes redirected port
             void DeletePortForwarding();
         public:
             // internal port and external port
-            Upnp();
+            Upnp(char*, char*);
             ~Upnp();
 
             // redirects port

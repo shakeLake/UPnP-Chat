@@ -21,12 +21,6 @@ namespace ucc
     class Client
     {
         private:
-            // data
-            ucd::Data* info;
-
-            // entry
-            //asio::io_context io_c;
-
             // .resolve
             asio::ip::tcp::resolver rslvr;
 
@@ -34,17 +28,25 @@ namespace ucc
             asio::ip::tcp::socket sckt;
 
             // endpoint
-            asio::ip::tcp::results_type endpnt;
+            asio::ip::tcp::resolver::results_type endpnt;
 
             asio::error_code error;
         private:
             /* this function sends message to connected ip */
             void SendTo();
-
-            // error handler
-            void ErrorHandler(asio::error_code);
         public:
-            Client(asio::io_context&, ucd::Data&);
+            Client(asio::io_context& io_c, std::string& ip, const char* port) : rslvr(io_c), sckt(io_c)
+            {
+                endpnt = rslvr.resolve(ip, port, error);
+
+                if (error)
+                {
+                    std::cerr << "Error: ";
+                    std::cerr << error.message() << std::endl;
+                    assert(error);
+                }
+            }
+
             ~Client() = default;
 
             /* connects to specific ip address */
