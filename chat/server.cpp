@@ -1,7 +1,9 @@
-#include "server.hpp"
+#include "include/server.hpp"
 
 void ucs::Server::Listening()
 {
+    std::cout << "Listening" << std::endl;
+    
     accptr.accept(sckt, endpnt, error);
     
     if (error)

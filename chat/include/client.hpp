@@ -4,9 +4,6 @@
 // I / O
 #include <iostream>
 
-// data
-#include "data.hpp"
-
 // assert
 #include <cassert>
 

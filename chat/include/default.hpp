@@ -9,7 +9,7 @@
 
 // net
 #include "client.hpp"
-//#include "server.hpp"
+#include "server.hpp"
 
 // data
 #include "data.hpp"

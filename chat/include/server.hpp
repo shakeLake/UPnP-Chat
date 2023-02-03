@@ -28,7 +28,7 @@ namespace ucs
         private:
             // funcs
         public:
-            Server(asio::io_context& io_c, std::string port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), port), accptr(io_c, endpnt)
+            Server(asio::io_context& io_c, const char* port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), atoi(port)), accptr(io_c, endpnt)
             {
                 /*
                     invisibility
