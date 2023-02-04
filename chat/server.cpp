@@ -13,3 +13,18 @@ void ucs::Server::Listening()
         assert(error);
     }
 }
+
+void ucs::Server::ReadFrom()
+{
+    unsigned int bytes_transfered = asio::read_until(sckt, data, '\n', error);
+
+    if (error)
+    {
+        std::cerr << "Reading error: ";
+        std::cerr << error.message() << std::endl;
+    }
+    else
+    {
+        std::cout << "Bytes transfered: " << bytes_transfered << std::endl;
+    }
+}

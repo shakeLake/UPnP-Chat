@@ -37,3 +37,8 @@ asio::streambuf::const_buffers_type ucd::Data::Construction()
 
     return message.data();
 }
+
+ucd::Data::~Data()
+{
+    message.consume( message.size() );
+}

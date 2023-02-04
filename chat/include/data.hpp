@@ -63,7 +63,7 @@ namespace ucd
             }
 
             Data() = default;
-            ~Data() = default;
+            ~Data();
             
             // creates full message form
             asio::streambuf::const_buffers_type Construction();

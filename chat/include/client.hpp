@@ -28,9 +28,6 @@ namespace ucc
             asio::ip::tcp::resolver::results_type endpnt;
 
             asio::error_code error;
-        private:
-            /* this function sends message to connected ip */
-            void SendTo();
         public:
             Client(asio::io_context& io_c, std::string& ip, const char* port) : rslvr(io_c), sckt(io_c)
             {
@@ -48,6 +45,9 @@ namespace ucc
 
             /* connects to specific ip address */
             bool Connect();
+
+            /* this function sends message to connected ip */
+            void SendTo(asio::streambuf::const_buffers_type);
     };
 }
 

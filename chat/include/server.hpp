@@ -25,8 +25,8 @@ namespace ucs
 
             asio::ip::tcp::endpoint endpnt;
             asio::ip::tcp::acceptor accptr;
-        private:
-            // funcs
+
+            asio::streambuf data;
         public:
             Server(asio::io_context& io_c, const char* port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), atoi(port)), accptr(io_c, endpnt)
             {
@@ -38,6 +38,8 @@ namespace ucs
             ~Server() = default;
 
             void Listening();
+
+            void ReadFrom();
     };
 }
 
