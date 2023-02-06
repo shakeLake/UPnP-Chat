@@ -37,7 +37,7 @@ namespace ucs
             
             ~Server() = default;
 
-            void Listening();
+            std::string Listening();
 
             void ReadFrom();
     };

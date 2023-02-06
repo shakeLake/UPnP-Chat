@@ -1,6 +1,6 @@
 #include "include/server.hpp"
 
-void ucs::Server::Listening()
+std::string ucs::Server::Listening()
 {
     std::cout << "Listening" << std::endl;
     
@@ -12,6 +12,10 @@ void ucs::Server::Listening()
         std::cerr << error.message() << std::endl;
         assert(error);
     }
+
+    std::string ip = endpnt.address().to_string();
+
+    return ip;
 }
 
 void ucs::Server::ReadFrom()
