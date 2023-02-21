@@ -20,7 +20,7 @@ class UserInterface : public QMainWindow
 		// toolbar
 			QToolBar* toolBar;
 			QPushButton* disconnectButton;
-			QLabel* ip;	
+			QLabel* ipLabe;	
 
 		// chat widgets
 			QPushButton* sendButon;
