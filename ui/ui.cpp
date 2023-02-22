@@ -9,12 +9,12 @@ UserInterface::UserInterface()
 void UserInterface::createToolBar()
 {
 	// set toolbar
-	toolbar = addToolBar("ToolBar");
+	tool_bar = addToolBar("ToolBar");
 
 	// property
-	toolbar->setMovable(false); 
+	tool_bar->setMovable(false); 
 
 	// widgets
-	toolbar->addWidget(ipLabe);
-	toolbar->addWidget(disconnectButton)	
+	tool_bar->addWidget(ip_label);
+	tool_bar->addWidget(disconnect_button)	
 }
