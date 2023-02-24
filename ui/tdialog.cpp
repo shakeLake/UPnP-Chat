@@ -1,8 +1,8 @@
-#include "inlcude/dialog.hpp"
+#include "include/dialog.hpp"
 
 int main(int argc, char* argv[])
 {
-	QApplication app(argc, argc);
+	QApplication app(argc, argv);
 
 	ConnectionDialog test_dialog;
 	test_dialog.show();
