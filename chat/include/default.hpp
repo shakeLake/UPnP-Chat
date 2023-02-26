@@ -14,19 +14,10 @@
 // data
 #include "data.hpp"
 
-// interface
-#include "ui.hpp"
-
 // threads
 #include <thread>
 
 // config
 #include "../../config.hpp"
-
-// external port
-const char* ext_port = "50001";
-
-// internal port
-const char* int_port = "50001";
 
 #endif /* DEF_INCLUDE_HPP_ */
