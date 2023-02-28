@@ -1,20 +1,16 @@
-#ifndef DIALOG_HPP_
-#define DIALOG_HPP_
+#ifndef CDIALOG_HPP_
+#define CDIALOG_HPP_
 
 // i / o
 #include <iostream>
 
 // qt / application
 #include <QApplication>
-#include <QMainWindow>
+#include <QDialog>
 
 // qt / layouts
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-
-// qt / state machine
-#include <QStateMachine>
-#include <QState>
 
 // qt gui
 #include <QFormLayout>
@@ -24,7 +20,7 @@
 #include <QString>
 #include <QToolBar>
 
-class ConnectionDialog : public QMainWindow
+class ConnectionDialog : public QDialog
 {
 	Q_OBJECT
 	
@@ -54,11 +50,6 @@ class ConnectionDialog : public QMainWindow
 		// for line edit
 		QString str;
 		
-		// state machine 
-		QStateMachine* state_machine;
-		QState* connect_state;
-		QState* make_connection_state;
-
 	public:
 		std::string ip_address;
 		std::string port;
@@ -69,12 +60,12 @@ class ConnectionDialog : public QMainWindow
 	private:
 		void CreateToolBar();
 
-		void StateMachine();
-
 	public:
 		ConnectionDialog();
 		~ConnectionDialog() = default;
 };
+
+#endif /* CDIALOG_HPP_ */
 
 /*
 	#######################################
@@ -89,5 +80,3 @@ class ConnectionDialog : public QMainWindow
 	#									  #
 	#######################################
 */
-
-#endif /* DIALOG_HPP_ */

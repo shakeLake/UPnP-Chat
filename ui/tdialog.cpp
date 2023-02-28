@@ -1,10 +1,11 @@
-#include "include/dialog.hpp"
+#include "include/makeconnectiondialog.hpp"
+//#include "include/connectiondialog.hpp"
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
 
-	ConnectionDialog test_dialog;
+	MakeConnectionDialog test_dialog;
 	test_dialog.show();
 
 	return app.exec();
