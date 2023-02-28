@@ -1,20 +1,16 @@
-#include "ui.hpp"
+#include "include/ui.hpp"
 
 UserInterface::UserInterface()
 {
-	// createToolBar()
+	CreateToolBar()
 	
 }
 
-void UserInterface::createToolBar()
+void UserInterface::CreateToolBar()
 {
 	// set toolbar
-	tool_bar = addToolBar("ToolBar");
+	tool_bar = addToolBar(Qt::LeftToolBarArea, "ToolBar");
 
 	// property
 	tool_bar->setMovable(false); 
-
-	// widgets
-	tool_bar->addWidget(ip_label);
-	tool_bar->addWidget(disconnect_button)	
 }

@@ -4,6 +4,16 @@
 // I / O
 #include <iostream>
 
+// qt
+#include <QApplication>
+#include <QMainWindow>
+
+// widgets
+#include <QToolBar>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QLabel>
+
 class UserInterface : public QMainWindow
 {
 	Q_OBJECT
@@ -11,13 +21,11 @@ class UserInterface : public QMainWindow
 	private:
 		// toolbar
 			QToolBar* tool_bar;
-			QPushButton* disconnect_button;
-			QLabel* ip_label;	
 
 		// chat widgets
 			QPushButton* send_buton;
 			QTextEdit* main_Text_field;
-			QLable* message;		
+			QLabel* message;		
 
 	private:
 		// toolbar
@@ -27,4 +35,4 @@ class UserInterface : public QMainWindow
 		~UserInterface() = default;
 };
 
-#endif /* UI_HPP *\
+#endif /* UI_HPP */
