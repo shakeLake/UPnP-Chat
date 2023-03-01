@@ -8,6 +8,13 @@
 #include <QApplication>
 #include <QMainWindow>
 
+// des
+#include <QPixmap>
+
+// layouts
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+
 // widgets
 #include <QToolBar>
 #include <QPushButton>
@@ -21,15 +28,23 @@ class UserInterface : public QMainWindow
 	private:
 		// toolbar
 			QToolBar* tool_bar;
+			
+			QPixmap connect_to_pixmap;			
+			QPushButton* connect_to;
+				
+			QPixmap make_connection_pixmap;			
+			QPushButton* make_connection;
 
 		// chat widgets
-			QPushButton* send_buton;
-			QTextEdit* main_Text_field;
+			QHBoxLayout* input_field_layout;
+			QPushButton* send_button;
+			QTextEdit* main_text_field;
 			QLabel* message;		
 
 	private:
 		// toolbar
 			void CreateToolBar();
+
 	public:
 		UserInterface();
 		~UserInterface() = default;
