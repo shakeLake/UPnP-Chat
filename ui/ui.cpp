@@ -1,9 +1,10 @@
 #include "include/ui.hpp"
+#include "include/design.hpp"
 
 UserInterface::UserInterface()
 {
-	setWindowTitle("Chat");
-	resize(900, 600);	
+	setWindowTitle( GetTitle() );
+	resize( GetWidth(), GetHeight() );	
 
 	CreateToolBar();
 
@@ -11,6 +12,11 @@ UserInterface::UserInterface()
 	QVBoxLayout* main_layout = new QVBoxLayout(main_widget);
 
 	setCentralWidget(main_widget);
+	
+	// info 
+	info_label = new QLabel("Information");
+	info_label->setAlignment(Qt::AlignTop);
+	info_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 	// input field 
 	input_field_layout = new QHBoxLayout();	
@@ -21,6 +27,13 @@ UserInterface::UserInterface()
 	input_field_layout->addWidget(main_text_field);
 	input_field_layout->addWidget(send_button);
 
+	// set messages
+	message_layout = new QVBoxLayout();	
+	message_layout->addWidget( LabelEstablish("Test Message"), true);	
+	message_layout->addWidget( LabelEstablish("Test Message 1"), false);	
+
+	// set main layout
+	main_layout->addWidget(info_label);
 	main_layout->addLayout(input_field_layout);		
 }
 

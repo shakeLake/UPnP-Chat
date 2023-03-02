@@ -31,11 +31,15 @@ if (MCDIALOG_TEST)
 endif()
 
 if (UI_TEST)
+	add_library(design-lib design.cpp "include/design.hpp")	
+	target_link_libraries(design-lib PRIVATE Qt6::Widgets)
+
 	add_executable(ui-test tmain.cpp ui.cpp "include/ui.hpp")
 
 	target_link_libraries(ui-test PRIVATE Qt6::Core)
 	target_link_libraries(ui-test PRIVATE Qt6::Widgets)
 	target_link_libraries(ui-test PRIVATE Qt6::Gui)
+	target_link_libraries(ui-test PRIVATE design-lib)
 endif()
 
 #else ()

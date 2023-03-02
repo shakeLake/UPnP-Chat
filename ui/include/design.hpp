@@ -2,32 +2,35 @@
 #include <QLabel>
 #include <QFont>
 
+// stl
+#include <vector>
+
 class Design
 {
 	private:	
 		const char* title = "UpNpChat";
 
 		// resolution
-		const unsigned short width = 480;
-		const unsigned short height = 640;
+		const unsigned short width = 900;
+		const unsigned short height = 600;
 
 		// font
-		constexpr unsigned short font_size = 17; 
-
 		QFont font;
-		//font.setPixelSize(font_size);
+		const unsigned short font_size = 17; 
 
 		// data
 		std::vector<QLabel*> labels;
-	private:
-		// vec::label::push_back( new QLabel )
-		void CreateLabel();
+
 	public:
-		Design();
+		Design() 
+		{
+			font.setPixelSize(font_size);	
+		}
+
 		~Design() = default;
 		
 		// set font, set alignment, set frame style
-		QLabel* LabelEstablishing();
+		QLabel* LabelEstablish(std::string, bool);
 		
 		// return title
 		const char* GetTitle();
@@ -35,6 +38,6 @@ class Design
 		// width
 		const unsigned short GetWidth();
 
-		//height
+		// height
 		const unsigned short GetHeight(); 
 };

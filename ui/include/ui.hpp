@@ -36,10 +36,15 @@ class UserInterface : public QMainWindow
 			QPushButton* make_connection;
 
 		// chat widgets
+			QLabel* info_label;
 			QHBoxLayout* input_field_layout;
 			QPushButton* send_button;
 			QTextEdit* main_text_field;
-			QLabel* message;		
+		
+		// message 
+			QVBoxLayout* message_layout;
+			QLabel* message;
+			QFont font;		
 
 	private:
 		// toolbar
