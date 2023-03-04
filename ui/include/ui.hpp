@@ -4,6 +4,9 @@
 // I / O
 #include <iostream>
 
+// design
+#include "design.hpp"
+
 // qt
 #include <QApplication>
 #include <QMainWindow>
@@ -26,6 +29,8 @@ class UserInterface : public QMainWindow
 	Q_OBJECT
 
 	private:
+		Design style;
+
 		// toolbar
 			QToolBar* tool_bar;
 			

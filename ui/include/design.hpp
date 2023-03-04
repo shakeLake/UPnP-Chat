@@ -1,6 +1,7 @@
 // Qt
 #include <QLabel>
 #include <QFont>
+#include <QString>
 
 // stl
 #include <vector>
@@ -11,12 +12,12 @@ class Design
 		const char* title = "UpNpChat";
 
 		// resolution
-		const unsigned short width = 900;
-		const unsigned short height = 600;
+		unsigned short width;
+		unsigned short height;
 
 		// font
 		QFont font;
-		const unsigned short font_size = 17; 
+		unsigned short font_size; 
 
 		// data
 		std::vector<QLabel*> labels;
@@ -24,6 +25,11 @@ class Design
 	public:
 		Design() 
 		{
+			width = 900;
+			height = 600;
+
+			font_size = 17;
+
 			font.setPixelSize(font_size);	
 		}
 

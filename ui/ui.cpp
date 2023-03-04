@@ -1,10 +1,9 @@
 #include "include/ui.hpp"
-#include "include/design.hpp"
 
 UserInterface::UserInterface()
 {
-	setWindowTitle( GetTitle() );
-	resize( GetWidth(), GetHeight() );	
+	setWindowTitle( style.GetTitle() );
+	resize( style.GetWidth(), style.GetHeight() );	
 
 	CreateToolBar();
 
@@ -29,11 +28,12 @@ UserInterface::UserInterface()
 
 	// set messages
 	message_layout = new QVBoxLayout();	
-	message_layout->addWidget( LabelEstablish("Test Message"), true);	
-	message_layout->addWidget( LabelEstablish("Test Message 1"), false);	
+	message_layout->addWidget( style.LabelEstablish("Test Message", true) );	
+	message_layout->addWidget( style.LabelEstablish("Test Message 1", false) );	
 
 	// set main layout
 	main_layout->addWidget(info_label);
+	main_layout->addLayout(message_layout);
 	main_layout->addLayout(input_field_layout);		
 }
 
