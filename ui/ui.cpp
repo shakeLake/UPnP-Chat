@@ -28,6 +28,8 @@ UserInterface::UserInterface()
 
 	// set messages
 	message_layout = new QVBoxLayout();	
+	message_layout->setContentsMargins(0, 390, 0, 10);
+
 	message_layout->addWidget( style.LabelEstablish("Test Message", true) );	
 	message_layout->addWidget( style.LabelEstablish("Test Message 1", false) );	
 
