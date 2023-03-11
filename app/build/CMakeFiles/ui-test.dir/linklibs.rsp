@@ -1,1 +1,0 @@
- "libdesign-lib.a" "C:/Program Files/Qt/lib/libQt6Widgets.a" "C:/Program Files/Qt/lib/libQt6Gui.a" "C:/Program Files/Qt/lib/libQt6Core.a" -lmpr -luserenv -ld3d11 -ldxgi -ldxguid -ldcomp -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

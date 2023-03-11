@@ -1,6 +1,6 @@
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/design-lib.dir
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/ui-test.dir
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/edit_cache.dir
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/rebuild_cache.dir
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/design-lib_autogen.dir
-D:/it's a cake/1/pr/upnp_chat/ui/build/CMakeFiles/ui-test_autogen.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/mcdialog-lib.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/mcdialog-test.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/edit_cache.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/rebuild_cache.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/mcdialog-lib_autogen.dir
+D:/it's a cake/1/pr/upnp_chat/app/build/CMakeFiles/mcdialog-test_autogen.dir

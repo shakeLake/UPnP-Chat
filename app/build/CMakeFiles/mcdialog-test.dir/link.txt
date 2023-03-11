@@ -1,0 +1,3 @@
+C:\msys64\mingw64\bin\cmake.exe -E rm -f CMakeFiles\mcdialog-test.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\mcdialog-test.dir/objects.a @CMakeFiles\mcdialog-test.dir\objects1
+C:\msys64\mingw64\bin\c++.exe -Wl,--whole-archive CMakeFiles\mcdialog-test.dir/objects.a -Wl,--no-whole-archive -o mcdialog-test.exe -Wl,--out-implib,libmcdialog-test.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\mcdialog-test.dir\linkLibs.rsp

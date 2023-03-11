@@ -56,10 +56,10 @@ RM = C:\msys64\mingw64\bin\cmake.exe -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "D:\it's a cake\1\pr\upnp_chat\ui"
+CMAKE_SOURCE_DIR = "D:\it's a cake\1\pr\upnp_chat\app"
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "D:\it's a cake\1\pr\upnp_chat\ui\build"
+CMAKE_BINARY_DIR = "D:\it's a cake\1\pr\upnp_chat\app\build"
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -67,7 +67,7 @@ CMAKE_BINARY_DIR = "D:\it's a cake\1\pr\upnp_chat\ui\build"
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
-	"C:\Program Files\CMake\bin\cmake-gui.exe" -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	C:\msys64\mingw64\bin\ccmake.exe -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -86,9 +86,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "D:\it's a cake\1\pr\upnp_chat\ui\build\CMakeFiles" "D:\it's a cake\1\pr\upnp_chat\ui\build\\CMakeFiles\progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start "D:\it's a cake\1\pr\upnp_chat\app\build\CMakeFiles" "D:\it's a cake\1\pr\upnp_chat\app\build\\CMakeFiles\progress.marks"
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "D:\it's a cake\1\pr\upnp_chat\ui\build\CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start "D:\it's a cake\1\pr\upnp_chat\app\build\CMakeFiles" 0
 .PHONY : all
 
 # The main clean target
@@ -116,176 +116,152 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named design-lib
+# Target rules for targets named mcdialog-lib
 
 # Build rule for target.
-design-lib: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 design-lib
-.PHONY : design-lib
+mcdialog-lib: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mcdialog-lib
+.PHONY : mcdialog-lib
 
 # fast build rule for target.
-design-lib/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/build
-.PHONY : design-lib/fast
+mcdialog-lib/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/build
+.PHONY : mcdialog-lib/fast
 
 #=============================================================================
-# Target rules for targets named ui-test
+# Target rules for targets named mcdialog-test
 
 # Build rule for target.
-ui-test: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 ui-test
-.PHONY : ui-test
+mcdialog-test: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mcdialog-test
+.PHONY : mcdialog-test
 
 # fast build rule for target.
-ui-test/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/build
-.PHONY : ui-test/fast
+mcdialog-test/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/build
+.PHONY : mcdialog-test/fast
 
 #=============================================================================
-# Target rules for targets named design-lib_autogen
+# Target rules for targets named mcdialog-lib_autogen
 
 # Build rule for target.
-design-lib_autogen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 design-lib_autogen
-.PHONY : design-lib_autogen
+mcdialog-lib_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mcdialog-lib_autogen
+.PHONY : mcdialog-lib_autogen
 
 # fast build rule for target.
-design-lib_autogen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib_autogen.dir\build.make CMakeFiles/design-lib_autogen.dir/build
-.PHONY : design-lib_autogen/fast
+mcdialog-lib_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib_autogen.dir\build.make CMakeFiles/mcdialog-lib_autogen.dir/build
+.PHONY : mcdialog-lib_autogen/fast
 
 #=============================================================================
-# Target rules for targets named ui-test_autogen
+# Target rules for targets named mcdialog-test_autogen
 
 # Build rule for target.
-ui-test_autogen: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 ui-test_autogen
-.PHONY : ui-test_autogen
+mcdialog-test_autogen: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 mcdialog-test_autogen
+.PHONY : mcdialog-test_autogen
 
 # fast build rule for target.
-ui-test_autogen/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test_autogen.dir\build.make CMakeFiles/ui-test_autogen.dir/build
-.PHONY : ui-test_autogen/fast
+mcdialog-test_autogen/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test_autogen.dir\build.make CMakeFiles/mcdialog-test_autogen.dir/build
+.PHONY : mcdialog-test_autogen/fast
 
-design-lib_autogen/mocs_compilation.obj: design-lib_autogen/mocs_compilation.cpp.obj
-.PHONY : design-lib_autogen/mocs_compilation.obj
-
-# target to build an object file
-design-lib_autogen/mocs_compilation.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design-lib_autogen/mocs_compilation.cpp.obj
-.PHONY : design-lib_autogen/mocs_compilation.cpp.obj
-
-design-lib_autogen/mocs_compilation.i: design-lib_autogen/mocs_compilation.cpp.i
-.PHONY : design-lib_autogen/mocs_compilation.i
-
-# target to preprocess a source file
-design-lib_autogen/mocs_compilation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design-lib_autogen/mocs_compilation.cpp.i
-.PHONY : design-lib_autogen/mocs_compilation.cpp.i
-
-design-lib_autogen/mocs_compilation.s: design-lib_autogen/mocs_compilation.cpp.s
-.PHONY : design-lib_autogen/mocs_compilation.s
-
-# target to generate assembly for a file
-design-lib_autogen/mocs_compilation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design-lib_autogen/mocs_compilation.cpp.s
-.PHONY : design-lib_autogen/mocs_compilation.cpp.s
-
-design.obj: design.cpp.obj
-.PHONY : design.obj
+makeconnectiondialog.obj: makeconnectiondialog.cpp.obj
+.PHONY : makeconnectiondialog.obj
 
 # target to build an object file
-design.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design.cpp.obj
-.PHONY : design.cpp.obj
+makeconnectiondialog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/makeconnectiondialog.cpp.obj
+.PHONY : makeconnectiondialog.cpp.obj
 
-design.i: design.cpp.i
-.PHONY : design.i
+makeconnectiondialog.i: makeconnectiondialog.cpp.i
+.PHONY : makeconnectiondialog.i
 
 # target to preprocess a source file
-design.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design.cpp.i
-.PHONY : design.cpp.i
+makeconnectiondialog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/makeconnectiondialog.cpp.i
+.PHONY : makeconnectiondialog.cpp.i
 
-design.s: design.cpp.s
-.PHONY : design.s
+makeconnectiondialog.s: makeconnectiondialog.cpp.s
+.PHONY : makeconnectiondialog.s
 
 # target to generate assembly for a file
-design.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\design-lib.dir\build.make CMakeFiles/design-lib.dir/design.cpp.s
-.PHONY : design.cpp.s
+makeconnectiondialog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/makeconnectiondialog.cpp.s
+.PHONY : makeconnectiondialog.cpp.s
 
-tmain.obj: tmain.cpp.obj
-.PHONY : tmain.obj
+mcdialog-lib_autogen/mocs_compilation.obj: mcdialog-lib_autogen/mocs_compilation.cpp.obj
+.PHONY : mcdialog-lib_autogen/mocs_compilation.obj
 
 # target to build an object file
-tmain.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/tmain.cpp.obj
-.PHONY : tmain.cpp.obj
+mcdialog-lib_autogen/mocs_compilation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/mcdialog-lib_autogen/mocs_compilation.cpp.obj
+.PHONY : mcdialog-lib_autogen/mocs_compilation.cpp.obj
 
-tmain.i: tmain.cpp.i
-.PHONY : tmain.i
+mcdialog-lib_autogen/mocs_compilation.i: mcdialog-lib_autogen/mocs_compilation.cpp.i
+.PHONY : mcdialog-lib_autogen/mocs_compilation.i
 
 # target to preprocess a source file
-tmain.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/tmain.cpp.i
-.PHONY : tmain.cpp.i
+mcdialog-lib_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/mcdialog-lib_autogen/mocs_compilation.cpp.i
+.PHONY : mcdialog-lib_autogen/mocs_compilation.cpp.i
 
-tmain.s: tmain.cpp.s
-.PHONY : tmain.s
+mcdialog-lib_autogen/mocs_compilation.s: mcdialog-lib_autogen/mocs_compilation.cpp.s
+.PHONY : mcdialog-lib_autogen/mocs_compilation.s
 
 # target to generate assembly for a file
-tmain.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/tmain.cpp.s
-.PHONY : tmain.cpp.s
+mcdialog-lib_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-lib.dir\build.make CMakeFiles/mcdialog-lib.dir/mcdialog-lib_autogen/mocs_compilation.cpp.s
+.PHONY : mcdialog-lib_autogen/mocs_compilation.cpp.s
 
-ui-test_autogen/mocs_compilation.obj: ui-test_autogen/mocs_compilation.cpp.obj
-.PHONY : ui-test_autogen/mocs_compilation.obj
+mcdialog-test_autogen/mocs_compilation.obj: mcdialog-test_autogen/mocs_compilation.cpp.obj
+.PHONY : mcdialog-test_autogen/mocs_compilation.obj
 
 # target to build an object file
-ui-test_autogen/mocs_compilation.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui-test_autogen/mocs_compilation.cpp.obj
-.PHONY : ui-test_autogen/mocs_compilation.cpp.obj
+mcdialog-test_autogen/mocs_compilation.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/mcdialog-test_autogen/mocs_compilation.cpp.obj
+.PHONY : mcdialog-test_autogen/mocs_compilation.cpp.obj
 
-ui-test_autogen/mocs_compilation.i: ui-test_autogen/mocs_compilation.cpp.i
-.PHONY : ui-test_autogen/mocs_compilation.i
+mcdialog-test_autogen/mocs_compilation.i: mcdialog-test_autogen/mocs_compilation.cpp.i
+.PHONY : mcdialog-test_autogen/mocs_compilation.i
 
 # target to preprocess a source file
-ui-test_autogen/mocs_compilation.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui-test_autogen/mocs_compilation.cpp.i
-.PHONY : ui-test_autogen/mocs_compilation.cpp.i
+mcdialog-test_autogen/mocs_compilation.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/mcdialog-test_autogen/mocs_compilation.cpp.i
+.PHONY : mcdialog-test_autogen/mocs_compilation.cpp.i
 
-ui-test_autogen/mocs_compilation.s: ui-test_autogen/mocs_compilation.cpp.s
-.PHONY : ui-test_autogen/mocs_compilation.s
+mcdialog-test_autogen/mocs_compilation.s: mcdialog-test_autogen/mocs_compilation.cpp.s
+.PHONY : mcdialog-test_autogen/mocs_compilation.s
 
 # target to generate assembly for a file
-ui-test_autogen/mocs_compilation.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui-test_autogen/mocs_compilation.cpp.s
-.PHONY : ui-test_autogen/mocs_compilation.cpp.s
+mcdialog-test_autogen/mocs_compilation.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/mcdialog-test_autogen/mocs_compilation.cpp.s
+.PHONY : mcdialog-test_autogen/mocs_compilation.cpp.s
 
-ui.obj: ui.cpp.obj
-.PHONY : ui.obj
+testdialog.obj: testdialog.cpp.obj
+.PHONY : testdialog.obj
 
 # target to build an object file
-ui.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui.cpp.obj
-.PHONY : ui.cpp.obj
+testdialog.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/testdialog.cpp.obj
+.PHONY : testdialog.cpp.obj
 
-ui.i: ui.cpp.i
-.PHONY : ui.i
+testdialog.i: testdialog.cpp.i
+.PHONY : testdialog.i
 
 # target to preprocess a source file
-ui.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui.cpp.i
-.PHONY : ui.cpp.i
+testdialog.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/testdialog.cpp.i
+.PHONY : testdialog.cpp.i
 
-ui.s: ui.cpp.s
-.PHONY : ui.s
+testdialog.s: testdialog.cpp.s
+.PHONY : testdialog.s
 
 # target to generate assembly for a file
-ui.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\ui-test.dir\build.make CMakeFiles/ui-test.dir/ui.cpp.s
-.PHONY : ui.cpp.s
+testdialog.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\mcdialog-test.dir\build.make CMakeFiles/mcdialog-test.dir/testdialog.cpp.s
+.PHONY : testdialog.cpp.s
 
 # Help Target
 help:
@@ -295,25 +271,22 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... design-lib_autogen
-	@echo ... ui-test_autogen
-	@echo ... design-lib
-	@echo ... ui-test
-	@echo ... design-lib_autogen/mocs_compilation.obj
-	@echo ... design-lib_autogen/mocs_compilation.i
-	@echo ... design-lib_autogen/mocs_compilation.s
-	@echo ... design.obj
-	@echo ... design.i
-	@echo ... design.s
-	@echo ... tmain.obj
-	@echo ... tmain.i
-	@echo ... tmain.s
-	@echo ... ui-test_autogen/mocs_compilation.obj
-	@echo ... ui-test_autogen/mocs_compilation.i
-	@echo ... ui-test_autogen/mocs_compilation.s
-	@echo ... ui.obj
-	@echo ... ui.i
-	@echo ... ui.s
+	@echo ... mcdialog-lib_autogen
+	@echo ... mcdialog-test_autogen
+	@echo ... mcdialog-lib
+	@echo ... mcdialog-test
+	@echo ... makeconnectiondialog.obj
+	@echo ... makeconnectiondialog.i
+	@echo ... makeconnectiondialog.s
+	@echo ... mcdialog-lib_autogen/mocs_compilation.obj
+	@echo ... mcdialog-lib_autogen/mocs_compilation.i
+	@echo ... mcdialog-lib_autogen/mocs_compilation.s
+	@echo ... mcdialog-test_autogen/mocs_compilation.obj
+	@echo ... mcdialog-test_autogen/mocs_compilation.i
+	@echo ... mcdialog-test_autogen/mocs_compilation.s
+	@echo ... testdialog.obj
+	@echo ... testdialog.i
+	@echo ... testdialog.s
 .PHONY : help
 
 

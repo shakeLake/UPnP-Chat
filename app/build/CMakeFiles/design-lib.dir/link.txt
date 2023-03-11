@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libdesign-lib.a "CMakeFiles/design-lib.dir/design-lib_autogen/mocs_compilation.cpp.obj" "CMakeFiles/design-lib.dir/design.cpp.obj"
-C:\msys64\mingw64\bin\ranlib.exe libdesign-lib.a
