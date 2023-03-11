@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libui-lib.a "CMakeFiles/ui-lib.dir/ui-lib_autogen/mocs_compilation.cpp.obj" "CMakeFiles/ui-lib.dir/ui.cpp.obj"
-C:\msys64\mingw64\bin\ranlib.exe libui-lib.a

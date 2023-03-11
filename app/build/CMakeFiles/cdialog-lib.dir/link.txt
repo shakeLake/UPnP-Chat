@@ -1,2 +1,0 @@
-C:\msys64\mingw64\bin\ar.exe qc libcdialog-lib.a "CMakeFiles/cdialog-lib.dir/cdialog-lib_autogen/mocs_compilation.cpp.obj" "CMakeFiles/cdialog-lib.dir/connectiondialog.cpp.obj"
-C:\msys64\mingw64\bin\ranlib.exe libcdialog-lib.a

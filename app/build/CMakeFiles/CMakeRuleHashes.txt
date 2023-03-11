@@ -1,6 +1,0 @@
-# Hashes of file build rules.
-eedf1d1b2afc304e58456c6e2c2ffd47 CMakeFiles/cdialog-lib_autogen
-672215a55952fad80c5f14e6e56162a9 CMakeFiles/design-lib_autogen
-a8752d1f081552772927f88e4e10378c CMakeFiles/mcdialog-lib_autogen
-82dd6fad0f6b01eea4175892f71ebcba CMakeFiles/ui-lib_autogen
-0276c4497dbc40babc0803cf4c4e4808 CMakeFiles/ui-test_autogen
