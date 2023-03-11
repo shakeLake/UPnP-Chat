@@ -2,7 +2,7 @@
 #define CONFIG_HPP
 
 // DEBUG or RELEASE
-#define DEBUG
+#define RELEASE
 
 // external port
 const char* ext_port = "50001";

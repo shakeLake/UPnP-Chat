@@ -21,9 +21,9 @@
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
 
 #ifdef DEBUG
-    #include "../build-debug/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+    #include "../build-debug/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
 #else
-    #include "../build-release/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+    #include "../build-release/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
 #endif
 
 namespace SL_upnp

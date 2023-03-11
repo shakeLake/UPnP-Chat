@@ -13,8 +13,4 @@ target_link_libraries(asio INTERFACE Threads::Threads)
 
 set(CHAT_SOURCE data.cpp client.cpp server.cpp)
 add_library(upnp_chat-static STATIC ${CHAT_SOURCE})
-target_link_libraries(upnp_chat-static asio)
-
-add_executable(chatStart main.cpp)
-
-target_link_libraries(chatStart upnp-static upnp_chat-static)
+target_link_libraries(upnp_chat-static upnp-static asio)
