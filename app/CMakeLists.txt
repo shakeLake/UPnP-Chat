@@ -4,8 +4,8 @@ project(chat_ui)
 
 # union
 option(CDIALOG_TEST "Builds cdialog test" FALSE)
-option(MCDIALOG_TEST "Builds mcdialog test" TRUE)
-option(UI_TEST "Builds ui test" FALSE)
+option(MCDIALOG_TEST "Builds mcdialog test" FALSE)
+option(UI_TEST "Builds ui test" TRUE)
 option(UI "Default" FALSE)
 
 set(CMAKE_AUTOMOC ON)
@@ -21,21 +21,21 @@ find_package(Qt6 REQUIRED COMPONENTS Gui)
 if (CDIALOG_TEST)	
 	add_library(cdialog-lib connectiondialog.cpp "include/connectiondialog.hpp")
 
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Gui)	
+	target_link_libraries(cdialog-lib PUBLIC Qt6::Core)
+	target_link_libraries(cdialog-lib PUBLIC Qt6::Widgets)
+	target_link_libraries(cdialog-lib PUBLIC Qt6::Gui)	
 
 	add_executable(cdialog-test testdialog.cpp)
 
-	target_link_libraries(cdialog-test PRIVATE cdialog-lib)
+	target_link_libraries(cdialog-test PUBLIC cdialog-lib)
 endif()
 
 if (MCDIALOG_TEST)	
-	add_library(mcdialog-lib makeconnectiondialog.cpp "${CMAKE_SOURCE_DIR}/include/makeconnectiondialog.hpp")
+	add_library(mcdialog-lib makeconnectiondialog.cpp "/include/makeconnectiondialog.hpp")
 
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Gui)
+	target_link_libraries(mcdialog-lib PUBLIC Qt6::Core)
+	target_link_libraries(mcdialog-lib PUBLIC Qt6::Widgets)
+	target_link_libraries(mcdialog-lib PUBLIC Qt6::Gui)
 
 	add_executable(mcdialog-test testdialog.cpp)
 
@@ -49,7 +49,7 @@ if (UI_TEST)
 	add_library(ui-lib ui.cpp "include/ui.hpp")
 
 	target_link_libraries(ui-lib PRIVATE Qt6::Core)
-	target_link_libraries(ui-lib PRIVATE Qt6::Widgets)
+	target_link_libraries(ui-lib PUBLIC Qt6::Widgets)
 	target_link_libraries(ui-lib PRIVATE Qt6::Gui)
 	target_link_libraries(ui-lib PRIVATE design-lib)
 	

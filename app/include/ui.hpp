@@ -7,6 +7,10 @@
 // design
 #include "design.hpp"
 
+// dialogs
+#include "connectiondialog.hpp"
+#include "makeconnectiondialog.hpp"
+
 // qt
 #include <QApplication>
 #include <QMainWindow>
@@ -39,6 +43,10 @@ class UserInterface : public QMainWindow
 				
 			QPixmap make_connection_pixmap;			
 			QPushButton* make_connection;
+			
+			// dialogs
+			ConnectionDialog cdialog;
+			MakeConnectionDialog mcdialog;
 
 		// chat widgets
 			QLabel* info_label;

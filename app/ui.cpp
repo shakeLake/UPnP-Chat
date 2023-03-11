@@ -56,10 +56,12 @@ void UserInterface::CreateToolBar()
 	connect_to_pixmap.load(":icons/arrow.png");
 	connect_to->setIcon(connect_to_pixmap);	
 	connect_to->setIconSize(QSize(20, 20));	
+	connect(connect_to, &QPushButton::released, this, [this](){ cdialog.show(); });
 
 	make_connection_pixmap.load(":icons/share.png");
 	make_connection->setIcon(connect_to_pixmap);	
 	make_connection->setIconSize(QSize(20, 20));	
+	connect(make_connection, &QPushButton::released, this, [this](){ mcdialog.show(); });
 
 	// set widgets
 	tool_bar->addWidget(connect_to);
