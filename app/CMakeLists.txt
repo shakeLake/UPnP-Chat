@@ -29,7 +29,7 @@ if (CDIALOG_TEST)
 
 	add_executable(cdialog-test testdialog.cpp)
 
-	target_link_libraries(cdialog-test PUBLIC cdialog-lib)
+	target_link_libraries(cdialog-test PRIVATE cdialog-lib)
 endif()
 
 if (MCDIALOG_TEST)	
@@ -45,62 +45,50 @@ if (MCDIALOG_TEST)
 endif()
 
 if (UI_TEST)
-	add_library(design-lib STATIC design.cpp "include/design.hpp")	
-	target_link_libraries(design-lib PRIVATE Qt6::Widgets)
+	# ui | dialogs | design
+	set(APP_SOURCE
+		ui.cpp
+		"include/ui.hpp"
+		connectiondialog.cpp
+		"include/connectiondialog.hpp"
+		makeconnectiondialog.cpp
+		"include/makeconnectiondialog.hpp"
+		design.cpp
+		"include/design.hpp"
+	)
 
-	add_library(ui-lib STATIC ui.cpp "include/ui.hpp")
+	add_library(app-lib STATIC ${APP_SOURCE})
 
-	target_link_libraries(ui-lib PRIVATE Qt6::Core)
-	target_link_libraries(ui-lib PUBLIC Qt6::Widgets)
-	target_link_libraries(ui-lib PRIVATE Qt6::Gui)
-	target_link_libraries(ui-lib PRIVATE design-lib)
-	
-	add_library(cdialog-lib STATIC connectiondialog.cpp "include/connectiondialog.hpp")
-
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Gui)
-
-	add_library(mcdialog-lib STATIC makeconnectiondialog.cpp "include/makeconnectiondialog.hpp")
-
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Gui)
+	target_link_libraries(app-lib PUBLIC Qt6::Core)
+	target_link_libraries(app-lib PUBLIC Qt6::Widgets)
+	target_link_libraries(app-lib PUBLIC Qt6::Gui)
 	
 	add_executable(ui-test testui.cpp)
 
-	target_link_libraries(ui-test PRIVATE ui-lib)
-	target_link_libraries(ui-test PRIVATE cdialog-lib)
-	target_link_libraries(ui-test PRIVATE mcdialog-lib)
+	target_link_libraries(ui-test PRIVATE app-lib)
 endif()
 
 if (UI)
-	add_library(design-lib STATIC design.cpp "include/design.hpp")	
-	target_link_libraries(design-lib PRIVATE Qt6::Widgets)
+	# ui | dialogs | design
+	set(APP_SOURCE
+		ui.cpp
+		"include/ui.hpp"
+		connectiondialog.cpp
+		"include/connectiondialog.hpp"
+		makeconnectiondialog.cpp
+		"include/makeconnectiondialog.hpp"
+		design.cpp
+		"include/design.hpp"
+	)
 
-	add_library(ui-lib STATIC ui.cpp "include/ui.hpp")
+	add_library(app-lib STATIC ${APP_SOURCE})
 
-	target_link_libraries(ui-lib PRIVATE Qt6::Core)
-	target_link_libraries(ui-lib PUBLIC Qt6::Widgets)
-	target_link_libraries(ui-lib PRIVATE Qt6::Gui)
-	target_link_libraries(ui-lib PRIVATE design-lib)
-	target_link_libraries(ui-lib PUBLIC upnp_chat-static)
+	target_link_libraries(app-lib PUBLIC Qt6::Core)
+	target_link_libraries(app-lib PUBLIC Qt6::Widgets)
+	target_link_libraries(app-lib PUBLIC Qt6::Gui)
+	target_link_libraries(app-lib PUBLIC upnp_chat-static)
 	
-	add_library(cdialog-lib STATIC connectiondialog.cpp "include/connectiondialog.hpp")
+	add_executable(app main.cpp)
 
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(cdialog-lib PRIVATE Qt6::Gui)
-
-	add_library(mcdialog-lib STATIC makeconnectiondialog.cpp "include/makeconnectiondialog.hpp")
-
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Core)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Widgets)
-	target_link_libraries(mcdialog-lib PRIVATE Qt6::Gui)
-	
-	add_executable(ui-test main.cpp)
-
-	target_link_libraries(ui-test PRIVATE ui-lib)
-	target_link_libraries(ui-test PRIVATE cdialog-lib)
-	target_link_libraries(ui-test PRIVATE mcdialog-lib)
+	target_link_libraries(app PRIVATE app-lib)
 endif()

@@ -46,12 +46,17 @@ ConnectionDialog::ConnectionDialog()
 	main_layout->addLayout(button_layout);	
 }
 
-void ConnectionDialog::GetIpAddress()
+void ConnectionDialog::GetIpAddressAndPort()
 {
 	// check string 
 	
-	str = edit_ip->text();	
-	ip_address = str.toStdString();
+	ip_str = edit_ip->text();	
+	ip_address = ip_str.toStdString();
 	
+	port_str = edit_ip->text();	
+	port = port_str.toStdString();
+
 	std::cout << ip_address << std::endl;
+	
+	accept();
 }

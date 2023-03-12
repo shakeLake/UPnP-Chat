@@ -29,7 +29,7 @@ namespace ucc
 
             asio::error_code error;
         public:
-            Client(asio::io_context& io_c, std::string& ip, const char* port) : rslvr(io_c), sckt(io_c)
+            Client(asio::io_context& io_c, std::string& ip, std::string& port) : rslvr(io_c), sckt(io_c)
             {
                 endpnt = rslvr.resolve(ip, port, error);
 

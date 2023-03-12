@@ -1,7 +1,13 @@
 #include "include/ui.hpp"
 
-UserInterface::UserInterface()
+UserInterface::UserInterface(asio::io_context& io)
 {
+	// chat init
+
+	io_c = io; 
+
+	// ui init
+
 	setWindowTitle( style.GetTitle() );
 	resize( style.GetWidth(), style.GetHeight() );	
 
@@ -56,7 +62,7 @@ void UserInterface::CreateToolBar()
 	connect_to_pixmap.load(":icons/arrow.png");
 	connect_to->setIcon(connect_to_pixmap);	
 	connect_to->setIconSize(QSize(20, 20));	
-	connect(connect_to, &QPushButton::released, this, [this](){ cdialog.show(); });
+	connect(connect_to, &QPushButton::released, this, &UserInterface::ConnectionDialogSlot);
 
 	make_connection_pixmap.load(":icons/share.png");
 	make_connection->setIcon(connect_to_pixmap);	
@@ -66,4 +72,23 @@ void UserInterface::CreateToolBar()
 	// set widgets
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
+}
+
+// slots
+void UserInterface::ConnectionDialogSlot()
+{
+	cdialog.show();
+	
+	if (cdialog.result())
+	{
+		// init
+		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);					
+		// connect
+		chat_client->Connect();
+	}
+}
+
+UserInterface::~UserInterface()
+{
+	delete chat_client;
 }

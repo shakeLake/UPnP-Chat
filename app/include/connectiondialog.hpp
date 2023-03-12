@@ -47,15 +47,18 @@ class ConnectionDialog : public QDialog
 		QPushButton* cancel_button;
 		QPushButton* task_button;			
 
-		// for line edit
-		QString str;
+		// for IP line edit
+		QString ip_str;
 		
+		// for IP line edit
+		QString port_str;
+
 	public:
 		std::string ip_address;
 		std::string port;
-	
+
 	private slots:
-		void GetIpAddress();
+		void GetIpAddressAndPort();
 
 	private:
 		void CreateToolBar();

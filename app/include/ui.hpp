@@ -4,6 +4,9 @@
 // I / O
 #include <iostream>
 
+// chat 
+#include "../../chat/include/default.hpp"
+
 // design
 #include "design.hpp"
 
@@ -34,6 +37,10 @@ class UserInterface : public QMainWindow
 
 	private:
 		Design style;
+		
+		// chat
+		ucc::Client* chat_client;
+		asio::io_context& io_c;
 
 		// toolbar
 			QToolBar* tool_bar;
@@ -59,13 +66,17 @@ class UserInterface : public QMainWindow
 			QLabel* message;
 			QFont font;		
 
+	private slots:
+		void ConnectionDialogSlot();
+		void MakeConnectionDialogSlot();
+
 	private:
 		// toolbar
 			void CreateToolBar();
 
 	public:
-		UserInterface();
-		~UserInterface() = default;
+		UserInterface(asio::io_context&);
+		~UserInterface();	
 };
 
 #endif /* UI_HPP */
