@@ -21,60 +21,25 @@
 
 namespace ucd
 {
-    class User
-    {
-        protected:
-            User(std::string);
+	class Data
+	{	
+		private:
+			std::string ip_address;
+			std::string message;
+			
+			// temp memory
+			std::string full_message;		
 
-            User() = default;
-            ~User() = default;
-        public:
-            std::string ipaddr;
+		private:
+			// packs text to streambuf
+			asio::streambuf::const_buffers_type Construction();
+		
+		public:
+			Data(std::string&);
+			~Data();			
 
-        public:
-            void SetIpAddr(std::string&);
-
-    };
-
-    class Message
-    {
-        protected:
-            std::string msg;
-
-        protected:
-            Message() = default;
-            ~Message() = default;
-
-        public:
-            // ucu::Ui sets message
-            void SetMessage(std::string&);
-
-    };
-
-    class Data : public User, public Message
-    {
-        private:
-            // username + ipaddr + msg
-            std::string full_message;
-
-            asio::streambuf message;
-
-        public:
-            Data(std::string ipaddr) : User(ipaddr)
-            {
-                /* 
-                    "Useless information..."
-                    "Who knows but mb this constructor won't be empty in the future :|"
-                */
-            }
-
-            Data() = default;
-            ~Data();
-            
-            // creates full message form
-            asio::streambuf::const_buffers_type Construction();
-
-    };
+			void SetMessage(std::string&);
+	}
 }
 
 #endif /* DATA_HPP_ */

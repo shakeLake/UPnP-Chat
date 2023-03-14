@@ -10,6 +10,8 @@ int main()
 	std::string port = "50000";
 	ucc::Client test_client(io_c, ip, port);	
 
+	test_client.Connect();
+
 	t1.join();
 	
 	return 0;	

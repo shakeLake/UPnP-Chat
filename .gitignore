@@ -1,3 +1,12 @@
+# build
+ 
 build-debug/
 build-release/
 app/build/
+chat/build/
+
+# vim swap files
+
+*.swn
+*.swp
+*.swo

@@ -1,25 +1,14 @@
 #include "include/data.hpp"
 
-// USER class
-
-ucd::User::User(std::string ip)
+Data::Data(std::string& ip)
 {
-    ipaddr = ip;
+	ip_address = ip;
 }
 
-void ucd::User::SetIpAddr(std::string& ip)
+void SetMessage(std::string& msg)
 {
-    ipaddr = ip;
+	message = msg
 }
-
-// MESSAGE class
-
-void ucd::Message::SetMessage(std::string& message)
-{
-    msg = message;
-}
-
-// DATA class
 
 asio::streambuf::const_buffers_type ucd::Data::Construction()
 {
