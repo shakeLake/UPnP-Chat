@@ -1,6 +1,6 @@
 #include "include/client.hpp"
 
-bool ucc::Client::Connect()
+void ucc::Client::Connect()
 {
     asio::connect(sckt, endpnt, 
         [](const asio::error_code& ec, const asio::ip::tcp::endpoint& next)
@@ -20,16 +20,35 @@ bool ucc::Client::Connect()
      
     std::cout << "Connected" << std::endl;
 
-    return sckt.is_open();
+	ReceiveFrom();
 }
 
 void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
 {
+	std::cout << "sending" << std::endl;
+
     unsigned int bytes_transfered = asio::write(sckt, msg, asio::transfer_all(), error);
 
     if (error)
     {
         std::cerr << "Sending error: ";
-        std::cout << error.message() << std::endl;
+        std::cerr << error.message() << std::endl;
     }
+}
+
+void ucc::Client::ReceiveFrom()
+{
+	std::cout << "receiving" << std::endl;
+
+	unsigned int bytes_transfered = asio::read_until(sckt, received_message, '\n', error);
+
+	if (error)
+	{
+		std::cerr << "Receiving error: ";
+		std::cerr << error.message() << std::endl;	
+	}
+	else 
+	{
+		std::cout << "Bytes Transfered: " << bytes_transfered << std::endl;
+	}
 }

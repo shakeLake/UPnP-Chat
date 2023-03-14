@@ -27,19 +27,24 @@ namespace ucs
             asio::ip::tcp::acceptor accptr;
 
             asio::streambuf data;
+			
+		private:		
+			/* listen connection */
+            void Listening();
+	
         public:
-            Server(asio::io_context& io_c, const char* port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), atoi(port)), accptr(io_c, endpnt)
+            Server(asio::io_context& io_c, std::string& port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), stoi(port)), accptr(io_c, endpnt)
             {
-                /*
-                    invisibility
-                */
+            	Listening();
             }             
             
             ~Server() = default;
 
-            std::string Listening();
-
-            void ReadFrom();
+			/* send data */
+			void SendTo(asio::streambuf::const_buffers_type);
+	
+			/* receive data */	
+            void ReceiveFrom();
     };
 }
 

@@ -1,6 +1,6 @@
 #include "include/server.hpp"
 
-std::string ucs::Server::Listening()
+void ucs::Server::Listening()
 {
     std::cout << "Listening" << std::endl;
     
@@ -15,11 +15,30 @@ std::string ucs::Server::Listening()
 
     std::string ip = endpnt.address().to_string();
 
-    return ip;
+	ReceiveFrom();
 }
 
-void ucs::Server::ReadFrom()
+void ucs::Server::SendTo(asio::streambuf::const_buffers_type msg)
 {
+	std::cout << "sending" << std::endl;
+
+    unsigned int bytes_transfered = asio::write(sckt, msg, asio::transfer_all(), error);
+
+    if (error)
+    {
+        std::cerr << "Sending error: ";
+        std::cerr << error.message() << std::endl;
+    }
+    else
+    {
+        std::cout << "Bytes transfered: " << bytes_transfered << std::endl;
+    }
+}
+
+void ucs::Server::ReceiveFrom()
+{
+	std::cout << "receiving" << std::endl;
+
     unsigned int bytes_transfered = asio::read_until(sckt, data, '\n', error);
 
     if (error)

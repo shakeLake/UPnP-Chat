@@ -30,20 +30,25 @@ namespace ucd
             ~User() = default;
         public:
             std::string ipaddr;
+
         public:
             void SetIpAddr(std::string&);
+
     };
 
     class Message
     {
         protected:
             std::string msg;
+
         protected:
             Message() = default;
             ~Message() = default;
+
         public:
             // ucu::Ui sets message
             void SetMessage(std::string&);
+
     };
 
     class Data : public User, public Message
@@ -53,6 +58,7 @@ namespace ucd
             std::string full_message;
 
             asio::streambuf message;
+
         public:
             Data(std::string ipaddr) : User(ipaddr)
             {
