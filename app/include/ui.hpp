@@ -39,8 +39,14 @@ class UserInterface : public QMainWindow
 		Design style;
 		
 		// chat
-		ucc::Client* chat_client;
-		asio::io_context& io_c;
+			std::thread client_or_server_thread;
+
+			// client chat
+			ucc::Client* chat_client;
+			asio::io_context io_c;
+
+			// server chat
+		
 
 		// toolbar
 			QToolBar* tool_bar;
@@ -68,14 +74,14 @@ class UserInterface : public QMainWindow
 
 	private slots:
 		void ConnectionDialogSlot();
-		void MakeConnectionDialogSlot();
+		// void MakeConnectionDialogSlot();
 
 	private:
 		// toolbar
 			void CreateToolBar();
 
 	public:
-		UserInterface(asio::io_context&);
+		UserInterface();
 		~UserInterface();	
 };
 

@@ -1,11 +1,7 @@
 #include "include/ui.hpp"
 
-UserInterface::UserInterface(asio::io_context& io)
+UserInterface::UserInterface()
 {
-	// chat init
-
-	io_c = io; 
-
 	// ui init
 
 	setWindowTitle( style.GetTitle() );
@@ -48,6 +44,7 @@ UserInterface::UserInterface(asio::io_context& io)
 void UserInterface::CreateToolBar()
 {
 	tool_bar = new QToolBar();
+
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
 
@@ -82,13 +79,17 @@ void UserInterface::ConnectionDialogSlot()
 	if (cdialog.result())
 	{
 		// init
-		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);					
-		// connect
-		chat_client->Connect();
+		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);
+
+		client_or_server_thread = std::thread( [this]() { io_c.run(); } );
+
+		std::cout << cdialog.ip_address << ' ' << cdialog.port << std::endl;
 	}
 }
 
 UserInterface::~UserInterface()
 {
+	client_or_server_thread.join();
+
 	delete chat_client;
 }

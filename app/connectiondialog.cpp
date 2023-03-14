@@ -35,7 +35,7 @@ ConnectionDialog::ConnectionDialog()
 	button_layout = new QHBoxLayout();	
 	connect(cancel_button, &QPushButton::released, this, [this](){ reject(); });	
 
-	connect(task_button, &QPushButton::released, this, &ConnectionDialog::GetIpAddress);
+	connect(task_button, &QPushButton::released, this, &ConnectionDialog::GetIpAddressAndPort);
 
 	button_layout->addWidget(cancel_button);
 	button_layout->addWidget(task_button);
