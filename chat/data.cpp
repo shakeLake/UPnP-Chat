@@ -5,6 +5,11 @@ ucd::Data::Data(std::string& ip)
 	ip_address = ip;
 }
 
+ucd::Data::Data()
+{
+	ip_address = "default";
+}
+
 asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 {
     // ip ...

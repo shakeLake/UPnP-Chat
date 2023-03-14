@@ -27,13 +27,20 @@ void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
 {
 	std::cout << "sending" << std::endl;
 
-    unsigned int bytes_transfered = asio::write(sckt, msg, asio::transfer_all(), error);
-
-    if (error)
-    {
-        std::cerr << "Sending error: ";
-        std::cerr << error.message() << std::endl;
-    }
+    asio::async_write(sckt, msg, asio::transfer_all(), 
+		[this](const asio::error_code& e, std::size_t size)
+		{
+    		if (e)
+    		{
+        		std::cerr << "Sending error: ";
+        		std::cerr << e.message() << std::endl;
+    		}
+    		else
+    		{
+        		std::cout << "Bytes transferred: " << size  << std::endl;
+    		}
+		}
+	);
 }
 
 void ucc::Client::ReceiveFrom()

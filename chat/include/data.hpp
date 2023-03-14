@@ -33,6 +33,8 @@ namespace ucd
 			asio::streambuf msg_buffer;			
 
 		public:
+			Data();
+
 			Data(std::string&);
 			~Data();			
 
