@@ -1,19 +1,14 @@
 #include "include/data.hpp"
 
-Data::Data(std::string& ip)
+ucd::Data::Data(std::string& ip)
 {
 	ip_address = ip;
 }
 
-void SetMessage(std::string& msg)
-{
-	message = msg
-}
-
-asio::streambuf::const_buffers_type ucd::Data::Construction()
+asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 {
     // ip ...
-    full_message += ipaddr;
+    full_message += ip_address;
     full_message += ' ';
 
     // ... text
@@ -21,13 +16,13 @@ asio::streambuf::const_buffers_type ucd::Data::Construction()
     full_message += '\n';
 
     // save message to streambuffer
-    std::ostream os_msg(&message);
+    std::ostream os_msg(&msg_buffer);
     os_msg << full_message;
 
-    return message.data();
+    return msg_buffer.data();
 }
 
 ucd::Data::~Data()
 {
-    message.consume( message.size() );
+    msg_buffer.consume( msg_buffer.size() );
 }

@@ -24,22 +24,20 @@ namespace ucd
 	class Data
 	{	
 		private:
+			// data
 			std::string ip_address;
 			std::string message;
 			
 			// temp memory
 			std::string full_message;		
+			asio::streambuf msg_buffer;			
 
-		private:
-			// packs text to streambuf
-			asio::streambuf::const_buffers_type Construction();
-		
 		public:
 			Data(std::string&);
 			~Data();			
 
-			void SetMessage(std::string&);
-	}
+			asio::streambuf::const_buffers_type SetMessage(std::string&);
+	};
 }
 
 #endif /* DATA_HPP_ */

@@ -40,15 +40,23 @@ void ucc::Client::ReceiveFrom()
 {
 	std::cout << "receiving" << std::endl;
 
-	unsigned int bytes_transfered = asio::read_until(sckt, received_message, '\n', error);
+    asio::async_read_until(sckt, received_message, '\n', 
+		[this](const asio::error_code& e, std::size_t size)
+		{
+    		if (e)
+    		{
+        		std::cerr << "Reading error: ";
+        		std::cerr << e.message() << std::endl;
+    		}
+    		else
+    		{
+        		std::cout << "Bytes received: " << size  << std::endl;
+				
+				// take data here
+				received_message.consume(size);
 
-	if (error)
-	{
-		std::cerr << "Receiving error: ";
-		std::cerr << error.message() << std::endl;	
-	}
-	else 
-	{
-		std::cout << "Bytes Transfered: " << bytes_transfered << std::endl;
-	}
+				ReceiveFrom();
+    		}
+		}
+	);
 }
