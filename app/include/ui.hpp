@@ -17,6 +17,7 @@
 // qt
 #include <QApplication>
 #include <QMainWindow>
+#include <QString>
 
 // des
 #include <QPixmap>
@@ -39,6 +40,8 @@ class UserInterface : public QMainWindow
 		Design style;
 		
 		// chat
+			ucd::Data client_or_server_data;
+			
 			std::thread client_or_server_thread;
 
 			// client chat
@@ -62,18 +65,23 @@ class UserInterface : public QMainWindow
 			MakeConnectionDialog mcdialog;
 
 		// chat widgets
+			QString msg_buffer;
+			std::string msg;
+
 			QLabel* info_label;
 			QHBoxLayout* input_field_layout;
 			QPushButton* send_button;
 			QTextEdit* main_text_field;
 		
-		// message 
+		// message 			
 			QVBoxLayout* message_layout;
 			QLabel* message;
 			QFont font;		
 
 	private slots:
 		void ConnectionDialogSlot();
+		void SendMessageSlot();
+
 		// void MakeConnectionDialogSlot();
 
 	private:

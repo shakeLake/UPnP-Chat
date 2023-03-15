@@ -3,7 +3,6 @@
 UserInterface::UserInterface()
 {
 	// ui init
-
 	setWindowTitle( style.GetTitle() );
 	resize( style.GetWidth(), style.GetHeight() );	
 
@@ -23,6 +22,8 @@ UserInterface::UserInterface()
 	input_field_layout = new QHBoxLayout();	
 
 	send_button = new QPushButton("send");
+	connect(send_button, &QPushButton::released, this, &UserInterface::SendMessageSlot);
+	
 	main_text_field = new QTextEdit();
 	
 	input_field_layout->addWidget(main_text_field);
@@ -31,9 +32,6 @@ UserInterface::UserInterface()
 	// set messages
 	message_layout = new QVBoxLayout();	
 	message_layout->setContentsMargins(0, 390, 0, 10);
-
-	message_layout->addWidget( style.LabelEstablish("Test Message", true) );	
-	message_layout->addWidget( style.LabelEstablish("Test Message 1", false) );	
 
 	// set main layout
 	main_layout->addWidget(info_label);
@@ -72,24 +70,32 @@ void UserInterface::CreateToolBar()
 }
 
 // slots
+void UserInterface::SendMessageSlot()
+{
+	msg_buffer = main_text_field->toPlainText();	
+	msg = msg_buffer.toStdString();
+	
+	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+
+	message_layout->addWidget( style.LabelEstablish(msg, false) );	
+}
+
 void UserInterface::ConnectionDialogSlot()
 {
-	cdialog.show();
+	cdialog.exec();
 	
 	if (cdialog.result())
 	{
 		// init
 		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);
 
-		client_or_server_thread = std::thread( [this]() { io_c.run(); } );
-
-		std::cout << cdialog.ip_address << ' ' << cdialog.port << std::endl;
+		client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 	}
 }
 
 UserInterface::~UserInterface()
 {
 	client_or_server_thread.join();
-
+	
 	delete chat_client;
 }

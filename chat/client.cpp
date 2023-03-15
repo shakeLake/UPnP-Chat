@@ -2,8 +2,8 @@
 
 void ucc::Client::Connect()
 {
-    asio::connect(sckt, endpnt, 
-        [](const asio::error_code& ec, const asio::ip::tcp::endpoint& next)
+    asio::async_connect(sckt, endpnt, 
+        [this](const asio::error_code& ec, const asio::ip::tcp::endpoint& next)
         {
             if (ec)
             {
@@ -13,14 +13,12 @@ void ucc::Client::Connect()
             else
             {
                 std::cout << "Connecting to: " << next << std::endl;
+
+				ReceiveFrom();
                 return true;
             }
         }
-    );
-     
-    std::cout << "Connected" << std::endl;
-
-	ReceiveFrom();
+    ); 
 }
 
 void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)

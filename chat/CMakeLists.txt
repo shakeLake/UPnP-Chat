@@ -2,10 +2,9 @@ cmake_minimum_required(VERSION 3.2)
 
 project(chat)
 
-# UNION
-option(CHAT_CLIENT_TEST "Build Chat-Client Test" TRUE)
-option(CHAT_SERVER_TEST "Build Chat-Server Test" TRUE)
-option(CHAT "Default" FALSE)
+option(CHAT_CLIENT_TEST "Build Chat-Client Test" FALSE)
+option(CHAT_SERVER_TEST "Build Chat-Server Test" FALSE)
+option(CHAT "Default" TRUE)
 
 # add_subdirectory("../upnp" "upnp-build")
 
@@ -19,11 +18,11 @@ target_link_libraries(asio INTERFACE Threads::Threads)
 
 if (CHAT_CLIENT_TEST)
 	set(CHAT_CLIENT_SOURCE 
+		"include/default.hpp"
 		data.cpp
 		"include/data.hpp"
 		client.cpp
 		"include/client.hpp"
-		"include/default.hpp"
 	)
 
 	add_library(chat_client-test STATIC ${CHAT_CLIENT_SOURCE})
@@ -35,11 +34,11 @@ endif()
 
 if (CHAT_SERVER_TEST)
 	set(CHAT_SERVER_SOURCE 
+		"include/default.hpp"
 		data.cpp
 		"include/data.hpp"
 		server.cpp
 		"include/server.hpp"
-		"include/default.hpp"
 	)
 
 	add_library(chat_server-test STATIC ${CHAT_SERVER_SOURCE})
@@ -47,4 +46,19 @@ if (CHAT_SERVER_TEST)
 
 	add_executable(server_test testchatserver.cpp)
 	target_link_libraries(server_test PRIVATE chat_server-test ws2_32)
+endif()
+
+if (CHAT)
+	set(CHAT_SERVER_SOURCE 
+		"include/default.hpp"
+		data.cpp
+		"include/data.hpp"
+		server.cpp
+		"include/server.hpp"
+		client.cpp
+		"include/client.hpp"
+	)
+
+	add_library(upnp_chat-static STATIC ${CHAT_SERVER_SOURCE})
+	target_link_libraries(upnp_chat-static PUBLIC asio ws2_32)	
 endif()

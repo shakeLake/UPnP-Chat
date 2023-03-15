@@ -37,6 +37,9 @@ namespace ucc
             /* connects to specific ip address */
 			void Connect();
 
+			/* this function receives data */
+			void ReceiveFrom();
+
         public:
             Client(asio::io_context& io_c, std::string& ip, std::string& port) : rslvr(io_c), sckt(io_c)
             {
@@ -56,9 +59,6 @@ namespace ucc
 
             /* this function sends message to connected ip */
             void SendTo(asio::streambuf::const_buffers_type);
-
-			/* this function receives data */
-			void ReceiveFrom();
     };
 }
 

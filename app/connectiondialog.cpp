@@ -53,10 +53,11 @@ void ConnectionDialog::GetIpAddressAndPort()
 	ip_str = edit_ip->text();	
 	ip_address = ip_str.toStdString();
 	
-	port_str = edit_ip->text();	
+	port_str = edit_port->text();	
 	port = port_str.toStdString();
 
 	std::cout << ip_address << std::endl;
+	std::cout << port << std::endl;
 	
 	accept();
 }
