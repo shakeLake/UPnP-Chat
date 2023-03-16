@@ -25,17 +25,24 @@ UserInterface::UserInterface()
 	connect(send_button, &QPushButton::released, this, &UserInterface::SendMessageSlot);
 	
 	main_text_field = new QTextEdit();
+	main_text_field->setFixedHeight(50);
 	
 	input_field_layout->addWidget(main_text_field);
 	input_field_layout->addWidget(send_button);
 
-	// set messages
-	message_layout = new QVBoxLayout();	
-	message_layout->setContentsMargins(0, 390, 0, 10);
+	// scroll area
+	message_layout_widget = new QWidget;
+	message_layout = new QVBoxLayout;
+
+	message_layout_widget->setLayout(message_layout);
+
+	scroll_area = new QScrollArea();	
+	scroll_area->setWidgetResizable( true );
+	scroll_area->setWidget(message_layout_widget);
 
 	// set main layout
 	main_layout->addWidget(info_label);
-	main_layout->addLayout(message_layout);
+	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
 }
 

@@ -32,6 +32,9 @@
 #include <QTextEdit>
 #include <QLabel>
 
+// scrolls
+#include <QScrollArea>
+
 class UserInterface : public QMainWindow
 {
 	Q_OBJECT
@@ -77,6 +80,10 @@ class UserInterface : public QMainWindow
 			QVBoxLayout* message_layout;
 			QLabel* message;
 			QFont font;		
+
+		// scrolls
+			QWidget* message_layout_widget;
+			QScrollArea* scroll_area;
 
 	private slots:
 		void ConnectionDialogSlot();
