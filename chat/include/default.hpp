@@ -5,7 +5,7 @@
 #include <iostream>
 
 // port mapping
-//#include "../../upnp/upnp.hpp"
+#include "../../upnp/upnp.hpp"
 
 // net
 #include "client.hpp"

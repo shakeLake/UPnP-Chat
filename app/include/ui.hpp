@@ -47,12 +47,16 @@ class UserInterface : public QMainWindow
 			
 			std::thread client_or_server_thread;
 
-			// client chat
-			ucc::Client* chat_client;
 			asio::io_context io_c;
 
+			// client chat
+			ucc::Client* chat_client;
+
 			// server chat
-		
+			ucs::Server* chat_server;		
+			
+			// upnp
+			SL_upnp::Upnp* upnp;
 
 		// toolbar
 			QToolBar* tool_bar;
@@ -89,7 +93,7 @@ class UserInterface : public QMainWindow
 		void ConnectionDialogSlot();
 		void SendMessageSlot();
 
-		// void MakeConnectionDialogSlot();
+		void MakeConnectionDialogSlot();
 
 	private:
 		// toolbar

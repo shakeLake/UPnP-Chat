@@ -20,11 +20,7 @@
 #include "../third-party/miniupnpc-2.2.4/include/upnpcommands.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
 
-#ifdef DEBUG
-    #include "../build-debug/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
-#else
-    #include "../build-release/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
-#endif
+#include "../build/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
 
 namespace SL_upnp
 {
@@ -40,13 +36,6 @@ namespace SL_upnp
             struct UPNPDev* devlist;
             int localport;
             
-            /* 
-                only for miniupnpd
-
-                UPNP_GetIGDFromUrl 
-                const char* rootdescurl = 0; 
-            */  
-
             // UPNP_GetValidIGD 
             char LAN_addr[64] = "unset";
 
@@ -70,7 +59,7 @@ namespace SL_upnp
             void DeletePortForwarding();
         public:
             // internal port and external port
-            Upnp(char*, char*);
+            Upnp(std::string&, std::string&);
             ~Upnp();
 
             // redirects port

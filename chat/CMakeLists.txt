@@ -6,7 +6,7 @@ option(CHAT_CLIENT_TEST "Build Chat-Client Test" FALSE)
 option(CHAT_SERVER_TEST "Build Chat-Server Test" FALSE)
 option(CHAT "Default" TRUE)
 
-# add_subdirectory("../upnp" "upnp-build")
+add_subdirectory("../upnp" "upnp-build")
 
 find_package(Threads REQUIRED)
 
@@ -60,5 +60,6 @@ if (CHAT)
 	)
 
 	add_library(upnp_chat-static STATIC ${CHAT_SERVER_SOURCE})
+	target_link_libraries(upnp_chat-static PUBLIC upnp-static)
 	target_link_libraries(upnp_chat-static PUBLIC asio ws2_32)	
 endif()

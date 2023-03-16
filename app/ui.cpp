@@ -69,7 +69,7 @@ void UserInterface::CreateToolBar()
 	make_connection_pixmap.load(":icons/share.png");
 	make_connection->setIcon(connect_to_pixmap);	
 	make_connection->setIconSize(QSize(20, 20));	
-	connect(make_connection, &QPushButton::released, this, [this](){ mcdialog.show(); });
+	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
 
 	// set widgets
 	tool_bar->addWidget(connect_to);
@@ -100,9 +100,26 @@ void UserInterface::ConnectionDialogSlot()
 	}
 }
 
+void UserInterface::MakeConnectionDialogSlot()
+{
+	mcdialog.exec();
+
+	if (mcdialog.result())
+	{
+		// upnp init
+		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
+		upnp->PortForwarding();
+
+		// init
+		chat_server = new ucs::Server(io_c, mcdialog.port);
+
+		client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+	}
+}
+
 UserInterface::~UserInterface()
 {
 	client_or_server_thread.join();
-	
+
 	delete chat_client;
 }

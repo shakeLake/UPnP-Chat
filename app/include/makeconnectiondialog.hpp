@@ -48,11 +48,13 @@ class MakeConnectionDialog : public QDialog
 		QPushButton* task_button;			
 
 		// for line edit
-		QString str;
+		QString port_str;
 		
 	public:
-		bool accept_message = false;
 		std::string port;
+	
+	public slots:
+		void GetPort();
 
 	public:
 		MakeConnectionDialog();

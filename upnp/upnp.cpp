@@ -1,9 +1,9 @@
 #include "upnp.hpp"
 
-SL_upnp::Upnp::Upnp(char* ext_p, char* int_p)
+SL_upnp::Upnp::Upnp(std::string& ext_p, std::string& int_p)
 {
     #ifdef _WIN32
-        nResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+        nResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
         if(nResult != NO_ERROR)
         {
             std::cerr << "WSAStartup() failed." << std::endl;
@@ -21,8 +21,8 @@ SL_upnp::Upnp::Upnp(char* ext_p, char* int_p)
             std::cerr << "Error: UPNPDISCOVER_UNKNOWN_ERROR" << std::endl;
     #endif
 
-    external_port = ext_p;
-    internal_port = int_p;
+    external_port = ext_p.data();
+    internal_port = int_p.data();
 
     error = UPNP_GetValidIGD(devlist, &urls, &data, LAN_addr, sizeof(LAN_addr));
     #ifdef DEBUG

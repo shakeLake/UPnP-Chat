@@ -3,7 +3,7 @@
 # set DEBUG in config.hpp
 
 echo -e "Build"
-cmake -G "MinGW Makefiles" -B "build-debug" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_BUILD_TYPE=RelWithDebInfo
+cmake -G "MinGW Makefiles" -B "build" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_BUILD_TYPE=RelWithDebInfo
 
-cd build-debug
+cd build
 mingw32-make
