@@ -35,10 +35,7 @@ class MakeConnectionDialog : public QDialog
 		QPushButton* listen_to;	
 		
 		// input
-		QFormLayout* label_line_edit_ip;
 		QFormLayout* label_line_edit_port;
-		QLabel* ip_label;
-		QLabel* ip_text;
 		QLabel* port_label;
 		QLineEdit* edit_port;
 		

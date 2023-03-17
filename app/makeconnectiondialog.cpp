@@ -8,27 +8,19 @@ MakeConnectionDialog::MakeConnectionDialog()
 	QWidget* main_widget = new QWidget(this);
 			
 	// init
-	main_label = new QLabel("This menu will open port on your router by UPNP!\nbe sure UPNP is on. If youre router doesn't support UPNP\nyou can use Port Forwarding");
+	main_label = new QLabel("This menu will open port on your router by UPNP!\nbe sure UPNP is on. If your router doesn't support UPNP\nyou can use Port Forwarding");
 
-	ip_label = new QLabel("IP address: ");
 	port_label = new QLabel("Port");
-	
-	ip_text = new QLabel("Your Ip Address");
 	edit_port = new QLineEdit();	
 
 	cancel_button = new QPushButton("Cancel"); 
-	task_button = new QPushButton("Connect");
+	task_button = new QPushButton("Create");
 
 	// main_label
 	main_layout = new QVBoxLayout(main_widget);	
-	
-	/* 
-		"edit_ip" requirements: 000.000.000.000
-	*/
-	label_line_edit_ip = new QFormLayout();
+
+	// port layout	
 	label_line_edit_port = new QFormLayout();
-	
-	label_line_edit_ip->addRow(ip_label, ip_text);
 	label_line_edit_port->addRow(port_label, edit_port);
 	
 	// button layout
@@ -41,7 +33,6 @@ MakeConnectionDialog::MakeConnectionDialog()
 	button_layout->addWidget(task_button);
 
 	main_layout->addWidget(main_label);
-	main_layout->addLayout(label_line_edit_ip);
 	main_layout->addLayout(label_line_edit_port);
 	main_layout->addLayout(button_layout);	
 }

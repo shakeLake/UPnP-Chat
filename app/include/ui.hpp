@@ -13,6 +13,8 @@
 // dialogs
 #include "connectiondialog.hpp"
 #include "makeconnectiondialog.hpp"
+#include "acceptdialog.hpp"
+#include "errordialog.hpp"
 
 // qt
 #include <QApplication>
@@ -70,6 +72,8 @@ class UserInterface : public QMainWindow
 			// dialogs
 			ConnectionDialog cdialog;
 			MakeConnectionDialog mcdialog;
+			AcceptDialog* adialog;
+			ErrorDialog* edialog;
 
 		// chat widgets
 			QString msg_buffer;

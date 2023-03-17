@@ -106,14 +106,26 @@ void UserInterface::MakeConnectionDialogSlot()
 
 	if (mcdialog.result())
 	{
+		// accept dialog		
+		/* if cant connect show error dialog */		
+
 		// upnp init
 		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
-		upnp->PortForwarding();
+	
+		if (upnp->PortForwarding())
+		{
+			// init
+			chat_server = new ucs::Server(io_c, mcdialog.port);
 
-		// init
-		chat_server = new ucs::Server(io_c, mcdialog.port);
+			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+		}
+		else
+		{
+			std::string error = "Error: UPNP is not supported on your router or is off";
+			edialog = new ErrorDialog(error);	
 
-		client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+			edialog->show();
+		}
 	}
 }
 
@@ -121,5 +133,11 @@ UserInterface::~UserInterface()
 {
 	client_or_server_thread.join();
 
+	delete upnp;
+
+	delete adialog;
+	delete edialog;
+
 	delete chat_client;
+	delete chat_server;
 }

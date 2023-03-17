@@ -63,7 +63,7 @@ namespace SL_upnp
             ~Upnp();
 
             // redirects port
-            void PortForwarding();
+            bool PortForwarding();
     };
 }
 

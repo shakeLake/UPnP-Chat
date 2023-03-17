@@ -79,6 +79,10 @@ if (UI)
 		"include/makeconnectiondialog.hpp"
 		design.cpp
 		"include/design.hpp"
+		acceptdialog.cpp
+		"include/acceptdialog.hpp"
+		errordialog.cpp
+		"include/errordialog.hpp"
 	)
 
 	add_library(app-lib STATIC ${APP_SOURCE})
