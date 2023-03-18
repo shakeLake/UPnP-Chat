@@ -8,14 +8,16 @@ void ucc::Client::Connect()
             if (ec)
             {
                 std::cerr << ec.message() << std::endl;
-                return false;
+		
+				status = false;
             }
             else
             {
                 std::cout << "Connecting to: " << next << std::endl;
+				
+				status = "true";
 
 				ReceiveFrom();
-                return true;
             }
         }
     ); 

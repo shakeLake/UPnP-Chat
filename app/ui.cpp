@@ -96,7 +96,19 @@ void UserInterface::ConnectionDialogSlot()
 		// init
 		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);
 
-		client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+		if (chat_client->status)
+		{
+			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+		}
+		else
+		{
+			delete chat_client;
+		
+			edialog = new ErrorDialog(er.connection_error);
+			edialog->exec();
+		}
+	
+		delete edialog;
 	}
 }
 
@@ -106,14 +118,17 @@ void UserInterface::MakeConnectionDialogSlot()
 
 	if (mcdialog.result())
 	{
-		// accept dialog		
-		/* if cant connect show error dialog */		
-
+		std::string inv = "INVITECODE";
+		adialog = new AcceptDialog(inv);
+		adialog->show();		
+		
 		// upnp init
 		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
 	
 		if (upnp->PortForwarding())
 		{
+			setDisabled(true);
+	
 			// init
 			chat_server = new ucs::Server(io_c, mcdialog.port);
 
@@ -121,11 +136,17 @@ void UserInterface::MakeConnectionDialogSlot()
 		}
 		else
 		{
-			std::string error = "Error: UPNP is not supported on your router or is off";
-			edialog = new ErrorDialog(error);	
+			adialog->close();			
+	
+			delete chat_server;
+		
+			edialog = new ErrorDialog(er.listening_error);	
 
-			edialog->show();
+			edialog->exec();
 		}
+		
+		delete adialog;
+		delete edialog;
 	}
 }
 
@@ -134,9 +155,6 @@ UserInterface::~UserInterface()
 	client_or_server_thread.join();
 
 	delete upnp;
-
-	delete adialog;
-	delete edialog;
 
 	delete chat_client;
 	delete chat_server;

@@ -19,7 +19,7 @@ private:
 	QPushButton* okay_button;
 
 public:
-	ErrorDialog(std::string&);
+	ErrorDialog(const std::string&);
 	~ErrorDialog() = default;
 };
 

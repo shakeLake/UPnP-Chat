@@ -17,6 +17,9 @@
 // threads
 #include <thread>
 
+// error
+#include "errorcodes.hpp"
+
 // config
 #include "../../config.hpp"
 

@@ -1,6 +1,6 @@
 #include "include/errordialog.hpp"
 
-ErrorDialog::ErrorDialog(std::string& er_msg)
+ErrorDialog::ErrorDialog(const std::string& er_msg)
 {
 	setWindowTitle("Error dialog");
 	resize(350, 150);

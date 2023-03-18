@@ -57,6 +57,7 @@ if (CHAT)
 		"include/server.hpp"
 		client.cpp
 		"include/client.hpp"
+		"include/errorcodes.hpp"
 	)
 
 	add_library(upnp_chat-static STATIC ${CHAT_SERVER_SOURCE})

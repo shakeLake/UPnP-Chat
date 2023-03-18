@@ -45,6 +45,8 @@ class UserInterface : public QMainWindow
 		Design style;
 		
 		// chat
+			ErrorMessage er;
+
 			ucd::Data client_or_server_data;
 			
 			std::thread client_or_server_thread;

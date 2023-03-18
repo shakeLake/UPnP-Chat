@@ -33,6 +33,10 @@ namespace ucc
 			// buffer
 			asio::streambuf received_message;	
 
+		public:
+			// connection status
+			bool status;
+
 		private:
             /* connects to specific ip address */
 			void Connect();
