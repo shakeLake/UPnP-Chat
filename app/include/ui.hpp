@@ -20,8 +20,6 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QString>
-
-// des
 #include <QPixmap>
 
 // layouts

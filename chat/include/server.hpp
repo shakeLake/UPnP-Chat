@@ -27,6 +27,10 @@ namespace ucs
             asio::ip::tcp::acceptor accptr;
 
             asio::streambuf data;
+		
+		public:
+			// connection status
+			bool status;
 			
 		private:		
 			/* listen connection */

@@ -17,8 +17,9 @@ private:
 	QLabel* invite_code;
 
 public:
-	AcceptDialog(const std::string&);
+	AcceptDialog(char*, char*);
 	~AcceptDialog() = default;
+
 };
 
 #endif /* ACCEPTDIALOG_HPP_ */

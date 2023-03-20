@@ -106,9 +106,8 @@ void UserInterface::ConnectionDialogSlot()
 		
 			edialog = new ErrorDialog(er.connection_error);
 			edialog->exec();
+			delete edialog;
 		}
-	
-		delete edialog;
 	}
 }
 
@@ -118,35 +117,42 @@ void UserInterface::MakeConnectionDialogSlot()
 
 	if (mcdialog.result())
 	{
-		std::string inv = "INVITECODE";
-		adialog = new AcceptDialog(inv);
-		adialog->show();		
-		
 		// upnp init
 		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
 	
+		adialog = new AcceptDialog(upnp->GetLanAddress(), &mcdialog.port[0]);
+
+		adialog->exec();		
+
 		if (upnp->PortForwarding())
 		{
-			setDisabled(true);
-	
 			// init
 			chat_server = new ucs::Server(io_c, mcdialog.port);
 
-			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+			if (chat_server->status)
+			{
+				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+			}
+			else
+			{
+				delete chat_server;
+
+				edialog = new ErrorDialog(er.listening_error);
+				edialog->exec();
+				delete edialog;
+			}
 		}
 		else
 		{
 			adialog->close();			
 	
-			delete chat_server;
-		
-			edialog = new ErrorDialog(er.listening_error);	
+			edialog = new ErrorDialog(er.upnp_failed);	
 
 			edialog->exec();
+			delete edialog;
 		}
 		
 		delete adialog;
-		delete edialog;
 	}
 }
 

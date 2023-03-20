@@ -10,12 +10,17 @@ void ucs::Server::Listening()
     {
         std::cerr << "Acceptor error: ";
         std::cerr << error.message() << std::endl;
-        assert(error);
+		
+		status = 0;
     }
+	else
+	{
+		status = 1;		
 
-    std::string ip = endpnt.address().to_string();
+	    std::string ip = endpnt.address().to_string();
 
-	ReceiveFrom();
+		ReceiveFrom();
+	}
 }
 
 void ucs::Server::SendTo(asio::streambuf::const_buffers_type msg)

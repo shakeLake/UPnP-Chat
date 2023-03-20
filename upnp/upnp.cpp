@@ -116,3 +116,8 @@ void SL_upnp::Upnp::DeletePortForwarding()
     else
     	std::cout << "UPNP_DeletePortMapping() returned : " << error << std::endl;
 }
+
+char* SL_upnp::Upnp::GetLanAddress()
+{
+	return LAN_addr;
+}

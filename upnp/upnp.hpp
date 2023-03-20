@@ -54,9 +54,11 @@ namespace SL_upnp
             // ports
             char* external_port;
             char* internal_port;
+		
         private:
             // deletes redirected port
             void DeletePortForwarding();
+
         public:
             // internal port and external port
             Upnp(std::string&, std::string&);
@@ -64,6 +66,9 @@ namespace SL_upnp
 
             // redirects port
             bool PortForwarding();
+			
+			// get ip address
+			char* GetLanAddress();
     };
 }
 
