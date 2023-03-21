@@ -15,7 +15,9 @@ UserInterface::UserInterface()
 	
 	// info 
 	info_label = new QLabel("Information");
-	info_label->setAlignment(Qt::AlignTop);
+	main_text_field = new QTextEdit();
+	info_label->setFixedHeight(50);
+	info_label->setAlignment(Qt::AlignCenter);
 	info_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 	// input field 
@@ -140,15 +142,11 @@ void UserInterface::MakeConnectionDialogSlot()
 		}
 		else
 		{
-			adialog->close();			
-	
 			edialog = new ErrorDialog(er.upnp_failed);	
 
 			edialog->exec();
 			delete edialog;
 		}
-		
-		delete adialog;
 	}
 }
 
