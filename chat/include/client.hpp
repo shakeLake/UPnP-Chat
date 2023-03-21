@@ -53,7 +53,6 @@ namespace ucc
                 {
                     std::cerr << "Error: ";
                     std::cerr << error.message() << std::endl;
-                    assert(error);
                 }
 
             	Connect();

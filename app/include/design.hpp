@@ -37,7 +37,7 @@ class Design
 		
 		// set font, set alignment, set frame style
 		QLabel* LabelEstablish(std::string, bool);
-		
+
 		// return title
 		const char* GetTitle();
 		

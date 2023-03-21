@@ -94,7 +94,9 @@ class UserInterface : public QMainWindow
 
 	private slots:
 		void ConnectionDialogSlot();
-		void SendMessageSlot();
+
+		void SendChatMessageSlot();
+		void SendServerMessageSlot();
 
 		void MakeConnectionDialogSlot();
 

@@ -14,9 +14,9 @@ UserInterface::UserInterface()
 	setCentralWidget(main_widget);
 	
 	// info 
-	info_label = new QLabel("Information");
+	info_label = new QLabel("UPNP Chat");
 	main_text_field = new QTextEdit();
-	info_label->setFixedHeight(50);
+	info_label->setFixedHeight(40);
 	info_label->setAlignment(Qt::AlignCenter);
 	info_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
@@ -24,7 +24,6 @@ UserInterface::UserInterface()
 	input_field_layout = new QHBoxLayout();	
 
 	send_button = new QPushButton("send");
-	connect(send_button, &QPushButton::released, this, &UserInterface::SendMessageSlot);
 	
 	main_text_field = new QTextEdit();
 	main_text_field->setFixedHeight(50);
@@ -79,12 +78,22 @@ void UserInterface::CreateToolBar()
 }
 
 // slots
-void UserInterface::SendMessageSlot()
+void UserInterface::SendChatMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
 	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+
+	message_layout->addWidget( style.LabelEstablish(msg, false) );	
+}
+
+void UserInterface::SendServerMessageSlot()
+{
+	msg_buffer = main_text_field->toPlainText();	
+	msg = msg_buffer.toStdString();
+	
+	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
 	message_layout->addWidget( style.LabelEstablish(msg, false) );	
 }
@@ -95,20 +104,24 @@ void UserInterface::ConnectionDialogSlot()
 	
 	if (cdialog.result())
 	{
+		info_label->setText("Connecting...");
+		info_label->repaint();
+
 		// init
 		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port);
 
 		if (chat_client->status)
 		{
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+
+			connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
 		}
 		else
 		{
+			info_label->setText("Connection Refused");
+			info_label->repaint();
+			
 			delete chat_client;
-		
-			edialog = new ErrorDialog(er.connection_error);
-			edialog->exec();
-			delete edialog;
 		}
 	}
 }
@@ -119,29 +132,39 @@ void UserInterface::MakeConnectionDialogSlot()
 
 	if (mcdialog.result())
 	{
+		info_label->setText("Opening port...");
+		info_label->repaint();
+
 		// upnp init
 		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
 	
 		if (upnp->PortForwarding())
 		{
+			info_label->setText("Waiting for connection...");
+			info_label->repaint();
+
 			// init
 			chat_server = new ucs::Server(io_c, mcdialog.port);
 
 			if (chat_server->status)
 			{
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+
+				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 			}
 			else
 			{
-				delete chat_server;
+				info_label->setText("Failed");
+				info_label->repaint();
 
-				edialog = new ErrorDialog(er.listening_error);
-				edialog->exec();
-				delete edialog;
+				delete chat_server;
 			}
 		}
 		else
 		{
+			info_label->setText("Failed");
+			info_label->repaint();
+
 			edialog = new ErrorDialog(er.upnp_failed);	
 
 			edialog->exec();
