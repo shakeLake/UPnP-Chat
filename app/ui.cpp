@@ -120,10 +120,6 @@ void UserInterface::MakeConnectionDialogSlot()
 		// upnp init
 		upnp = new SL_upnp::Upnp(mcdialog.port, mcdialog.port);
 	
-		adialog = new AcceptDialog(upnp->GetLanAddress(), &mcdialog.port[0]);
-
-		adialog->exec();		
-
 		if (upnp->PortForwarding())
 		{
 			// init

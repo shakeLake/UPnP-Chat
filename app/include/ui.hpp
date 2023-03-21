@@ -72,7 +72,6 @@ class UserInterface : public QMainWindow
 			// dialogs
 			ConnectionDialog cdialog;
 			MakeConnectionDialog mcdialog;
-			AcceptDialog* adialog;
 			ErrorDialog* edialog;
 
 		// chat widgets
