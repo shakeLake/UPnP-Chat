@@ -27,6 +27,24 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
     return msg_buffer.data();
 }
 
+void ucd::Data::GetMessage(asio::strambuf str)
+{
+	std::ostringstream os;
+	os << str;
+	
+	msg_buffer.push_back(os.str());
+}
+
+unsigned int GetMsgBufferSize()
+{
+	return msg_buffer.size();
+}
+
+std::string& GetMsgFromMsgBuffer(unsigned int index)
+{
+	return msg_buffer[index];
+}
+
 ucd::Data::~Data()
 {
     msg_buffer.consume( msg_buffer.size() );

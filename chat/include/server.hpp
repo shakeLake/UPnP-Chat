@@ -17,38 +17,38 @@ namespace ucs
 {
     class Server
     {
-        private:
-            // socket
-            asio::ip::tcp::socket sckt;
+    private:
+    	// socket
+        asio::ip::tcp::socket sckt;
 
-            asio::error_code error;
+        asio::error_code error;
 
-            asio::ip::tcp::endpoint endpnt;
-            asio::ip::tcp::acceptor accptr;
+        asio::ip::tcp::endpoint endpnt;
+        asio::ip::tcp::acceptor accptr;
 
-            asio::streambuf data;
+        asio::streambuf data;
 		
-		public:
-			// connection status
-			bool status;
+	public:
+		// connection status
+		bool status;
 			
-		private:		
-			/* listen connection */
-            void Listening();
+	private:		
+		/* listen connection */
+       	void Listening();
 	
-        public:
-            Server(asio::io_context& io_c, std::string& port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), stoi(port)), accptr(io_c, endpnt)
-            {
-            	Listening();
-            }             
+    public:
+    	Server(asio::io_context& io_c, std::string& port) : sckt(io_c), endpnt(asio::ip::tcp::v4(), stoi(port)), accptr(io_c, endpnt)
+        {
+            Listening();
+        }             
             
-            ~Server() = default;
+        ~Server() = default;
 
-			/* send data */
-			void SendTo(asio::streambuf::const_buffers_type);
+		/* send data */
+		void SendTo(asio::streambuf::const_buffers_type);
 	
-			/* receive data */	
-            void ReceiveFrom();
+		/* receive data */	
+        void ReceiveFrom();
     };
 }
 

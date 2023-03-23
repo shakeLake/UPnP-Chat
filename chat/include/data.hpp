@@ -9,6 +9,7 @@
 
 // std::string
 #include <cstring>
+#include <vector>
 
 /*  
     asio
@@ -23,22 +24,33 @@ namespace ucd
 {
 	class Data
 	{	
-		private:
-			// data
-			std::string ip_address;
-			std::string message;
+	private:
+		// data
+		std::string ip_address;
+		std::string message;
 			
-			// temp memory
-			std::string full_message;		
-			asio::streambuf msg_buffer;			
+		// temp memory
+		std::string full_message;		
+		asio::streambuf msg_buffer;			
+			
+		// vector of messages
+		std::vector<std::string> msg_buffer;
 
-		public:
-			Data();
+	public:
+		Data();
 
-			Data(std::string&);
-			~Data();			
+		Data(std::string&);
+		~Data();			
+			
+		// get new message
+		unsigned int GetMsgBufferSize();
+		std::string& GetMsgFromMsgBuffer(unsigned int index);
+	
+		// string to streambuf
+		asio::streambuf::coust_buffers_type SetMessage(std::string&);
 
-			asio::streambuf::const_buffers_type SetMessage(std::string&);
+		// streambuf to string 
+		void GetMessage(asio::streambuf);			
 	};
 }
 

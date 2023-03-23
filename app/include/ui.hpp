@@ -39,74 +39,74 @@ class UserInterface : public QMainWindow
 {
 	Q_OBJECT
 
-	private:
-		Design style;
+private:
+	Design style;
 		
-		// chat
-			ErrorMessage er;
+	// chat
+	ErrorMessage er;
 
-			ucd::Data client_or_server_data;
+	ucd::Data client_or_server_data;
 			
-			std::thread client_or_server_thread;
+	std::thread client_or_server_thread;
 
-			asio::io_context io_c;
+	asio::io_context io_c;
 
-			// client chat
-			ucc::Client* chat_client;
+	// client chat
+	ucc::Client* chat_client;
 
-			// server chat
-			ucs::Server* chat_server;		
+	// server chat
+	ucs::Server* chat_server;		
 			
-			// upnp
-			SL_upnp::Upnp* upnp;
+	// upnp
+	SL_upnp::Upnp* upnp;
 
-		// toolbar
-			QToolBar* tool_bar;
+	// toolbar
+	QToolBar* tool_bar;
 			
-			QPixmap connect_to_pixmap;			
-			QPushButton* connect_to;
+	QPixmap connect_to_pixmap;			
+	QPushButton* connect_to;
 				
-			QPixmap make_connection_pixmap;			
-			QPushButton* make_connection;
+	QPixmap make_connection_pixmap;			
+	QPushButton* make_connection;
 			
-			// dialogs
-			ConnectionDialog cdialog;
-			MakeConnectionDialog mcdialog;
-			ErrorDialog* edialog;
+	// dialogs
+	ConnectionDialog cdialog;
+	MakeConnectionDialog mcdialog;
+	ErrorDialog* edialog;
 
-		// chat widgets
-			QString msg_buffer;
-			std::string msg;
+	// chat widgets
+	QString msg_buffer;
+	std::string msg;
 
-			QLabel* info_label;
-			QHBoxLayout* input_field_layout;
-			QPushButton* send_button;
-			QTextEdit* main_text_field;
+	QLabel* info_label;
+	QHBoxLayout* input_field_layout;
+	QPushButton* send_button;
+	QTextEdit* main_text_field;
 		
-		// message 			
-			QVBoxLayout* message_layout;
-			QLabel* message;
-			QFont font;		
+	// message 			
+	QVBoxLayout* message_layout;
+	QLabel* message;
+	QFont font;		
 
-		// scrolls
-			QWidget* message_layout_widget;
-			QScrollArea* scroll_area;
+	// scrolls
+	QWidget* message_layout_widget;
+	QScrollArea* scroll_area;
 
-	private slots:
-		void ConnectionDialogSlot();
+private slots:
+	void ConnectionDialogSlot();
 
-		void SendChatMessageSlot();
-		void SendServerMessageSlot();
+	void SendChatMessageSlot();
+	void SendServerMessageSlot();
 
-		void MakeConnectionDialogSlot();
+	void MakeConnectionDialogSlot();
 
-	private:
-		// toolbar
-			void CreateToolBar();
+private:
+	// toolbar
+	void CreateToolBar();
 
-	public:
-		UserInterface();
-		~UserInterface();	
+public:
+	UserInterface();
+	~UserInterface();	
 };
 
 #endif /* UI_HPP */

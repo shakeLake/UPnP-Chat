@@ -8,42 +8,42 @@
 
 class Design
 {
-	private:	
-		const char* title = "UpNpChat";
+private:	
+	const char* title = "UpNpChat";
 
-		// resolution
-		unsigned short width;
-		unsigned short height;
+	// resolution
+	unsigned short width;
+	unsigned short height;
 
-		// font
-		QFont font;
-		unsigned short font_size; 
+	// font
+	QFont font;
+	unsigned short font_size; 
 
-		// data
-		std::vector<QLabel*> labels;
+	// data
+	std::vector<QLabel*> labels;
 
-	public:
-		Design() 
-		{
-			width = 900;
-			height = 600;
+public:
+	Design() 
+	{
+		width = 900;
+		height = 600;
 
-			font_size = 17;
+		font_size = 17;
 
-			font.setPixelSize(font_size);	
-		}
+		font.setPixelSize(font_size);	
+	}
 
-		~Design() = default;
+	~Design() = default;
 		
-		// set font, set alignment, set frame style
-		QLabel* LabelEstablish(std::string, bool);
+	// set font, set alignment, set frame style
+	QLabel* LabelEstablish(std::string, bool);
 
-		// return title
-		const char* GetTitle();
+	// return title
+	const char* GetTitle();
 		
-		// width
-		const unsigned short GetWidth();
+	// width
+	const unsigned short GetWidth();
 
-		// height
-		const unsigned short GetHeight(); 
+	// height
+	const unsigned short GetHeight(); 
 };
