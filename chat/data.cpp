@@ -1,10 +1,5 @@
 #include "include/data.hpp"
 
-ucd::Data::Data(std::string& ip)
-{
-	ip_address = ip;
-}
-
 ucd::Data::Data()
 {
 	ip_address = "default";
@@ -27,22 +22,23 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
     return msg_buffer.data();
 }
 
-void ucd::Data::GetMessage(asio::strambuf str)
+void ucd::Data::GetMessage(asio::streambuf str)
 {
-	std::ostringstream os;
-	os << str;
+	std::istream is(&str);
+	is >> vec_buf;
 	
-	msg_buffer.push_back(os.str());
+	msg_buffer_vec.push_back(vec_buf);
+	vec_buf.clear();
 }
 
-unsigned int GetMsgBufferSize()
+unsigned int ucd::Data::GetMsgBufferSize()
 {
-	return msg_buffer.size();
+	return msg_buffer_vec.size();
 }
 
-std::string& GetMsgFromMsgBuffer(unsigned int index)
+std::string& ucd::Data::GetMsgFromMsgBuffer(unsigned int index)
 {
-	return msg_buffer[index];
+	return msg_buffer_vec[index];
 }
 
 ucd::Data::~Data()

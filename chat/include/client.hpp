@@ -13,6 +13,9 @@
 // std::string
 #include <cstring>
 
+// data
+#include "data.hpp"
+
 namespace ucc
 {
     class Client
@@ -33,6 +36,9 @@ namespace ucc
 		// buffer
 		asio::streambuf received_message;	
 
+		// data
+		ucd::Data* user_data;
+
 	public:
 		// connection status
 		bool status;
@@ -45,8 +51,10 @@ namespace ucc
 		void ReceiveFrom();
 
 	public:
-    	Client(asio::io_context& io_c, std::string& ip, std::string& port) : rslvr(io_c), sckt(io_c)
+    	Client(asio::io_context& io_c, std::string& ip, std::string& port, ucd::Data* u_d) : rslvr(io_c), sckt(io_c)
         {
+			user_data = u_d;		
+	
         	endpnt = rslvr.resolve(ip, port, error);
 
             if (error)

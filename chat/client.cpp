@@ -59,7 +59,7 @@ void ucc::Client::ReceiveFrom()
     		{
         		std::cout << "Bytes received: " << size  << std::endl;
 				
-				// take data here
+				//user_data->GetMessage(received_message);
 				received_message.consume(size);
 
 				ReceiveFrom();

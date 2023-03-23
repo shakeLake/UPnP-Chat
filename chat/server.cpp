@@ -59,8 +59,8 @@ void ucs::Server::ReceiveFrom()
     		{
         		std::cout << "Bytes received: " << size  << std::endl;
 				
-				// take data here	
-				data.consume( size );			
+				//user_data->GetMessage(data);
+				data.consume(size);			
 	
 				ReceiveFrom();
     		}

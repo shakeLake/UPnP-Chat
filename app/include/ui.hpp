@@ -45,7 +45,7 @@ private:
 	// chat
 	ErrorMessage er;
 
-	ucd::Data client_or_server_data;
+	ucd::Data* client_or_server_data;
 			
 	std::thread client_or_server_thread;
 
@@ -59,6 +59,10 @@ private:
 			
 	// upnp
 	SL_upnp::Upnp* upnp;
+
+	// data checking variables
+	std::thread data_checking_thread;
+	unsigned int size_of_msg_buffer;
 
 	// toolbar
 	QToolBar* tool_bar;
@@ -103,6 +107,9 @@ private slots:
 private:
 	// toolbar
 	void CreateToolBar();
+
+	// data checking -- thread
+	void DataChecking(); 
 
 public:
 	UserInterface();

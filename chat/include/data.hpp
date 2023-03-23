@@ -7,7 +7,7 @@
 // I / O
 #include <iostream>
 
-// std::string
+// data
 #include <cstring>
 #include <vector>
 
@@ -34,12 +34,11 @@ namespace ucd
 		asio::streambuf msg_buffer;			
 			
 		// vector of messages
-		std::vector<std::string> msg_buffer;
+		std::string vec_buf;
+		std::vector<std::string> msg_buffer_vec;
 
 	public:
 		Data();
-
-		Data(std::string&);
 		~Data();			
 			
 		// get new message
@@ -47,10 +46,10 @@ namespace ucd
 		std::string& GetMsgFromMsgBuffer(unsigned int index);
 	
 		// string to streambuf
-		asio::streambuf::coust_buffers_type SetMessage(std::string&);
+		asio::streambuf::const_buffers_type SetMessage(std::string&);
 
 		// streambuf to string 
-		void GetMessage(asio::streambuf);			
+		void GetMessage(asio::streambuf);
 	};
 }
 
