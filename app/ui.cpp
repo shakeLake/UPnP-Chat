@@ -2,9 +2,6 @@
 
 UserInterface::UserInterface()
 {
-	// data init
-	client_or_server_data = new ucd::Data;
-
 	// data checking 
 	size_of_msg_buffer = 0;
 
@@ -89,7 +86,7 @@ void UserInterface::SendChatMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
-	chat_client->SendTo( client_or_server_data->SetMessage(msg) );
+	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
 	message_layout->addWidget( style.LabelEstablish(msg, false) );	
 }
@@ -99,7 +96,7 @@ void UserInterface::SendServerMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
-	chat_server->SendTo( client_or_server_data->SetMessage(msg) );
+	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
 	message_layout->addWidget( style.LabelEstablish(msg, false) );	
 }
@@ -114,7 +111,7 @@ void UserInterface::ConnectionDialogSlot()
 		info_label->repaint();
 
 		// init
-		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port, client_or_server_data);
+		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port, &client_or_server_data);
 
 		if (chat_client->status)
 		{
@@ -122,7 +119,7 @@ void UserInterface::ConnectionDialogSlot()
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
 			// Start data checking
-			data_checking_thread = std::thread(DataChecking);	
+			data_checking_thread = std::thread(DataChecking, this);	
 
 			connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
 		}
@@ -154,7 +151,7 @@ void UserInterface::MakeConnectionDialogSlot()
 			info_label->repaint();
 
 			// init
-			chat_server = new ucs::Server(io_c, mcdialog.port, client_or_server_data);
+			chat_server = new ucs::Server(io_c, mcdialog.port, &client_or_server_data);
 
 			if (chat_server->status)
 			{
@@ -162,7 +159,7 @@ void UserInterface::MakeConnectionDialogSlot()
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
 				// Start data checking
-				//data_checking_thread = std::thread(DataChecking);	
+				data_checking_thread = std::thread(DataChecking, this);	
 
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 			}
@@ -189,23 +186,26 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
-	if (client_or_server_data->GetMsgBufferSize() > size_of_msg_buffer)
+	while (true)
 	{
-		message_layout->addWidget(
-			style.LabelEstablish(
-				client_or_server_data->GetMsgFromMsgBuffer(size_of_msg_buffer), true) 
-		);	
+		std::cout << "dc";		
 
-		size_of_msg_buffer += 1;	
-	}	
+		if (client_or_server_data.GetMsgBufferSize() > size_of_msg_buffer)
+		{
+			message_layout->addWidget(
+				style.LabelEstablish(
+					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
+			);	
+
+			size_of_msg_buffer += 1;	
+		}	
+	}
 }
 
 UserInterface::~UserInterface()
 {
 	client_or_server_thread.join();
 	data_checking_thread.join();
-
-	delete client_or_server_data;
 
 	delete upnp;
 

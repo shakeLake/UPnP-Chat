@@ -38,7 +38,7 @@ namespace ucd
 		std::vector<std::string> msg_buffer_vec;
 
 	public:
-		Data();
+		Data() = default;
 		~Data();			
 			
 		// get new message
@@ -49,7 +49,7 @@ namespace ucd
 		asio::streambuf::const_buffers_type SetMessage(std::string&);
 
 		// streambuf to string 
-		void GetMessage(asio::streambuf);
+		void GetMsg(asio::streambuf&);
 	};
 }
 

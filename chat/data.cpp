@@ -1,10 +1,5 @@
 #include "include/data.hpp"
 
-ucd::Data::Data()
-{
-	ip_address = "default";
-}
-
 asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 {
     // ip ...
@@ -22,7 +17,7 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
     return msg_buffer.data();
 }
 
-void ucd::Data::GetMessage(asio::streambuf str)
+void ucd::Data::GetMsg(asio::streambuf& str)
 {
 	std::istream is(&str);
 	is >> vec_buf;

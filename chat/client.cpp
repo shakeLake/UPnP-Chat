@@ -2,7 +2,7 @@
 
 void ucc::Client::Connect()
 {
-    asio::async_connect(sckt, endpnt, 
+    asio::connect(sckt, endpnt, 
         [this](const asio::error_code& ec, const asio::ip::tcp::endpoint& next)
         {
             if (ec)
@@ -59,7 +59,7 @@ void ucc::Client::ReceiveFrom()
     		{
         		std::cout << "Bytes received: " << size  << std::endl;
 				
-				//user_data->GetMessage(received_message);
+				user_data->GetMsg(received_message);
 				received_message.consume(size);
 
 				ReceiveFrom();

@@ -45,7 +45,7 @@ private:
 	// chat
 	ErrorMessage er;
 
-	ucd::Data* client_or_server_data;
+	ucd::Data client_or_server_data;
 			
 	std::thread client_or_server_thread;
 
