@@ -70,6 +70,10 @@ namespace ucc
 
         /* this function sends message to connected ip */
         void SendTo(asio::streambuf::const_buffers_type);
+		
+		// return socket.is_open()
+		bool SocketIsOpen();
+
     };
 }
 

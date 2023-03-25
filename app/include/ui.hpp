@@ -60,7 +60,7 @@ private:
 	// upnp
 	SL_upnp::Upnp* upnp;
 
-	// data checking variables
+	// data checking
 	std::thread data_checking_thread;
 	unsigned int size_of_msg_buffer;
 
@@ -98,11 +98,16 @@ private:
 
 private slots:
 	void ConnectionDialogSlot();
+	void MakeConnectionDialogSlot();
 
 	void SendChatMessageSlot();
 	void SendServerMessageSlot();
 
-	void MakeConnectionDialogSlot();
+	// data checking slot
+	void AddMessage();
+
+signals:
+	void DataReceived();
 
 private:
 	// toolbar

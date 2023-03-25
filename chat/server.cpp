@@ -25,8 +25,6 @@ void ucs::Server::Listening()
 
 void ucs::Server::SendTo(asio::streambuf::const_buffers_type msg)
 {
-	std::cout << "sending" << std::endl;
-
     asio::async_write(sckt, msg, asio::transfer_all(), 
 		[this](const asio::error_code& e, std::size_t size)
 		{
@@ -45,8 +43,6 @@ void ucs::Server::SendTo(asio::streambuf::const_buffers_type msg)
 
 void ucs::Server::ReceiveFrom()
 {
-	std::cout << "receiving" << std::endl;
-
     asio::async_read_until(sckt, data, '\n', 
 		[this](const asio::error_code& e, std::size_t size)
 		{
@@ -59,11 +55,16 @@ void ucs::Server::ReceiveFrom()
     		{
         		std::cout << "Bytes received: " << size  << std::endl;
 				
-				//user_data->GetMessage(data);
+				user_data->GetMsg(data);
 				data.consume(size);			
 	
 				ReceiveFrom();
     		}
 		}
 	);
+}
+
+bool ucs::Server::SocketIsOpen()
+{
+	return sckt.is_open();
 }

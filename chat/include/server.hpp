@@ -57,6 +57,9 @@ namespace ucs
 	
 		/* receive data */	
         void ReceiveFrom();
+		
+		// return socket.is_open()
+		bool SocketIsOpen();
     };
 }
 

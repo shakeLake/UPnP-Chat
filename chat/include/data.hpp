@@ -26,7 +26,6 @@ namespace ucd
 	{	
 	private:
 		// data
-		std::string ip_address;
 		std::string message;
 			
 		// temp memory

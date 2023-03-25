@@ -2,10 +2,6 @@
 
 asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 {
-    // ip ...
-    full_message += ip_address;
-    full_message += ' ';
-
     // ... text
     full_message += msg;
     full_message += '\n';

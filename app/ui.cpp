@@ -118,10 +118,11 @@ void UserInterface::ConnectionDialogSlot()
 			// Start client
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
-			// Start data checking
-			data_checking_thread = std::thread(DataChecking, this);	
-
 			connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
+
+			// Start data checking
+			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+			data_checking_thread = std::thread(DataChecking, this);	
 		}
 		else
 		{
@@ -158,10 +159,11 @@ void UserInterface::MakeConnectionDialogSlot()
 				// Start server
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
-				// Start data checking
-				data_checking_thread = std::thread(DataChecking, this);	
-
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
+
+				// Start data checking
+				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+				data_checking_thread = std::thread(DataChecking, this);	
 			}
 			else
 			{
@@ -186,20 +188,30 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
-	while (true)
+	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
 	{
-		std::cout << "dc";		
-
 		if (client_or_server_data.GetMsgBufferSize() > size_of_msg_buffer)
 		{
-			message_layout->addWidget(
-				style.LabelEstablish(
-					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
-			);	
-
-			size_of_msg_buffer += 1;	
+			emit DataReceived();			
+			
+			ize_of_msg_buffer += 1;	
 		}	
 	}
+}
+
+void UserInterface::AddMessage()
+{
+	/*
+	message_layout->addWidget(
+		style.LabelEstablish(
+				client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
+	);	
+	*/
+
+	std::cout << client_or_server_data.GetMsgBufferSize() << std::endl;
+	std::cout << size_of_msg_buffer << std::endl;
+	
+	message_layout->addWidget(style.LabelEstablish("Test", true));
 }
 
 UserInterface::~UserInterface()

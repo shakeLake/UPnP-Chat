@@ -2,25 +2,22 @@
 
 void ucc::Client::Connect()
 {
-    asio::connect(sckt, endpnt, 
-        [this](const asio::error_code& ec, const asio::ip::tcp::endpoint& next)
-        {
-            if (ec)
-            {
-                std::cerr << ec.message() << std::endl;
+    asio::connect(sckt, endpnt, error);
+ 
+   	if (error)
+    {
+    	std::cerr << error.message() << std::endl;
 		
-				status = false;
-            }
-            else
-            {
-                std::cout << "Connecting to: " << next << std::endl;
+		status = false;
+	}
+    else
+    {
+    	std::cout << "Connected" << std::endl;
 				
-				status = "true";
+		status = "true";
 
-				ReceiveFrom();
-            }
-        }
-    ); 
+		ReceiveFrom();
+    }
 }
 
 void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
@@ -66,4 +63,9 @@ void ucc::Client::ReceiveFrom()
     		}
 		}
 	);
+}
+
+bool ucc::Client::SocketIsOpen()
+{
+	return sckt.is_open();
 }
