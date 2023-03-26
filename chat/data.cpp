@@ -2,13 +2,18 @@
 
 asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 {
-    // ... text
-    full_message += msg;
-    full_message += '\n';
+	msg_size += stoi(msg.size());
+	msg_size += '*';	
 
-    // save message to streambuffer
+    message += msg;
+
+    // saves info about message to streambuffer
+    std::ostream os_info(&info_buffer);
+    os_msg << msg_size;
+
+    // saves message to streambuffer
     std::ostream os_msg(&msg_buffer);
-    os_msg << full_message;
+    os_msg << message;
 
     return msg_buffer.data();
 }
@@ -36,3 +41,4 @@ ucd::Data::~Data()
 {
     msg_buffer.consume( msg_buffer.size() );
 }
+

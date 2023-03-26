@@ -25,12 +25,15 @@ namespace ucd
 	class Data
 	{	
 	private:
-		// data
-		std::string message;
+		// info
+		std::string msg_size;
+		asio::streambuf info_buffer;
+		std::ostream os_info;
 			
-		// temp memory
-		std::string full_message;		
+		// main data
+		std::string message;
 		asio::streambuf msg_buffer;			
+		std::ostream os_msg;
 			
 		// vector of messages
 		std::string vec_buf;
