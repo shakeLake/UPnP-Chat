@@ -38,28 +38,33 @@ namespace ucc
 
 		// data
 		ucd::Data* user_data;
+		unsigned int message_size;
+		std::string message_size_buf;
 
 		// status buffers
 		asio::streambuf received_buf;
 		asio::streambuf error_buf;
+		std::string status_buf;
+		bool info_message_status;
 
 		// actions
 		enum message_info_status_action
 		{
 			message, info, status
 		} action;
+
 		std::string status_message;
 
 	public:
 		// connection status
-		bool status;
+		bool connection_status;
 
 	private:
     	/* connects to specific ip address */
 		void Connect();
 
 		/* this function receives data */
-		void ReceiveFrom();
+		void ReceiveFrom(int);
 
 		/* sends status */
 		void SendStatus(bool);
@@ -75,13 +80,13 @@ namespace ucc
                 std::cerr << error.message() << std::endl;
             }
 
-			action = status;
+			action = info;
 		
 			std::ostream os_temp1(&received_buf);
-			os_temp << "rec*";
+			os_temp1 << "rec*";
 			
 			std::ostream os_temp2(&error_buf);
-			os_temp << "er*";	 
+			os_temp2 << "er*";	 
 
 			user_data = u_d;		
 
@@ -91,7 +96,7 @@ namespace ucc
         ~Client() = default;
 
         /* this function sends message to connected ip */
-        void SendTo(asio::streambuf::const_buffers_type);
+        bool SendTo(asio::streambuf::const_buffers_type);
 
 		// return socket.is_open()
 		bool SocketIsOpen();

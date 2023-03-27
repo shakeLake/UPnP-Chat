@@ -113,7 +113,7 @@ void UserInterface::ConnectionDialogSlot()
 		// init
 		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port, &client_or_server_data);
 
-		if (chat_client->status)
+		if (chat_client->connection_status)
 		{
 			// Start client
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
@@ -154,7 +154,7 @@ void UserInterface::MakeConnectionDialogSlot()
 			// init
 			chat_server = new ucs::Server(io_c, mcdialog.port, &client_or_server_data);
 
-			if (chat_server->status)
+			if (chat_server->connection_status)
 			{
 				// Start server
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
@@ -194,7 +194,7 @@ void UserInterface::DataChecking()
 		{
 			emit DataReceived();			
 			
-			ize_of_msg_buffer += 1;	
+			size_of_msg_buffer += 1;	
 		}	
 	}
 }

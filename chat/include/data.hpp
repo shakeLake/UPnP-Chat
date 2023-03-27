@@ -28,12 +28,10 @@ namespace ucd
 		// info
 		std::string msg_size;
 		asio::streambuf info_buffer;
-		std::ostream os_info;
 			
 		// main data
 		std::string message;
 		asio::streambuf msg_buffer;			
-		std::ostream os_msg;
 			
 		// vector of messages
 		std::string vec_buf;
@@ -52,6 +50,9 @@ namespace ucd
 
 		// streambuf to string 
 		void GetMsg(asio::streambuf&);
+
+		// transfer data to client class
+		asio::streambuf::const_buffers_type GetInfoBuffer();	
 	};
 }
 

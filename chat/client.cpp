@@ -8,15 +8,15 @@ void ucc::Client::Connect()
     {
     	std::cerr << error.message() << std::endl;
 		
-		status = false;
+		connection_status = false;
 	}
     else
     {
     	std::cout << "Connected" << std::endl;
 				
-		status = "true";
+		connection_status = true;
 
-		ReceiveFrom();
+		ReceiveFrom(action);
     }
 }
 
@@ -43,16 +43,19 @@ void ucc::Client::SendStatus(bool received_or_error)
 		if (error)
 		{
 			std::cerr << "Sendig status: ";
+
 			std::cerr << error.message() << std::endl;	
 		}
 	}
 }
 
-void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
+bool ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
 {
+	info_message_status = true;
+
 	std::cout << "sending" << std::endl;
 
-    asio::async_write(sckt, info_buffer.data(), asio::transfer_all(), 
+    asio::async_write(sckt, user_data->GetInfoBuffer(), asio::transfer_all(), 
 		[this](const asio::error_code& e, std::size_t size)
 		{
     		if (e)
@@ -62,99 +65,135 @@ void ucc::Client::SendTo(asio::streambuf::const_buffers_type msg)
     		}
     		else
     		{
-        		std::cout << "Bytes transferred: " << size  << std::endl;
+	       		std::cout << "Bytes transferred: " << size  << std::endl;
 				
 				action = status;
+				ReceiveFrom(action);
     		}
 		}
 	);
 
-	ReceiveFrom(action);
-
-    asio::async_write(sckt, msg, asio::transfer_all(), 
-		[this](const asio::error_code& e, std::size_t size)
-		{
-    		if (e)
-    		{
-        		std::cerr << "Sending error: ";
-        		std::cerr << e.message() << std::endl;
-    		}
-    		else
-    		{
-        		std::cout << "Bytes transferred: " << size  << std::endl;
-				
-				action = status;
-    		}
-		}
-	);
-
-	ReceiveFrom(action);
-}
-
-void ucc::Client::ReceiveFrom(int action)
-{
-	std::cout << "receiving" << std::endl;
-
-	if (action == 1)
+	if (info_message_status)
 	{
-    	asio::async_read_until(sckt, received_message, '\n', 
+    	asio::async_write(sckt, msg, asio::transfer_all(), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
     			if (e)
     			{
-        			std::cerr << "Reading error: ";
-        			std::cerr << e.message() << std::endl;
-
-					SendStatus(false)
-    			}
-    			else
-    			{
-        			std::cout << "Bytes received: " << size  << std::endl;
-					
-					SendStatus(true)
-    			}
-			}
-		);
-	}	
-	else if (action == 0)
-	{	
-    	asio::async_read(sckt, received_message, asio::transfer_all(), 
-			[this](const asio::error_code& e, std::size_t size)
-			{
-    			if (e)
-    			{
-        			std::cerr << "Reading error: ";
+        			std::cerr << "Sending error: ";
         			std::cerr << e.message() << std::endl;
     			}
     			else
     			{
-        			std::cout << "Bytes received: " << size  << std::endl;
+        			std::cout << "Bytes transferred: " << size  << std::endl;
 				
-					user_data->GetMsg(received_message);
-					received_message.consume(size);
-
-					ReceiveFrom();
+					action = status;
+					ReceiveFrom(action);
     			}
 			}
 		);
 	}
 	else
 	{
-    	asio::async_read(sckt, received_message, asio::transfer_all(), 
+		return false;
+	}
+	
+	return info_message_status == true ? true : false;
+}
+
+void ucc::Client::ReceiveFrom(int enum_action)
+{
+	std::cout << "receiving" << std::endl;
+
+	if (enum_action == 1)
+	{
+    	asio::async_read_until(sckt, received_message, '*', 
+			[this](const asio::error_code& e, std::size_t size)
+			{
+    			if (e)
+    			{
+	       			std::cerr << "Reading error: ";
+
+        			std::cerr << e.message() << std::endl;
+
+					SendStatus(false);
+					
+					action = info;
+    			}
+    			else
+    			{
+        			std::cout << "Bytes received: " << size  << std::endl;
+				
+					std::istream is(&received_message);	
+					is >> message_size_buf;
+	
+					message_size = stoi(message_size_buf);
+					message_size_buf.clear();
+					
+					SendStatus(true);
+
+					action = message;
+    			}
+			}
+		);
+	}	
+	else if (enum_action == 0)
+	{	
+    	asio::async_read(sckt, received_message, asio::transfer_exactly(message_size), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
     			if (e)
     			{
         			std::cerr << "Reading error: ";
+
         			std::cerr << e.message() << std::endl;
+
+					SendStatus(false);
+
+					action = info;
     			}
     			else
     			{
         			std::cout << "Bytes received: " << size  << std::endl;
+
+					SendStatus(true);
+				
+					user_data->GetMsg(received_message);
+					received_message.consume(size);
+					
+					action = info;
     			}
 			}
 		);
 	}
+	else
+	{
+    	asio::read_until(sckt, received_message, '*', error);
+ 
+    	if (error)
+    	{
+       		std::cerr << "Reading error: ";
+        	std::cerr << error.message() << std::endl;
+	
+			action = info;
+    	}
+		else
+		{
+			std::istream is(&received_message);	
+			is >> status_buf;
+				
+			std::cout << "Status: " << status_buf << std::endl;
+
+			if (status_buf == "er*")
+			{
+				action = info;		
+				
+				info_message_status = false;
+			}
+		}
+	}
+
+	ReceiveFrom(action);
 }
 
 bool ucc::Client::SocketIsOpen()
