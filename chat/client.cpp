@@ -24,28 +24,33 @@ void ucc::Client::SendStatus(bool received_or_error)
 {
 	if (received_or_error)
 	{
-		std::cout << "received" << std::endl;
+		std::cout << "status: received" << std::endl;
 
-		asio::write(sckt, received_buf.data(), asio::transfer_all(), error);
-
-		if (error)
-		{
-			std::cerr << "Sendig status: ";
-			std::cerr << error.message() << std::endl;	
-		}
+		asio::async_write(sckt, received_buf.data(), asio::transfer_all(), 
+			[this](const asio::error_code& e, std::size_t size)
+			{
+				if (e)
+				{
+					std::cerr << "Sendig status: ";
+					std::cerr << error.message() << std::endl;	
+				}
+			}
+		);
 	}
 	else
 	{
-		std::cout << "error" << std::endl;
+		std::cout << "status: error" << std::endl;
 
-		asio::write(sckt, error_buf.data(), asio::transfer_all(), error);
-
-		if (error)
-		{
-			std::cerr << "Sendig status: ";
-
-			std::cerr << error.message() << std::endl;	
-		}
+		asio::async_write(sckt, error_buf.data(), asio::transfer_all(), 
+			[this](const asio::error_code& e, std::size_t size)
+			{
+				if (e)
+				{
+					std::cerr << "Sendig status: ";
+					std::cerr << error.message() << std::endl;	
+				}
+			}
+		);
 	}
 }
 
@@ -168,29 +173,32 @@ void ucc::Client::ReceiveFrom(int enum_action)
 	}
 	else
 	{
-    	asio::read_until(sckt, received_message, '*', error);
- 
-    	if (error)
-    	{
-       		std::cerr << "Reading error: ";
-        	std::cerr << error.message() << std::endl;
-	
-			action = info;
-    	}
-		else
-		{
-			std::istream is(&received_message);	
-			is >> status_buf;
-				
-			std::cout << "Status: " << status_buf << std::endl;
-
-			if (status_buf == "er*")
+    	asio::async_read_until(sckt, received_message, '*',
+			[this](const asio::error_code& e, std::size_t size)
 			{
-				action = info;		
+    			if (e)
+    			{
+       				std::cerr << "Reading error: ";
+        			std::cerr << e.message() << std::endl;
+	
+					action = info;
+    			}
+				else
+				{
+					std::istream is(&received_message);	
+					is >> status_buf;
 				
-				info_message_status = false;
+					std::cout << "Status: " << status_buf << std::endl;
+
+					if (status_buf == "er*")
+					{
+						action = info;		
+				
+						info_message_status = false;
+					}
+				}
 			}
-		}
+		);
 	}
 
 	ReceiveFrom(action);
