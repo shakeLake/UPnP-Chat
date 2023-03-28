@@ -42,15 +42,15 @@ namespace ucc
 		std::string message_size_buf;
 
 		// status buffers
-		asio::streambuf received_buf;
+		asio::streambuf received_info_buf;
+		asio::streambuf received_msg_buf;
 		asio::streambuf error_buf;
-		std::string status_buf;
 		bool info_message_status;
 
 		// actions
 		enum message_info_status_action
 		{
-			message, info, status
+			message, info
 		} action;
 
 		std::string status_message;
@@ -67,7 +67,7 @@ namespace ucc
 		void ReceiveFrom(int);
 
 		/* sends status */
-		void SendStatus(bool);
+		void SendStatus(bool, bool);
 
 	public:
     	Client(asio::io_context& io_c, std::string& ip, std::string& port, ucd::Data* u_d) : rslvr(io_c), sckt(io_c)
@@ -81,12 +81,15 @@ namespace ucc
             }
 
 			action = info;
-		
-			std::ostream os_temp1(&received_buf);
-			os_temp1 << "rec*";
+
+			std::ostream os_temp1(&received_info_buf);
+			os_temp1 << "reci*";
 			
-			std::ostream os_temp2(&error_buf);
-			os_temp2 << "er*";	 
+			std::ostream os_temp2(&received_msg_buf);
+			os_temp2 << "recm*";
+
+			std::ostream os_temp3(&error_buf);
+			os_temp3 << "er*";	 
 
 			user_data = u_d;		
 
@@ -96,7 +99,7 @@ namespace ucc
         ~Client() = default;
 
         /* this function sends message to connected ip */
-        bool SendTo(asio::streambuf::const_buffers_type);
+        void SendTo(asio::streambuf::const_buffers_type);
 
 		// return socket.is_open()
 		bool SocketIsOpen();
