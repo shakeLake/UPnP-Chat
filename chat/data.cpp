@@ -44,8 +44,21 @@ asio::streambuf::const_buffers_type ucd::Data::GetInfoBuffer()
 	return info_buffer.data();
 }
 
+void ucd::Data::ClearInfoBuf(std::size_t size)
+{
+	msg_size.clear();
+	info_buffer.consume(size);
+}
+
+void ucd::Data::ClearMsgBuf(std::size_t size)
+{
+	message.clear();
+	msg_buffer.consume(size);
+}
+
 ucd::Data::~Data()
 {
     msg_buffer.consume( msg_buffer.size() );
+	info_buffer.consume( info_buffer.size() );
 }
 

@@ -53,6 +53,10 @@ namespace ucd
 
 		// transfer data to client class
 		asio::streambuf::const_buffers_type GetInfoBuffer();	
+
+		// Clear
+		void ClearInfoBuf(std::size_t);
+		void ClearMsgBuf(std::size_t);
 	};
 }
 

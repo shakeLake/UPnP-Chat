@@ -57,6 +57,8 @@ if (CHAT)
 		"include/server.hpp"
 		client.cpp
 		"include/client.hpp"
+		clientcore.cpp
+		"include/clientcore.hpp"
 		"include/errorcodes.hpp"
 	)
 
