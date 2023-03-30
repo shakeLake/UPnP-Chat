@@ -11,6 +11,10 @@
 #include <cstring>
 #include <vector>
 
+// multithreading
+#include <condition_variable>
+#include <mutex>
+
 /*  
     asio
 
@@ -36,6 +40,10 @@ namespace ucd
 		// vector of messages
 		std::string vec_buf;
 		std::vector<std::string> msg_buffer_vec;
+		
+		// notifying
+		std::mutex mx;
+		std::condition_variable cv;
 
 	public:
 		Data() = default;
@@ -57,6 +65,9 @@ namespace ucd
 		// Clear
 		void ClearInfoBuf(std::size_t);
 		void ClearMsgBuf(std::size_t);
+
+		// wait for getting message
+		void Wait();
 	};
 }
 

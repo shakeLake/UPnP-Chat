@@ -25,10 +25,12 @@ namespace ucs
        	void Listening();
 
     public:
-    	Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) : ClientCore(io_c, u_d), endpnt(asio::ip::tcp::v4(), stoi(port)), accptr(io_c, endpnt)
+    	Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) 
+		:	ClientCore(io_c, u_d),
+			endpnt(asio::ip::tcp::v4(),
+			stoi(port)),
+			accptr(io_c, endpnt)
         {
-			action = info;
-
             Listening();
         }             
             

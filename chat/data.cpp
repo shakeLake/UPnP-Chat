@@ -27,6 +27,8 @@ void ucd::Data::GetMsg(asio::streambuf& str)
 
 	msg_buffer_vec.push_back(vec_buf);
 	vec_buf.clear();
+
+	cv.notify_one();
 }
 
 unsigned int ucd::Data::GetMsgBufferSize()
@@ -54,6 +56,12 @@ void ucd::Data::ClearMsgBuf(std::size_t size)
 {
 	message.clear();
 	msg_buffer.consume(size);
+}
+
+void ucd::Data::Wait()
+{
+	std::unique_lock<std::mutex> lk(mx);
+	cv.wait(lk);
 }
 
 ucd::Data::~Data()

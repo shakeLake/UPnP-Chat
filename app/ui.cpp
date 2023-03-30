@@ -188,30 +188,37 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
+	std::cout << "dc" << std::endl;
+
 	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
 	{
+		client_or_server_data.Wait();
+
 		if (client_or_server_data.GetMsgBufferSize() > size_of_msg_buffer)
 		{
 			emit DataReceived();			
-			
-			size_of_msg_buffer += 1;	
-		}	
+		}
 	}
 }
 
 void UserInterface::AddMessage()
 {
-	/*
-	message_layout->addWidget(
-		style.LabelEstablish(
-				client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
-	);	
-	*/
+	try
+	{
+		message_layout->addWidget(
+			style.LabelEstablish(
+					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
+		);	
+	}
+	catch(const std::exception& e)
+	{
+		std::cout << "Widget adding exception" << std::endl;
+	}
+
+	size_of_msg_buffer = client_or_server_data.GetMsgBufferSize();	
 
 	std::cout << client_or_server_data.GetMsgBufferSize() << std::endl;
 	std::cout << size_of_msg_buffer << std::endl;
-	
-	message_layout->addWidget(style.LabelEstablish("Test", true));
 }
 
 UserInterface::~UserInterface()

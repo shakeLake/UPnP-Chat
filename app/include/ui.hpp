@@ -103,9 +103,6 @@ private slots:
 	void SendChatMessageSlot();
 	void SendServerMessageSlot();
 
-	// data checking slot
-	void AddMessage();
-
 signals:
 	void DataReceived();
 
@@ -115,6 +112,12 @@ private:
 
 	// data checking -- thread
 	void DataChecking(); 
+
+	// data checking slot
+	void AddMessage();
+
+	// Waits for receiving
+	void Wait();
 
 public:
 	UserInterface();
