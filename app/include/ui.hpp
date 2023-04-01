@@ -9,6 +9,7 @@
 
 // design
 #include "design.hpp"
+#include <QDir>
 
 // dialogs
 #include "connectiondialog.hpp"
@@ -20,7 +21,7 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QString>
-#include <QPixmap>
+#include <QIcon>
 
 // layouts
 #include <QVBoxLayout>
@@ -67,10 +68,8 @@ private:
 	// toolbar
 	QToolBar* tool_bar;
 			
-	QPixmap connect_to_pixmap;			
 	QPushButton* connect_to;
 				
-	QPixmap make_connection_pixmap;			
 	QPushButton* make_connection;
 			
 	// dialogs
@@ -115,9 +114,6 @@ private:
 
 	// data checking slot
 	void AddMessage();
-
-	// Waits for receiving
-	void Wait();
 
 public:
 	UserInterface();

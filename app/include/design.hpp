@@ -1,6 +1,7 @@
 // Qt
 #include <QLabel>
 #include <QFont>
+#include <QFontDatabase>
 #include <QString>
 
 // stl
@@ -9,18 +10,25 @@
 class Design
 {
 private:	
-	const char* title = "UpNpChat";
+	const char* title = "Chat";
 
 	// resolution
 	unsigned short width;
 	unsigned short height;
 
-	// font
-	QFont font;
-	unsigned short font_size; 
+	// fonts
+	QFont message_font;
+	unsigned short message_font_size; 
+
+	QFont label_font;
 
 	// data
+	int labels_size;
 	std::vector<QLabel*> labels;
+
+private:
+	// labels size
+	int GetLabelsSize();
 
 public:
 	Design() 
@@ -28,15 +36,17 @@ public:
 		width = 900;
 		height = 600;
 
-		font_size = 17;
-
-		font.setPixelSize(font_size);	
+		message_font_size = 17;
+		message_font.setPixelSize(message_font_size);	
 	}
 
 	~Design() = default;
 		
 	// set font, set alignment, set frame style
-	QLabel* LabelEstablish(std::string, bool);
+	QLabel* MessageEstablishing(std::string&, bool);
+	
+	// set font, set alignment, set frame style
+	QLabel* MakeLabel(unsigned short, std::string&);
 
 	// return title
 	const char* GetTitle();
