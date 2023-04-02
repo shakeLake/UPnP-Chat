@@ -11,7 +11,6 @@ option(UI_TEST "Builds ui test" FALSE)
 option(UI "Default" TRUE)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 set(CMAKE_PREFIX_PATH "C:/Program Files/Qt/lib/cmake")
@@ -92,7 +91,7 @@ if (UI)
 	target_link_libraries(app-lib PUBLIC Qt6::Gui)
 	target_link_libraries(app-lib PUBLIC upnp_chat-static)
 	
-	add_executable(app main.cpp)
+	add_executable(app app.qrc main.cpp)
 
 	target_link_libraries(app PRIVATE app-lib)
 endif()

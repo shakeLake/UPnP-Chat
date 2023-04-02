@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>pics/black_upnp.png</file>
+		<file>pics/connect.png</file>
+		<file>pics/background.png</file>
+		<file>pics/send.png</file>
+		<file>font/static/Nunito-Bold.ttf</file>
+    </qresource>
+</RCC>

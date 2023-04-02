@@ -9,7 +9,6 @@
 
 // design
 #include "design.hpp"
-#include <QDir>
 
 // dialogs
 #include "connectiondialog.hpp"

@@ -12,23 +12,31 @@ UserInterface::UserInterface()
 	CreateToolBar();
 
 	QWidget* main_widget = new QWidget(this);
+	main_widget->setStyleSheet("background-color:white");
+
 	QVBoxLayout* main_layout = new QVBoxLayout(main_widget);
 
 	setCentralWidget(main_widget);
-	
+
 	// info 
-	info_label = new QLabel("UPNP Chat");
-	main_text_field = new QTextEdit();
+	info_label = new QLabel("UPnP Chat");
+	style.SetLabelFont(info_label);
+
 	info_label->setFixedHeight(40);
 	info_label->setAlignment(Qt::AlignCenter);
-	info_label->setFrameStyle(QFrame::Panel | QFrame::Sunken);
 
 	// input field 
 	input_field_layout = new QHBoxLayout();	
 
-	send_button = new QPushButton("send");
+	send_button = new QPushButton();
+	send_button->setStyleSheet("border: none");
+	send_button->setIcon(QIcon(":/pics/send.png"));	
+	send_button->setIconSize(QSize(40, 40));	
 	
 	main_text_field = new QTextEdit();
+	style.SetTextEditFont(main_text_field);
+	main_text_field->setFrameStyle(QFrame::NoFrame);
+	main_text_field->setPlaceholderText("Write something...");
 	main_text_field->setFixedHeight(50);
 	
 	input_field_layout->addWidget(main_text_field);
@@ -36,15 +44,28 @@ UserInterface::UserInterface()
 
 	// scroll area
 	message_layout_widget = new QWidget;
+	message_layout_widget->setStyleSheet("background-image: url(:/pics/background.png)");
 	message_layout = new QVBoxLayout;
 
 	message_layout_widget->setLayout(message_layout);
 
 	scroll_area = new QScrollArea();	
+	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
 	scroll_area->setWidget(message_layout_widget);
 
+	std::string test = "Test $%$# 1234 ./!}[-=_";
+	message_layout->addWidget(
+		style.MessageEstablishing(test, true)
+	);	
+
+	message_layout->addWidget(
+		style.MessageEstablishing(test, false)
+	);	
+
 	// set main layout
+	main_layout->setContentsMargins(0, 0, 0, 0);
+	main_layout->setSpacing(0);
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
@@ -53,6 +74,8 @@ UserInterface::UserInterface()
 void UserInterface::CreateToolBar()
 {
 	tool_bar = new QToolBar();
+	tool_bar->setFixedWidth(60);
+	tool_bar->setStyleSheet("background-color:#161C32");
 
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
@@ -65,14 +88,12 @@ void UserInterface::CreateToolBar()
 	make_connection = new QPushButton;
 
 	// widgets design
-	connect_to_pixmap.load(":icons/arrow.png");
-	connect_to->setIcon(connect_to_pixmap);	
-	connect_to->setIconSize(QSize(20, 20));	
+	connect_to->setIcon(QIcon(":/pics/connect.png"));	
+	connect_to->setIconSize(QSize(27, 27));	
 	connect(connect_to, &QPushButton::released, this, &UserInterface::ConnectionDialogSlot);
 
-	make_connection_pixmap.load(":icons/share.png");
-	make_connection->setIcon(connect_to_pixmap);	
-	make_connection->setIconSize(QSize(20, 20));	
+	make_connection->setIcon(QIcon(":/pics/black_upnp.png"));	
+	make_connection->setIconSize(QSize(30, 30));	
 	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
 
 	// set widgets
@@ -88,7 +109,7 @@ void UserInterface::SendChatMessageSlot()
 	
 	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addWidget( style.LabelEstablish(msg, false) );	
+	message_layout->addWidget( style.MessageEstablishing(msg, false) );	
 }
 
 void UserInterface::SendServerMessageSlot()
@@ -98,7 +119,7 @@ void UserInterface::SendServerMessageSlot()
 	
 	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addWidget( style.LabelEstablish(msg, false) );	
+	message_layout->addWidget( style.MessageEstablishing(msg, false) );	
 }
 
 void UserInterface::ConnectionDialogSlot()
@@ -115,6 +136,9 @@ void UserInterface::ConnectionDialogSlot()
 
 		if (chat_client->connection_status)
 		{
+			info_label->setText("Connected");
+			info_label->repaint();
+
 			// Start client
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
@@ -156,6 +180,9 @@ void UserInterface::MakeConnectionDialogSlot()
 
 			if (chat_server->connection_status)
 			{
+				info_label->setText("Connected");
+				info_label->repaint();
+
 				// Start server
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
@@ -188,8 +215,6 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
-	std::cout << "dc" << std::endl;
-
 	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
 	{
 		client_or_server_data.Wait();
@@ -206,13 +231,13 @@ void UserInterface::AddMessage()
 	try
 	{
 		message_layout->addWidget(
-			style.LabelEstablish(
+			style.MessageEstablishing(
 					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
 		);	
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << "Widget adding exception" << std::endl;
+		std::cout << "New message exception" << std::endl;
 	}
 
 	size_of_msg_buffer = client_or_server_data.GetMsgBufferSize();	
