@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
-        <file>pics/black_upnp.png</file>
+        <file>pics/upnp.png</file>
+        <file>pics/logo.png</file>
 		<file>pics/connect.png</file>
 		<file>pics/background.png</file>
 		<file>pics/send.png</file>

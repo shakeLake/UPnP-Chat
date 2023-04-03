@@ -75,7 +75,8 @@ void UserInterface::CreateToolBar()
 {
 	tool_bar = new QToolBar();
 	tool_bar->setFixedWidth(60);
-	tool_bar->setStyleSheet("background-color:#161C32");
+	tool_bar->setStyleSheet("background-color: #161C32;"
+							"spacing: 7px;");
 
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
@@ -84,19 +85,27 @@ void UserInterface::CreateToolBar()
 	tool_bar->setMovable(false); 
 
 	// widgets
+	logo = new QPushButton;
 	connect_to = new QPushButton;
 	make_connection = new QPushButton;
 
 	// widgets design
+	logo->setIcon(QIcon(":/pics/logo.png"));
+	logo->setStyleSheet("border: none");
+	logo->setIconSize(QSize(40, 40));
+
 	connect_to->setIcon(QIcon(":/pics/connect.png"));	
-	connect_to->setIconSize(QSize(27, 27));	
+	connect_to->setStyleSheet("border: none");
+	connect_to->setIconSize(QSize(36, 56));	
 	connect(connect_to, &QPushButton::released, this, &UserInterface::ConnectionDialogSlot);
 
-	make_connection->setIcon(QIcon(":/pics/black_upnp.png"));	
-	make_connection->setIconSize(QSize(30, 30));	
+	make_connection->setIcon(QIcon(":/pics/upnp.png"));	
+	make_connection->setStyleSheet("border: none");
+	make_connection->setIconSize(QSize(36, 56));	
 	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
 
 	// set widgets
+	tool_bar->addWidget(logo);
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
 }

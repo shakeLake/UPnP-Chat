@@ -66,7 +66,9 @@ private:
 
 	// toolbar
 	QToolBar* tool_bar;
-			
+	
+	QPushButton* logo;
+
 	QPushButton* connect_to;
 				
 	QPushButton* make_connection;
