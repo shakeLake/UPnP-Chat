@@ -2,6 +2,7 @@
     <qresource prefix="/">
         <file>pics/upnp.png</file>
         <file>pics/logo.png</file>
+        <file>pics/disconnect.png</file>
 		<file>pics/connect.png</file>
 		<file>pics/background.png</file>
 		<file>pics/send.png</file>

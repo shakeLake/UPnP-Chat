@@ -46,6 +46,7 @@ UserInterface::UserInterface()
 	message_layout_widget = new QWidget;
 	message_layout_widget->setStyleSheet("background-image: url(:/pics/background.png)");
 	message_layout = new QVBoxLayout;
+	message_layout->setContentsMargins(0, 0, 0, 0);
 
 	message_layout_widget->setLayout(message_layout);
 
@@ -54,14 +55,19 @@ UserInterface::UserInterface()
 	scroll_area->setWidgetResizable( true );
 	scroll_area->setWidget(message_layout_widget);
 
+	/*
 	std::string test = "Test $%$# 1234 ./!}[-=_";
-	message_layout->addWidget(
-		style.MessageEstablishing(test, true)
-	);	
+	for (int i = 0; i != 30; i++)
+	{
+		message_layout->addWidget(
+			style.MessageEstablishing(test, true)
+		);	
 
-	message_layout->addWidget(
-		style.MessageEstablishing(test, false)
-	);	
+		message_layout->addWidget(
+			style.MessageEstablishing(test, false)
+		);
+	}
+	*/
 
 	// set main layout
 	main_layout->setContentsMargins(0, 0, 0, 0);
@@ -88,6 +94,7 @@ void UserInterface::CreateToolBar()
 	logo = new QPushButton;
 	connect_to = new QPushButton;
 	make_connection = new QPushButton;
+	disconnect = new QPushButton;
 
 	// widgets design
 	logo->setIcon(QIcon(":/pics/logo.png"));
@@ -101,13 +108,18 @@ void UserInterface::CreateToolBar()
 
 	make_connection->setIcon(QIcon(":/pics/upnp.png"));	
 	make_connection->setStyleSheet("border: none");
-	make_connection->setIconSize(QSize(36, 56));	
+	make_connection->setIconSize(QSize(40, 60));	
 	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
+
+	disconnect->setIcon(QIcon(":/pics/disconnect.png"));
+	disconnect->setStyleSheet("border: none");
+	disconnect->setIconSize(QSize(40, 60));
 
 	// set widgets
 	tool_bar->addWidget(logo);
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
+	tool_bar->addWidget(disconnect);
 }
 
 // slots
@@ -145,6 +157,9 @@ void UserInterface::ConnectionDialogSlot()
 
 		if (chat_client->connection_status)
 		{
+			// activate disconnect button
+			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
+
 			info_label->setText("Connected");
 			info_label->repaint();
 
@@ -189,6 +204,9 @@ void UserInterface::MakeConnectionDialogSlot()
 
 			if (chat_server->connection_status)
 			{
+				// activate disconnect button
+				connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
+
 				info_label->setText("Connected");
 				info_label->repaint();
 
@@ -253,6 +271,12 @@ void UserInterface::AddMessage()
 
 	std::cout << client_or_server_data.GetMsgBufferSize() << std::endl;
 	std::cout << size_of_msg_buffer << std::endl;
+}
+
+void UserInterface::Disconnect()
+{
+	client_or_server_thread.join();
+	data_checking_thread.join();
 }
 
 UserInterface::~UserInterface()

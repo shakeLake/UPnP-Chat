@@ -15,17 +15,18 @@ QLabel* Design::MessageEstablishing(std::string& label_message, bool sent_receiv
 	if (sent_received)
 	{
 		labels[labels_size]->setAlignment(Qt::AlignLeft | Qt::AlignBottom);
-		//labels[labels_size]->setContentsMargins(0, 0, 500, 0);
+		//labels[labels_size]->setContentsMargins(0, 0, 300, 0);
 	}
 	else
 	{
 		labels[labels_size]->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-		//labels[labels_size]->setContentsMargins(500, 0, 0, 0);
+		//labels[labels_size]->setContentsMargins(300, 0, 0, 0);
 	}
 
+	labels[labels_size]->setStyleSheet("background-color: white");
+	labels[labels_size]->setAutoFillBackground(true);
 	labels[labels_size]->setFont(message_font);
 	labels[labels_size]->setFrameStyle(QFrame::Panel | QFrame::Sunken);
-	labels[labels_size]->setFixedHeight(30);
 
 	return labels[labels_size];
 }

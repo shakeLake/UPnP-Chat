@@ -72,6 +72,8 @@ private:
 	QPushButton* connect_to;
 				
 	QPushButton* make_connection;
+
+	QPushButton* disconnect;
 			
 	// dialogs
 	ConnectionDialog cdialog;
@@ -115,6 +117,9 @@ private:
 
 	// data checking slot
 	void AddMessage();
+
+	// disconnect
+	void Disconnect();
 
 public:
 	UserInterface();
