@@ -8,7 +8,7 @@ public:
 
 	const std::string listening_error = "Time is up";
 
-	const std::string upnp_failed = "Error: UPNP is not supported on your router or is off";
+	const std::string upnp_failed = "UPNP is not supported on your router or is off";
 
 public:
 	ErrorMessage() = default;

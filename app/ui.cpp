@@ -275,8 +275,8 @@ void UserInterface::AddMessage()
 
 void UserInterface::Disconnect()
 {
-	client_or_server_thread.join();
-	data_checking_thread.join();
+	delete chat_client;
+	delete chat_server;
 }
 
 UserInterface::~UserInterface()

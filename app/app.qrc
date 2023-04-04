@@ -6,6 +6,7 @@
 		<file>Resources/pics/connect.png</file>
 		<file>Resources/pics/background.png</file>
 		<file>Resources/pics/send.png</file>
+		<file>Resources/pics/warning.png</file>
 		<file>Resources/font/static/Nunito-Bold.ttf</file>
     </qresource>
 </RCC>

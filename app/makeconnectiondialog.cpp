@@ -3,6 +3,7 @@
 MakeConnectionDialog::MakeConnectionDialog()
 {
 	setWindowTitle("Make Connection");
+	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);	
 	resize(385, 141);	
 
 	QWidget* main_widget = new QWidget(this);
