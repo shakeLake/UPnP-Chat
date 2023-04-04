@@ -4,6 +4,9 @@
 // i / o
 #include <iostream>
 
+// design
+#include "design.hpp"
+
 // qt / application
 #include <QApplication>
 #include <QDialog>
@@ -25,6 +28,8 @@ class MakeConnectionDialog : public QDialog
 	Q_OBJECT
 	
 private:
+	Design style;
+
 	// main label
 	QVBoxLayout* main_layout;	
 	QLabel* main_label;

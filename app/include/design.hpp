@@ -1,6 +1,10 @@
+#ifndef DESIGN_HPP_
+#define DESIGN_HPP_
+
 // Qt
 #include <QLabel>
 #include <QTextEdit>
+#include <QLineEdit>
 #include <QFont>
 #include <QFontDatabase>
 #include <QString>
@@ -18,7 +22,7 @@ private:
 	unsigned short height;
 
 	// font
-	int id = QFontDatabase::addApplicationFont(":/font/static/Nunito-Bold.ttf");
+	int id = QFontDatabase::addApplicationFont(":/Resources/font/static/Nunito-Bold.ttf");
   	QString nunito = QFontDatabase::applicationFontFamilies(id).at(0);
 
 	QFont lbl_font;
@@ -29,6 +33,8 @@ private:
 
 	QFont text_edit_font;
 	unsigned short text_edit_font_size; 
+
+	QFont dialogs_label_font;
 
 	// data
 	int labels_size;
@@ -47,6 +53,7 @@ public:
 		lbl_font = QFont(nunito);
 		message_font = QFont(nunito);
 		text_edit_font = QFont(nunito);
+		dialogs_label_font = QFont(nunito);
 
 		message_font_size = 14;
 		message_font.setPixelSize(message_font_size);
@@ -76,4 +83,10 @@ public:
 	void SetLabelFont(QLabel*);
 
 	void SetTextEditFont(QTextEdit*);
+
+	void SetNunitoLabelFont(QLabel*);
+
+	void SetNunitoLineFont(QLineEdit*);
 };
+
+#endif /* DESIGN_HPP_ */

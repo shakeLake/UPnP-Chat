@@ -43,6 +43,17 @@ void Design::SetTextEditFont(QTextEdit* te)
 	te->setFont(text_edit_font);
 }
 
+void Design::SetNunitoLabelFont(QLabel* lbl)
+{
+	lbl->setStyleSheet("color: #0D0C1C");
+	lbl->setFont(text_edit_font);
+}
+
+void Design::SetNunitoLineFont(QLineEdit* le)
+{
+	le->setFont(text_edit_font);
+}
+
 int Design::GetLabelsSize()
 {
 	return labels.size() - 1;

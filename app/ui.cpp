@@ -30,7 +30,7 @@ UserInterface::UserInterface()
 
 	send_button = new QPushButton();
 	send_button->setStyleSheet("border: none");
-	send_button->setIcon(QIcon(":/pics/send.png"));	
+	send_button->setIcon(QIcon(":/Resources/pics/send.png"));	
 	send_button->setIconSize(QSize(40, 40));	
 	
 	main_text_field = new QTextEdit();
@@ -44,7 +44,7 @@ UserInterface::UserInterface()
 
 	// scroll area
 	message_layout_widget = new QWidget;
-	message_layout_widget->setStyleSheet("background-image: url(:/pics/background.png)");
+	message_layout_widget->setStyleSheet("background-image: url(:/Resources/pics/background.png)");
 	message_layout = new QVBoxLayout;
 	message_layout->setContentsMargins(0, 0, 0, 0);
 
@@ -97,21 +97,21 @@ void UserInterface::CreateToolBar()
 	disconnect = new QPushButton;
 
 	// widgets design
-	logo->setIcon(QIcon(":/pics/logo.png"));
+	logo->setIcon(QIcon(":/Resources/pics/logo.png"));
 	logo->setStyleSheet("border: none");
 	logo->setIconSize(QSize(40, 40));
 
-	connect_to->setIcon(QIcon(":/pics/connect.png"));	
+	connect_to->setIcon(QIcon(":/Resources/pics/connect.png"));	
 	connect_to->setStyleSheet("border: none");
 	connect_to->setIconSize(QSize(36, 56));	
 	connect(connect_to, &QPushButton::released, this, &UserInterface::ConnectionDialogSlot);
 
-	make_connection->setIcon(QIcon(":/pics/upnp.png"));	
+	make_connection->setIcon(QIcon(":/Resources/pics/upnp.png"));	
 	make_connection->setStyleSheet("border: none");
 	make_connection->setIconSize(QSize(40, 60));	
 	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
 
-	disconnect->setIcon(QIcon(":/pics/disconnect.png"));
+	disconnect->setIcon(QIcon(":/Resources/pics/disconnect.png"));
 	disconnect->setStyleSheet("border: none");
 	disconnect->setIconSize(QSize(40, 60));
 

@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/">
-        <file>pics/upnp.png</file>
-        <file>pics/logo.png</file>
-        <file>pics/disconnect.png</file>
-		<file>pics/connect.png</file>
-		<file>pics/background.png</file>
-		<file>pics/send.png</file>
-		<file>font/static/Nunito-Bold.ttf</file>
+        <file>Resources/pics/upnp.png</file>
+        <file>Resources/pics/logo.png</file>
+        <file>Resources/pics/disconnect.png</file>
+		<file>Resources/pics/connect.png</file>
+		<file>Resources/pics/background.png</file>
+		<file>Resources/pics/send.png</file>
+		<file>Resources/font/static/Nunito-Bold.ttf</file>
     </qresource>
 </RCC>
