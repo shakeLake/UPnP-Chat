@@ -25,6 +25,7 @@
 // layouts
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QListWidget>
 
 // widgets
 #include <QToolBar>
@@ -34,6 +35,7 @@
 
 // scrolls
 #include <QScrollArea>
+#include <QScrollBar>
 
 class UserInterface : public QMainWindow
 {

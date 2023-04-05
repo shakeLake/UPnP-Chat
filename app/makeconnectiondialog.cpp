@@ -29,7 +29,7 @@ MakeConnectionDialog::MakeConnectionDialog()
 	cancel_button->setFixedSize(100, 24);
 	cancel_button->setStyleSheet("border-radius: 5px");
 
-	task_button = new QPushButton("Create");
+	task_button = new QPushButton("Open");
 	task_button->setFixedSize(125, 24);
 	task_button->setStyleSheet("background-color: #161C32;"
 								"color: white;"

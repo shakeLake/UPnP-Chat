@@ -22,7 +22,7 @@ ConnectionDialog::ConnectionDialog()
 	style.SetNunitoLabelFont(port_label);
 	
 	edit_ip = new QLineEdit();
-	edit_ip->setPlaceholderText("ip address");
+	edit_ip->setPlaceholderText(" ip address");
 	edit_ip->setFixedHeight(25);
 	edit_ip->setStyleSheet("background-color: #F1DAC4;"
 						   "border-radius: 5px;"
@@ -30,7 +30,7 @@ ConnectionDialog::ConnectionDialog()
 	style.SetNunitoLineFont(edit_ip);
 
 	edit_port = new QLineEdit();	
-	edit_port->setPlaceholderText("49152 - 65535");
+	edit_port->setPlaceholderText(" 49152 - 65535");
 	edit_port->setFixedHeight(25);
 	edit_port->setStyleSheet("background-color: #F1DAC4;"
 							 "border-radius: 5px;"

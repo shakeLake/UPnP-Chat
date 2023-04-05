@@ -5,30 +5,35 @@
 	0 - sent
 	1 - received 
 */
-QLabel* Design::MessageEstablishing(std::string& label_message, bool sent_received)
+QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_received)
 {
-	// create label
-	labels.push_back(new QLabel(QString::fromStdString(label_message)));
+	// message analysis
 	
+
+	// create label
+	h_layouts.push_back(new QHBoxLayout);
+	labels.push_back(new QLabel(QString::fromStdString(label_message)));
+
 	labels_size = GetLabelsSize();
 
 	if (sent_received)
 	{
-		labels[labels_size]->setAlignment(Qt::AlignLeft | Qt::AlignBottom);
-		//labels[labels_size]->setContentsMargins(0, 0, 300, 0);
+		h_layouts[labels_size]->setAlignment(Qt::AlignLeft);
+		labels[labels_size]->setAlignment(Qt::AlignLeft);
 	}
 	else
 	{
-		labels[labels_size]->setAlignment(Qt::AlignRight | Qt::AlignBottom);
-		//labels[labels_size]->setContentsMargins(300, 0, 0, 0);
+		h_layouts[labels_size]->setAlignment(Qt::AlignRight);
+		labels[labels_size]->setAlignment(Qt::AlignRight);
 	}
 
-	labels[labels_size]->setStyleSheet("background-color: white");
-	labels[labels_size]->setAutoFillBackground(true);
+	labels[labels_size]->setFixedSize(150, 20);	
 	labels[labels_size]->setFont(message_font);
-	labels[labels_size]->setFrameStyle(QFrame::Panel | QFrame::Sunken);
+	labels[labels_size]->setStyleSheet("background-color: white; border-radius: 5px;");
 
-	return labels[labels_size];
+	h_layouts[labels_size]->addWidget( labels[labels_size] );
+
+	return h_layouts[labels_size];
 }
 
 void Design::SetLabelFont(QLabel* lbl)

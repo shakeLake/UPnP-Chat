@@ -45,29 +45,15 @@ UserInterface::UserInterface()
 	// scroll area
 	message_layout_widget = new QWidget;
 	message_layout_widget->setStyleSheet("background-image: url(:/Resources/pics/background.png)");
-	message_layout = new QVBoxLayout;
-	message_layout->setContentsMargins(0, 0, 0, 0);
 
+	message_layout = new QVBoxLayout;
 	message_layout_widget->setLayout(message_layout);
 
-	scroll_area = new QScrollArea();	
+	scroll_area = new QScrollArea;	
+
 	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
 	scroll_area->setWidget(message_layout_widget);
-
-	/*
-	std::string test = "Test $%$# 1234 ./!}[-=_";
-	for (int i = 0; i != 30; i++)
-	{
-		message_layout->addWidget(
-			style.MessageEstablishing(test, true)
-		);	
-
-		message_layout->addWidget(
-			style.MessageEstablishing(test, false)
-		);
-	}
-	*/
 
 	// set main layout
 	main_layout->setContentsMargins(0, 0, 0, 0);
@@ -75,6 +61,20 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
+
+	/*
+	std::string test = "Test $%$# 1234 ./!}[-=_";
+	for (int i = 0; i != 1; i++)
+	{
+		message_layout->addLayout(
+			style.MessageEstablishing(test, true)
+		);	
+
+		message_layout->addLayout(
+			style.MessageEstablishing(test, false)
+		);
+	}
+	*/
 }
 
 void UserInterface::CreateToolBar()
@@ -82,7 +82,7 @@ void UserInterface::CreateToolBar()
 	tool_bar = new QToolBar();
 	tool_bar->setFixedWidth(60);
 	tool_bar->setStyleSheet("background-color: #161C32;"
-							"spacing: 7px;");
+							"spacing: 15px;");
 
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
@@ -130,7 +130,7 @@ void UserInterface::SendChatMessageSlot()
 	
 	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addWidget( style.MessageEstablishing(msg, false) );	
+	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
 }
 
 void UserInterface::SendServerMessageSlot()
@@ -140,7 +140,7 @@ void UserInterface::SendServerMessageSlot()
 	
 	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addWidget( style.MessageEstablishing(msg, false) );	
+	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
 }
 
 void UserInterface::ConnectionDialogSlot()
@@ -257,7 +257,7 @@ void UserInterface::AddMessage()
 {
 	try
 	{
-		message_layout->addWidget(
+		message_layout->addLayout(
 			style.MessageEstablishing(
 					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
 		);	
@@ -275,6 +275,8 @@ void UserInterface::AddMessage()
 
 void UserInterface::Disconnect()
 {
+	delete upnp;
+
 	delete chat_client;
 	delete chat_server;
 }

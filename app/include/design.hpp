@@ -8,6 +8,7 @@
 #include <QFont>
 #include <QFontDatabase>
 #include <QString>
+#include <QHBoxLayout>
 
 // stl
 #include <vector>
@@ -39,6 +40,7 @@ private:
 	// data
 	int labels_size;
 	std::vector<QLabel*> labels;
+	std::vector<QHBoxLayout*> h_layouts;
 
 private:
 	// labels size
@@ -47,7 +49,7 @@ private:
 public:
 	Design() 
 	{
-		width = 900;
+		width = 800;
 		height = 600;
 
 		lbl_font = QFont(nunito);
@@ -68,7 +70,7 @@ public:
 	~Design() = default;
 		
 	// set font, set alignment, set frame style
-	QLabel* MessageEstablishing(std::string&, bool);
+	QHBoxLayout* MessageEstablishing(std::string&, bool);
 
 	// return title
 	const char* GetTitle();
