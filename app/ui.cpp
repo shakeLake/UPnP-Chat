@@ -47,10 +47,11 @@ UserInterface::UserInterface()
 	message_layout_widget->setStyleSheet("background-image: url(:/Resources/pics/background.png)");
 
 	message_layout = new QVBoxLayout;
+	message_layout->setSpacing(20);
+	message_layout->addStretch(10);
 	message_layout_widget->setLayout(message_layout);
 
 	scroll_area = new QScrollArea;	
-
 	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
 	scroll_area->setWidget(message_layout_widget);
@@ -63,7 +64,7 @@ UserInterface::UserInterface()
 	main_layout->addLayout(input_field_layout);		
 
 	/*
-	std::string test = "Test $%$# 1234 ./!}[-=_";
+	std::string test = "TTTTTTttttttttt\nreeeeeeee\neeeeeeeeeeeee\nTTTTT\nTTTTT";
 	for (int i = 0; i != 1; i++)
 	{
 		message_layout->addLayout(
@@ -242,6 +243,8 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
+	std::cout << "data checking" << std::endl;
+
 	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
 	{
 		client_or_server_data.Wait();
@@ -266,6 +269,8 @@ void UserInterface::AddMessage()
 	{
 		std::cout << "New message exception" << std::endl;
 	}
+
+	std::cout << client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer) << std::endl;
 
 	size_of_msg_buffer = client_or_server_data.GetMsgBufferSize();	
 

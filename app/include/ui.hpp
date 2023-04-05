@@ -25,7 +25,6 @@
 // layouts
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QListWidget>
 
 // widgets
 #include <QToolBar>

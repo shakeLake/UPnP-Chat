@@ -7,8 +7,7 @@
 */
 QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_received)
 {
-	// message analysis
-	
+	std::cout << "MsgEst" << label_message << std::endl;
 
 	// create label
 	h_layouts.push_back(new QHBoxLayout);
@@ -16,20 +15,26 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_r
 
 	labels_size = GetLabelsSize();
 
+	labels[labels_size]->setAlignment(Qt::AlignCenter);
+
+	// message analysis
+
+
+	labels[labels_size]->setFixedSize(300, 40);	
+
+	labels[labels_size]->setStyleSheet("background: #FFFCF9;"
+									   "border-radius: 10px;");
+
 	if (sent_received)
 	{
 		h_layouts[labels_size]->setAlignment(Qt::AlignLeft);
-		labels[labels_size]->setAlignment(Qt::AlignLeft);
 	}
 	else
 	{
 		h_layouts[labels_size]->setAlignment(Qt::AlignRight);
-		labels[labels_size]->setAlignment(Qt::AlignRight);
 	}
 
-	labels[labels_size]->setFixedSize(150, 20);	
 	labels[labels_size]->setFont(message_font);
-	labels[labels_size]->setStyleSheet("background-color: white; border-radius: 5px;");
 
 	h_layouts[labels_size]->addWidget( labels[labels_size] );
 

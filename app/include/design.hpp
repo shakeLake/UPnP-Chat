@@ -1,6 +1,8 @@
 #ifndef DESIGN_HPP_
 #define DESIGN_HPP_
 
+#include <iostream>
+
 // Qt
 #include <QLabel>
 #include <QTextEdit>
@@ -9,6 +11,7 @@
 #include <QFontDatabase>
 #include <QString>
 #include <QHBoxLayout>
+#include <QFrame>
 
 // stl
 #include <vector>
