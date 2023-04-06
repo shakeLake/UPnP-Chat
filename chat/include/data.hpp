@@ -6,6 +6,7 @@
 
 // I / O
 #include <iostream>
+#include <fstream>
 
 // data
 #include <cstring>
@@ -45,6 +46,9 @@ namespace ucd
 		std::mutex mx;
 		std::condition_variable cv;
 
+		// logs
+		std::ofstream log_file;
+
 	public:
 		Data() = default;
 		~Data();			
@@ -68,6 +72,9 @@ namespace ucd
 
 		// wait for getting message
 		void Wait();
+
+		// log
+		void Log(std::string);
 	};
 }
 

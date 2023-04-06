@@ -47,9 +47,6 @@ protected:
 	{
 		action = info;
 
-		std::ostream os_temp(&error_buf);
-		os_temp << "er*";	 
-
 		user_data = u_d;		
 	}
 
@@ -57,9 +54,6 @@ protected:
 
 	/* this function receives data */
 	void ReceiveFrom(int);
-
-	/* sends status */
-	void SendErrorStatus();
 
 public:
 	/* this function sends message to connected ip */

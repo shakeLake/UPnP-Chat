@@ -6,13 +6,13 @@ void ucc::Client::Connect()
  
    	if (error)
     {
-    	std::cerr << error.message() << std::endl;
+    	user_data->Log(error.message());
 		
 		connection_status = false;
 	}
     else
     {
-    	std::cout << "Connected" << std::endl;
+    	user_data->Log("Connected");
 				
 		connection_status = true;
 

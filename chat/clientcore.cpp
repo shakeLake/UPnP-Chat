@@ -1,26 +1,10 @@
 #include "include/clientcore.hpp"
 
-void ClientCore::SendErrorStatus()
-{
-	std::cout << "status: error" << std::endl;
-
-	asio::async_write(sckt, error_buf.data(), asio::transfer_all(), 
-		[this](const asio::error_code& e, std::size_t size)
-		{
-			if (e)
-			{
-				std::cerr << "Sendig status: ";
-				std::cerr << e.message() << std::endl;	
-			}
-		}
-	);
-}
-
 void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 {
-	info_message_status = true;
+	user_data->Log("Sending");
 
-	std::cout << "sending" << std::endl;
+	info_message_status = true;
 
 	if (info_message_status)
 	{
@@ -65,10 +49,12 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 
 void ClientCore::ReceiveFrom(int enum_action)
 {
-	std::cout << "receiving: " << enum_action << std::endl;
+	user_data->Log("Receiving");
 	
 	if (enum_action == 1)
 	{
+		user_data->Log("Receiving 1");
+
 		asio::async_read_until(sckt, received_message, '*', 
 			[this](const asio::error_code& e, std::size_t size)
 			{
@@ -79,8 +65,6 @@ void ClientCore::ReceiveFrom(int enum_action)
 					std::cerr << e.message() << std::endl;
 
 					received_message.consume(size);
-
-					SendErrorStatus();
 				}
 				else
 				{
@@ -131,8 +115,6 @@ void ClientCore::ReceiveFrom(int enum_action)
         			std::cerr << e.message() << std::endl;
 
 					received_message.consume(size);
-
-					SendErrorStatus();
     			}
     			else
     			{

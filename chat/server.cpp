@@ -8,16 +8,17 @@ void ucs::Server::Listening()
     
     if (error)
     {
-        std::cerr << "Acceptor error: ";
-        std::cerr << error.message() << std::endl;
+    	user_data->Log(error.message());
 		
 		connection_status = 0;
     }
 	else
 	{
+    	user_data->Log("Connected");
+
 		connection_status = 1;		
 
-	    std::string ip = endpnt.address().to_string();
+	    //std::string ip = endpnt.address().to_string();
 
 		ReceiveFrom(action);
 	}

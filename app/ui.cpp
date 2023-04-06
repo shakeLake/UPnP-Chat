@@ -62,18 +62,6 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
-
-	std::string test = "TTTTTTttttttttt\nreeeeeeee\neeeee eeeeee eeee eeeeeee eeeeeeee eeeeee eeeeee eeeee eee eeeeee eeeeee eeeeeee eeeeee eeeeei\nTTTTT\nTTTTT";
-	for (int i = 0; i != 1; i++)
-	{
-		message_layout->addLayout(
-			style.MessageEstablishing(test, true)
-		);	
-
-		message_layout->addLayout(
-			style.MessageEstablishing(test, false)
-		);
-	}
 }
 
 void UserInterface::CreateToolBar()
@@ -187,6 +175,8 @@ void UserInterface::MakeConnectionDialogSlot()
 
 	if (mcdialog.result())
 	{
+		client_or_server_data.Log("Opening port");		
+
 		info_label->setText("Opening port...");
 		info_label->repaint();
 
@@ -195,6 +185,8 @@ void UserInterface::MakeConnectionDialogSlot()
 	
 		if (upnp->PortForwarding())
 		{
+			client_or_server_data.Log("Port is opened");		
+
 			info_label->setText("Waiting for connection...");
 			info_label->repaint();
 
@@ -215,8 +207,8 @@ void UserInterface::MakeConnectionDialogSlot()
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
 				// Start data checking
-				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-				data_checking_thread = std::thread(DataChecking, this);	
+				//connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+				//data_checking_thread = std::thread(DataChecking, this);	
 			}
 			else
 			{
@@ -241,7 +233,7 @@ void UserInterface::MakeConnectionDialogSlot()
 
 void UserInterface::DataChecking()
 {
-	std::cout << "data checking" << std::endl;
+	client_or_server_data.Log("Data checking started");
 
 	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
 	{
@@ -256,6 +248,8 @@ void UserInterface::DataChecking()
 
 void UserInterface::AddMessage()
 {
+	client_or_server_data.Log("emit Data Receiving");
+
 	try
 	{
 		message_layout->addLayout(
@@ -278,6 +272,8 @@ void UserInterface::AddMessage()
 
 void UserInterface::Disconnect()
 {
+	client_or_server_data.Log("Disconnect");
+
 	delete upnp;
 
 	delete chat_client;
@@ -286,6 +282,8 @@ void UserInterface::Disconnect()
 
 UserInterface::~UserInterface()
 {
+	client_or_server_data.Log("Disconnect Destructor");
+
 	client_or_server_thread.join();
 	data_checking_thread.join();
 
