@@ -12,7 +12,7 @@ UserInterface::UserInterface()
 	CreateToolBar();
 
 	QWidget* main_widget = new QWidget(this);
-	main_widget->setStyleSheet("background-color:white");
+	main_widget->setStyleSheet("background-color: white");
 
 	QVBoxLayout* main_layout = new QVBoxLayout(main_widget);
 
@@ -63,8 +63,7 @@ UserInterface::UserInterface()
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
 
-	/*
-	std::string test = "TTTTTTttttttttt\nreeeeeeee\neeeeeeeeeeeee\nTTTTT\nTTTTT";
+	std::string test = "TTTTTTttttttttt\nreeeeeeee\neeeee eeeeee eeee eeeeeee eeeeeeee eeeeee eeeeee eeeee eee eeeeee eeeeee eeeeeee eeeeee eeeeei\nTTTTT\nTTTTT";
 	for (int i = 0; i != 1; i++)
 	{
 		message_layout->addLayout(
@@ -75,7 +74,6 @@ UserInterface::UserInterface()
 			style.MessageEstablishing(test, false)
 		);
 	}
-	*/
 }
 
 void UserInterface::CreateToolBar()
