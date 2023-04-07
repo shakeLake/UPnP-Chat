@@ -25,7 +25,7 @@ void ucd::Data::GetMsg(asio::streambuf& str)
 	Log("Get Message");
 
 	std::istream is(&str);
-	is >> vec_buf;
+	std::getline(is, vec_buf);
 	
 	msg_buffer_vec.push_back(vec_buf);
 	vec_buf.clear();

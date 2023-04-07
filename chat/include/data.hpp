@@ -1,9 +1,6 @@
 #ifndef DATA_HPP_
 #define DATA_HPP_
 
-// DEBUG or RELEASE
-#include "../../config.hpp"
-
 // I / O
 #include <iostream>
 #include <fstream>

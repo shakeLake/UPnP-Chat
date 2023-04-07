@@ -35,14 +35,17 @@ namespace ucc
             if (error)
            	{
             	std::cerr << "Error: ";
-                std::cerr << error.message() << std::endl;
+				u_d->Log(error.message());
             }
 
 
             Connect();
 		}
 
-        ~Client() = default;
+        ~Client()
+		{
+			user_data->Log("Client Core destructor");
+		}
 
 		// return socket.is_open()
 		bool SocketIsOpen();

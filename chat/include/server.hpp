@@ -34,7 +34,10 @@ namespace ucs
             Listening();
         }             
             
-        ~Server() = default;
+        ~Server()
+		{
+			user_data->Log("Client Core destructor");
+		}
 
 		// return socket.is_open()
 		bool SocketIsOpen();

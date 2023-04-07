@@ -50,7 +50,10 @@ protected:
 		user_data = u_d;		
 	}
 
-	~ClientCore() = default;
+	~ClientCore()
+	{
+		user_data->Log("Client Core destructor");
+	}
 
 	/* this function receives data */
 	void ReceiveFrom(int);

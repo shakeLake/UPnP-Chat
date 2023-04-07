@@ -20,7 +20,4 @@
 // error
 #include "errorcodes.hpp"
 
-// config
-#include "../../config.hpp"
-
 #endif /* DEF_INCLUDE_HPP_ */

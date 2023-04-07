@@ -14,7 +14,6 @@
 #include "connectiondialog.hpp"
 #include "makeconnectiondialog.hpp"
 #include "alreadyopened.hpp"
-#include "acceptdialog.hpp"
 #include "errordialog.hpp"
 
 // qt

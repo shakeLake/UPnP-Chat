@@ -1,9 +1,6 @@
 #ifndef UPNP_HPP_
 #define UPNP_HPP_
 
-// DEBUG or RELEASE
-#include "../config.hpp"
-
 // I / O
 #include <iostream>
 

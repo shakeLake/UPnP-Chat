@@ -214,8 +214,8 @@ void UserInterface::MakeConnectionDialogSlot()
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
 				// Start data checking
-				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-				data_checking_thread = std::thread(DataChecking, this);	
+				//connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+				//data_checking_thread = std::thread(DataChecking, this);	
 			}
 			else
 			{
@@ -250,8 +250,9 @@ void UserInterface::AlreadyOpenedDialogSlot()
 		// init
 		chat_server = new ucs::Server(io_c, adialog.port, &client_or_server_data);
 
-		if (chat_client->connection_status)
+		if (chat_server->connection_status)
 		{
+			std::cout << "Connected" << std::endl;
 			// activate disconnect button
 			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
 
@@ -281,7 +282,7 @@ void UserInterface::DataChecking()
 {
 	client_or_server_data.Log("Data checking started");
 
-	while (chat_client->SocketIsOpen() || chat_server->SocketIsOpen())
+	while (1)
 	{
 		client_or_server_data.Wait();
 

@@ -53,23 +53,17 @@ void ClientCore::ReceiveFrom(int enum_action)
 	
 	if (enum_action == 1)
 	{
-		user_data->Log("Receiving 1");
-
 		asio::async_read_until(sckt, received_message, '*', 
 			[this](const asio::error_code& e, std::size_t size)
 			{
 				if (e)
 				{
-					std::cerr << "Reading error: ";
-
-					std::cerr << e.message() << std::endl;
+					user_data->Log(e.message());
 
 					received_message.consume(size);
 				}
 				else
 				{
-					std::cout << "Bytes received: " << size  << std::endl;
-
 					std::istream is(&received_message);	
 					is >> message_size_buf;
 
@@ -110,16 +104,12 @@ void ClientCore::ReceiveFrom(int enum_action)
 			{
     			if (e)
     			{
-        			std::cerr << "Reading error: ";
-
-        			std::cerr << e.message() << std::endl;
+					user_data->Log(e.message());
 
 					received_message.consume(size);
     			}
     			else
     			{
-        			std::cout << "Bytes received: " << size  << std::endl;
-
 					user_data->GetMsg(received_message);
 
 					received_message.consume(size);
