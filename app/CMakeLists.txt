@@ -21,10 +21,10 @@ set(APP_SOURCE
 	"include/connectiondialog.hpp"
 	makeconnectiondialog.cpp
 	"include/makeconnectiondialog.hpp"
+	alreadyopened.cpp
+	"include/alreadyopened.hpp"
 	design.cpp
 	"include/design.hpp"
-	acceptdialog.cpp
-	"include/acceptdialog.hpp"
 	errordialog.cpp
 	"include/errordialog.hpp"
 )

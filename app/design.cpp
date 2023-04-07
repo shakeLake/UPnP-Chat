@@ -14,17 +14,19 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_r
 		if (label_message[symb] == '\n')
 		{
 			message_size = 0;
+			space_index = -1;
 		}
 		else if (message_size == 40)
 		{
 			message_size = 0;	
 			if (space_index == -1)
 			{
-				label_message.insert(40, "\n");
+				label_message.insert(symb, "\n");
 			}
 			else
 			{
 				label_message[space_index] = '\n';
+				space_index = -1;
 			}
 		}
 		else

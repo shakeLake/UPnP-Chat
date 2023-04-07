@@ -81,6 +81,7 @@ void UserInterface::CreateToolBar()
 	logo = new QPushButton;
 	connect_to = new QPushButton;
 	make_connection = new QPushButton;
+	alr_opn_make_connection = new QPushButton;
 	disconnect = new QPushButton;
 
 	// widgets design
@@ -98,6 +99,11 @@ void UserInterface::CreateToolBar()
 	make_connection->setIconSize(QSize(40, 60));	
 	connect(make_connection, &QPushButton::released, this, &UserInterface::MakeConnectionDialogSlot);
 
+	alr_opn_make_connection->setIcon(QIcon(":/Resources/pics/nat_router.png"));	
+	alr_opn_make_connection->setStyleSheet("border: none");
+	alr_opn_make_connection->setIconSize(QSize(44, 64));	
+	connect(alr_opn_make_connection, &QPushButton::released, this, &UserInterface::AlreadyOpenedDialogSlot);
+
 	disconnect->setIcon(QIcon(":/Resources/pics/disconnect.png"));
 	disconnect->setStyleSheet("border: none");
 	disconnect->setIconSize(QSize(40, 60));
@@ -106,6 +112,7 @@ void UserInterface::CreateToolBar()
 	tool_bar->addWidget(logo);
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
+	tool_bar->addWidget(alr_opn_make_connection);
 	tool_bar->addWidget(disconnect);
 }
 
@@ -207,8 +214,8 @@ void UserInterface::MakeConnectionDialogSlot()
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
 				// Start data checking
-				//connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-				//data_checking_thread = std::thread(DataChecking, this);	
+				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+				data_checking_thread = std::thread(DataChecking, this);	
 			}
 			else
 			{
@@ -227,6 +234,45 @@ void UserInterface::MakeConnectionDialogSlot()
 
 			edialog->exec();
 			delete edialog;
+		}
+	}
+}
+
+void UserInterface::AlreadyOpenedDialogSlot()
+{
+	adialog.exec();
+	
+	if (adialog.result())
+	{
+		info_label->setText("Connecting...");
+		info_label->repaint();
+
+		// init
+		chat_server = new ucs::Server(io_c, adialog.port, &client_or_server_data);
+
+		if (chat_client->connection_status)
+		{
+			// activate disconnect button
+			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
+
+			info_label->setText("Connected");
+			info_label->repaint();
+
+			// Start server
+			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
+
+			connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
+
+			// Start data checking
+			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+			data_checking_thread = std::thread(DataChecking, this);	
+		}
+		else
+		{
+			info_label->setText("Connection Refused");
+			info_label->repaint();
+			
+			delete chat_server;
 		}
 	}
 }

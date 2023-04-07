@@ -13,6 +13,7 @@
 // dialogs
 #include "connectiondialog.hpp"
 #include "makeconnectiondialog.hpp"
+#include "alreadyopened.hpp"
 #include "acceptdialog.hpp"
 #include "errordialog.hpp"
 
@@ -73,11 +74,14 @@ private:
 				
 	QPushButton* make_connection;
 
+	QPushButton* alr_opn_make_connection;
+
 	QPushButton* disconnect;
 			
 	// dialogs
 	ConnectionDialog cdialog;
 	MakeConnectionDialog mcdialog;
+	AlreadyOpenedDialog adialog;
 	ErrorDialog* edialog;
 
 	// chat widgets
@@ -101,6 +105,7 @@ private:
 private slots:
 	void ConnectionDialogSlot();
 	void MakeConnectionDialogSlot();
+	void AlreadyOpenedDialogSlot();
 
 	void SendChatMessageSlot();
 	void SendServerMessageSlot();
