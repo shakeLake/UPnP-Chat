@@ -5,7 +5,9 @@
 	0 - sent
 	1 - received 
 */
-QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_received)
+QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
+										 bool sent_received,
+										 QScrollArea* scroll_area)
 {
 	int space_index = -1;
 
@@ -60,9 +62,11 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_r
 	labels[labels_size]->setFont(message_font);
 
 	labels[labels_size]->setFixedSize(labels[labels_size]->sizeHint().width() + 20,
-									   labels[labels_size]->sizeHint().height() + 10);
+									  labels[labels_size]->sizeHint().height() + 10);
 
 	h_layouts[labels_size]->addWidget( labels[labels_size] );
+
+	scroll_area->verticalScrollBar()->setSliderPosition(scroll_area->verticalScrollBar()->maximum());
 
 	return h_layouts[labels_size];
 }

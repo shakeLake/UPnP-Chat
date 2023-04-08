@@ -165,7 +165,7 @@ void UserInterface::SendChatMessageSlot()
 	
 	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
+	message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
 }
 
 void UserInterface::SendServerMessageSlot()
@@ -178,7 +178,7 @@ void UserInterface::SendServerMessageSlot()
 
 	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
+	message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
 }
 
 void UserInterface::ConnectionDialogSlot()
@@ -343,14 +343,18 @@ void UserInterface::AddMessage()
 	try
 	{
 		message_layout->addLayout(
-			style.MessageEstablishing(
-					client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), true)
+			style.MessageEstablishing(client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
+									  true, 
+									  scroll_area)
 		);	
+
 	}
 	catch(const std::exception& e)
 	{
 		client_or_server_data.Log("New message exception");
 	}
+
+	size_of_msg_buffer += 1;
 }
 
 void UserInterface::Disconnect()

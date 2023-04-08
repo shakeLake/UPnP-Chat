@@ -12,6 +12,8 @@
 #include <QString>
 #include <QHBoxLayout>
 #include <QFrame>
+#include <QScrollArea>
+#include <QScrollBar>
 
 // stl
 #include <vector>
@@ -73,7 +75,7 @@ public:
 	~Design() = default;
 		
 	// set font, set alignment, set frame style
-	QHBoxLayout* MessageEstablishing(std::string&, bool);
+	QHBoxLayout* MessageEstablishing(std::string&, bool, QScrollArea*);
 
 	// return title
 	const char* GetTitle();
