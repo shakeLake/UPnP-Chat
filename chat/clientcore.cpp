@@ -110,7 +110,7 @@ void ClientCore::ReceiveFrom(int enum_action)
     			}
     			else
     			{
-					user_data->GetMsg(received_message);
+					user_data->GetMsg(received_message, message_size);
 
 					received_message.consume(size);
 				

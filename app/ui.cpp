@@ -122,6 +122,9 @@ void UserInterface::SendChatMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
+	// clear
+	main_text_field->clear();
+	
 	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
 	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
@@ -132,6 +135,9 @@ void UserInterface::SendServerMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
+	// clear
+	main_text_field->clear();
+
 	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
 	message_layout->addLayout( style.MessageEstablishing(msg, false) );	
@@ -214,8 +220,8 @@ void UserInterface::MakeConnectionDialogSlot()
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
 				// Start data checking
-				//connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-				//data_checking_thread = std::thread(DataChecking, this);	
+				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
+				data_checking_thread = std::thread(DataChecking, this);	
 			}
 			else
 			{
@@ -252,7 +258,6 @@ void UserInterface::AlreadyOpenedDialogSlot()
 
 		if (chat_server->connection_status)
 		{
-			std::cout << "Connected" << std::endl;
 			// activate disconnect button
 			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
 

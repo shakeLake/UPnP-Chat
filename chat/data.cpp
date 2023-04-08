@@ -20,16 +20,22 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
     return msg_buffer.data();
 }
 
-void ucd::Data::GetMsg(asio::streambuf& str)
+void ucd::Data::GetMsg(asio::streambuf& str, unsigned int message_size)
 {
 	Log("Get Message");
 
+	vec_buf.resize(message_size);
 	std::istream is(&str);
-	std::getline(is, vec_buf);
 	
-	msg_buffer_vec.push_back(vec_buf);
-	vec_buf.clear();
+	for (int i = 0; i < message_size; i++)
+	{
+		is.get(vec_buf[i]);
+	}
 
+	msg_buffer_vec.push_back(vec_buf);
+
+	vec_buf.clear();
+	
 	cv.notify_one();
 }
 

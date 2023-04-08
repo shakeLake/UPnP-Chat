@@ -58,7 +58,7 @@ namespace ucd
 		asio::streambuf::const_buffers_type SetMessage(std::string&);
 
 		// streambuf to string 
-		void GetMsg(asio::streambuf&);
+		void GetMsg(asio::streambuf&, unsigned int message_size);
 
 		// transfer data to client class
 		asio::streambuf::const_buffers_type GetInfoBuffer();	
