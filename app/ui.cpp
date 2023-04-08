@@ -100,12 +100,6 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
-
-	std::string test = "TestTest\nTests\ntests\n";
-	for (int i = 0; i != 10; i++)
-	{
-		message_layout->addLayout(style.MessageEstablishing(test, true));	
-	}
 }
 
 void UserInterface::CreateToolBar()
@@ -355,15 +349,8 @@ void UserInterface::AddMessage()
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << "New message exception" << std::endl;
+		client_or_server_data.Log("New message exception");
 	}
-
-	std::cout << client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer) << std::endl;
-
-	size_of_msg_buffer = client_or_server_data.GetMsgBufferSize();	
-
-	std::cout << client_or_server_data.GetMsgBufferSize() << std::endl;
-	std::cout << size_of_msg_buffer << std::endl;
 }
 
 void UserInterface::Disconnect()
