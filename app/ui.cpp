@@ -34,6 +34,25 @@ UserInterface::UserInterface()
 	send_button->setIconSize(QSize(40, 40));	
 	
 	main_text_field = new QTextEdit();
+	main_text_field->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
+														"{"
+															"border: none;"
+														"}"
+														"QScrollBar::sub-line"
+														"{"
+															"border: none;"
+														"}"
+														"QScrollBar::handle:vertical"
+														"{"
+															"background: #161C32;"
+															"border-radius: 2px;"
+														"}"
+														"QScrollBar:vertical"
+														"{"
+															"width: 4px;"
+														"}"
+													   );
+
 	style.SetTextEditFont(main_text_field);
 	main_text_field->setFrameStyle(QFrame::NoFrame);
 	main_text_field->setPlaceholderText("Write something...");
@@ -52,6 +71,25 @@ UserInterface::UserInterface()
 	message_layout_widget->setLayout(message_layout);
 
 	scroll_area = new QScrollArea;	
+	scroll_area->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
+													 "{"
+													 	"border: none;"
+													 "}"
+													 "QScrollBar::sub-line"
+													 "{"
+													  	"border: none;"
+													 "}"
+													 "QScrollBar::handle:vertical"
+													 "{"
+													  	"background: #161C32;"
+														"border-radius: 2px;"
+													 "}"
+													 "QScrollBar:vertical"
+													 "{"
+													 	"width: 5px;"
+													 "}"
+												   );
+
 	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
 	scroll_area->setWidget(message_layout_widget);
@@ -62,6 +100,12 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
+
+	std::string test = "TestTest\nTests\ntests\n";
+	for (int i = 0; i != 10; i++)
+	{
+		message_layout->addLayout(style.MessageEstablishing(test, true));	
+	}
 }
 
 void UserInterface::CreateToolBar()

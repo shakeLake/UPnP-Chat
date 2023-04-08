@@ -34,6 +34,7 @@
 
 // scrolls
 #include <QScrollArea>
+#include <QScrollBar>
 
 class UserInterface : public QMainWindow
 {
