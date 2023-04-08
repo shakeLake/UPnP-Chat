@@ -53,6 +53,13 @@ protected:
 	~ClientCore()
 	{
 		user_data->Log("Client Core destructor");
+
+		user_data->StatusSocketIsClosed();
+	
+		// data checking reset
+		user_data->NotifyOne();
+
+		sckt.close();
 	}
 
 	/* this function receives data */

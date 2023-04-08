@@ -19,8 +19,3 @@ void ucc::Client::Connect()
 		ReceiveFrom(action);
     }
 }
-
-bool ucc::Client::SocketIsOpen()
-{
-	return sckt.is_open();
-}

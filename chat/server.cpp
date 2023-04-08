@@ -23,8 +23,3 @@ void ucs::Server::Listening()
 		ReceiveFrom(action);
 	}
 }
-
-bool ucs::Server::SocketIsOpen()
-{
-	return sckt.is_open();
-}

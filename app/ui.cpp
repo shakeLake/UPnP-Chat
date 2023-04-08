@@ -287,7 +287,7 @@ void UserInterface::DataChecking()
 {
 	client_or_server_data.Log("Data checking started");
 
-	while (1)
+	while (client_or_server_data.StatusChecking())
 	{
 		client_or_server_data.Wait();
 
@@ -326,21 +326,32 @@ void UserInterface::Disconnect()
 {
 	client_or_server_data.Log("Disconnect");
 
-	delete upnp;
-
 	delete chat_client;
 	delete chat_server;
+
+	// data checking reset
+	client_or_server_data.NotifyOne();
+	client_or_server_data.StatusDisconnected();
+
+	client_or_server_thread.join();
+	data_checking_thread.join();
+
+	delete upnp;
 }
 
 UserInterface::~UserInterface()
 {
 	client_or_server_data.Log("Disconnect Destructor");
 
+	delete chat_client;
+	delete chat_server;
+
+	// data checking reset
+	client_or_server_data.NotifyOne();
+	client_or_server_data.StatusDisconnected();
+
 	client_or_server_thread.join();
 	data_checking_thread.join();
 
 	delete upnp;
-
-	delete chat_client;
-	delete chat_server;
 }

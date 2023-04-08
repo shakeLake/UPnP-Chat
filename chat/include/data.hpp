@@ -46,8 +46,17 @@ namespace ucd
 		// logs
 		std::ofstream log_file;
 
+		// status
+		bool socket_is_closed;
+		bool disconnected;
+
 	public:
-		Data() = default;
+		Data()
+		{
+			socket_is_closed = 0;
+			disconnected = 0;
+		}
+
 		~Data();			
 			
 		// get new message
@@ -72,6 +81,16 @@ namespace ucd
 
 		// log
 		void Log(std::string);
+
+		// Notify
+		void NotifyOne();
+
+		// Set Status
+		void StatusSocketIsClosed();
+		void StatusDisconnected();
+		
+		// status check
+		bool StatusChecking();
 	};
 }
 

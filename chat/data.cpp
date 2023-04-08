@@ -36,7 +36,7 @@ void ucd::Data::GetMsg(asio::streambuf& str, unsigned int message_size)
 
 	vec_buf.clear();
 	
-	cv.notify_one();
+	NotifyOne();
 }
 
 unsigned int ucd::Data::GetMsgBufferSize()
@@ -89,6 +89,29 @@ void ucd::Data::Log(std::string log_msg)
 	log_file.open("logs.txt", std::ios::app);
 	log_file << log_msg + '\n';
 	log_file.close();
+}
+
+void ucd::Data::NotifyOne()
+{	
+	cv.notify_one();
+}
+
+void ucd::Data::StatusSocketIsClosed()
+{
+	socket_is_closed = 1;
+}
+
+void ucd::Data::StatusDisconnected()
+{
+	disconnected = 1;
+}
+
+bool ucd::Data::StatusChecking()
+{
+	if (socket_is_closed == 1 || disconnected == 1)
+		return 0;
+	else
+		return 1;
 }
 
 ucd::Data::~Data()
