@@ -66,6 +66,7 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
 
 	h_layouts[labels_size]->addWidget( labels[labels_size] );
 
+	// scroll bar to bottom
 	scroll_area->verticalScrollBar()->setMaximum( scroll_area->height() + labels[labels_size]->sizeHint().height() + 20 );
 	scroll_area->verticalScrollBar()->setValue(scroll_area->verticalScrollBar()->maximum());
 

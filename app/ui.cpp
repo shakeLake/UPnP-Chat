@@ -159,13 +159,21 @@ void UserInterface::SendChatMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
-	
-	// clear
-	main_text_field->clear();
-	
-	chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
+	if (msg == " " || msg == "\n" || msg.size() == 0)
+	{
+		// clear
+		main_text_field->clear();
+	}
+	else
+	{
+		// clear
+		main_text_field->clear();
+
+		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+
+		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
+	}
 }
 
 void UserInterface::SendServerMessageSlot()
@@ -173,12 +181,20 @@ void UserInterface::SendServerMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	msg = msg_buffer.toStdString();
 	
-	// clear
-	main_text_field->clear();
+	if (msg == " " || msg == "\n" || msg.size() == 0)
+	{
+		// clear
+		main_text_field->clear();
+	}
+	else
+	{
+		// clear
+		main_text_field->clear();
 
-	chat_server->SendTo( client_or_server_data.SetMessage(msg) );
+		chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
-	message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
+		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
+	}
 }
 
 void UserInterface::ConnectionDialogSlot()
