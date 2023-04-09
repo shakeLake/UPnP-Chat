@@ -6,8 +6,8 @@
 	1 - received 
 */
 QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
-										 bool sent_received,
-										 QScrollArea* scroll_area)
+					 bool sent_received,
+					 QScrollArea* scroll_area)
 {
 	int space_index = -1;
 
@@ -48,7 +48,7 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
 	labels[labels_size]->setAlignment(Qt::AlignLeft);
 
 	labels[labels_size]->setStyleSheet("background: #FFFCF9;"
-									   "border-radius: 10px;");
+					   "border-radius: 10px;");
 
 	if (sent_received)
 	{
@@ -62,7 +62,7 @@ QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
 	labels[labels_size]->setFont(message_font);
 
 	labels[labels_size]->setFixedSize(labels[labels_size]->sizeHint().width() + 20,
-									  labels[labels_size]->sizeHint().height() + 10);
+					  labels[labels_size]->sizeHint().height() + 10);
 
 	h_layouts[labels_size]->addWidget( labels[labels_size] );
 
