@@ -61,28 +61,23 @@ void ClientCore::ReceiveFrom(int enum_action)
 					std::istream is(&received_message);	
 					is >> message_size_buf;
 
-					if (message_size_buf == "er*")
+					try
 					{
-						info_message_status = false;
-
-						action = info;		
-						ReceiveFrom(action);
-					}
-					else
-					{
-						try
-						{
-							message_size = stoi(message_size_buf);
-						}
-						catch(const std::exception& e)
-						{
-							 user_data->Log(e.what());
-						}
+						message_size = stoi(message_size_buf);
 
 						message_size_buf.clear();
 						received_message.consume(size);
 
 						action = message;
+						ReceiveFrom(action);
+					}
+					catch(const std::exception& e)
+					{
+						user_data->Log(e.what());
+
+						info_message_status = false;
+
+						action = info;		
 						ReceiveFrom(action);
 					}
 				}

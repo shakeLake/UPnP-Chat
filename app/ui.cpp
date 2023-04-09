@@ -342,10 +342,10 @@ void UserInterface::AddMessage()
 
 	try
 	{
-		message_layout->addLayout(
-			style.MessageEstablishing(client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
-									  true, 
-									  scroll_area)
+		message_layout->addLayout(style.MessageEstablishing(
+								  client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
+								  true, 
+								  scroll_area)
 		);	
 
 	}
