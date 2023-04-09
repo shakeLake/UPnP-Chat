@@ -10,7 +10,7 @@
 
 ### Computer as Server
 * Turn on **UPnP** and **NAT Traversal** on your router
-* Click **UPnP button** and enter **the Port** you need in dialog window
+* Click **UPnP button** and enter **the Port** you need
 * Wait **the Client**
 <details>
     <summary>Screenshot</summary>
