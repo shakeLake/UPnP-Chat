@@ -3,15 +3,26 @@
 
 #include <iostream>
 
-// Qt
-#include <QLabel>
-#include <QTextEdit>
-#include <QLineEdit>
+// qt
+#include <QApplication>
+#include <QMainWindow>
+#include <QString>
+#include <QIcon>
 #include <QFont>
 #include <QFontDatabase>
-#include <QString>
+
+// layouts
+#include <QVBoxLayout>
 #include <QHBoxLayout>
-#include <QFrame>
+
+// widgets
+#include <QToolBar>
+#include <QPushButton>
+#include <QTextEdit>
+#include <QLineEdit>
+#include <QLabel>
+
+// scrolls
 #include <QScrollArea>
 #include <QScrollBar>
 

@@ -34,7 +34,6 @@ namespace ucc
 
             if (error)
            	{
-            	std::cerr << "Error: ";
 				u_d->Log(error.message());
             }
 

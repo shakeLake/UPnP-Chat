@@ -16,26 +16,6 @@
 #include "alreadyopened.hpp"
 #include "errordialog.hpp"
 
-// qt
-#include <QApplication>
-#include <QMainWindow>
-#include <QString>
-#include <QIcon>
-
-// layouts
-#include <QVBoxLayout>
-#include <QHBoxLayout>
-
-// widgets
-#include <QToolBar>
-#include <QPushButton>
-#include <QTextEdit>
-#include <QLabel>
-
-// scrolls
-#include <QScrollArea>
-#include <QScrollBar>
-
 class UserInterface : public QMainWindow
 {
 	Q_OBJECT

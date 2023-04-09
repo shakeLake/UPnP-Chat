@@ -354,7 +354,7 @@ void UserInterface::AddMessage()
 		client_or_server_data.Log("New message exception");
 	}
 
-	size_of_msg_buffer += 1;
+	size_of_msg_buffer = client_or_server_data.GetMsgBufferSize();
 }
 
 void UserInterface::Disconnect()

@@ -2,8 +2,8 @@
 
 void ucs::Server::Listening()
 {
-    std::cout << "Listening" << std::endl;
-    
+    user_data->Log("Listening");	
+		
     accptr.accept(sckt, endpnt, error);
     
     if (error)

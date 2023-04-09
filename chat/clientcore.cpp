@@ -13,13 +13,10 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 			{
 				if (e)
 				{
-					std::cerr << "Sending error: ";
-					std::cerr << e.message() << std::endl;
+					user_data->Log(e.message());
 				}
 				else
 				{
-					std::cout << "Bytes transferred: " << size  << std::endl;
-
 					user_data->ClearInfoBuf(size);
 				}
 			}
@@ -33,13 +30,10 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 			{
     			if (e)
     			{
-        			std::cerr << "Sending error: ";
-        			std::cerr << e.message() << std::endl;
+					user_data->Log(e.message());
     			}
     			else
     			{
-        			std::cout << "Bytes transferred: " << size  << std::endl;
-
 					user_data->ClearMsgBuf(size);
     			}
 			}
@@ -76,15 +70,13 @@ void ClientCore::ReceiveFrom(int enum_action)
 					}
 					else
 					{
-						std::cout << message_size_buf << std::endl;
-
 						try
 						{
 							message_size = stoi(message_size_buf);
 						}
 						catch(const std::exception& e)
 						{
-							std::cout << e.what() << std::endl;
+							 user_data->Log(e.what());
 						}
 
 						message_size_buf.clear();
