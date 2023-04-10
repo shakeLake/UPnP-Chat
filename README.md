@@ -2,7 +2,9 @@
 
 **UPnP Chat** makes peer-to-peer connection between two computers
 
-![image](https://user-images.githubusercontent.com/99725123/230795307-2b1e081d-2aa9-4325-ae0d-04c25fab71b8.png)
+<kbd>
+    <img src="https://user-images.githubusercontent.com/99725123/230795307-2b1e081d-2aa9-4325-ae0d-04c25fab71b8.png"/>
+</kbd>
 
 **UPnP Chat** uses [miniupnp](https://github.com/miniupnp/miniupnp) to opens port
 
@@ -14,7 +16,9 @@
 * Wait **the Client**
 <details>
     <summary>Screenshot</summary>
-    <img src="https://user-images.githubusercontent.com/99725123/230796605-ee5fc252-29b0-4f1d-b96a-d4329d48972e.png"/>
+    <kbd>
+        <img src="https://user-images.githubusercontent.com/99725123/230796605-ee5fc252-29b0-4f1d-b96a-d4329d48972e.png"/>
+    </kbd>
 </details>
 
 ### Computer as Client 
@@ -22,7 +26,9 @@
 * Enter **Server Ip** and **Server Port** 
 <details>
     <summary>Screenshot</summary>
-    <img src="https://user-images.githubusercontent.com/99725123/230796588-77cb8035-e45f-4273-b9bc-cf7dcb896e6e.png"/>
+    <kbd>
+        <img src="https://user-images.githubusercontent.com/99725123/230796588-77cb8035-e45f-4273-b9bc-cf7dcb896e6e.png"/>
+    </kbd>
 </details>
 
 ### Router Doesn't Support UPnP
