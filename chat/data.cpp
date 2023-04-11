@@ -7,17 +7,17 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 	msg_size = std::to_string(msg.size());
 	msg_size += '*';	
 
-    message += msg;
+	message += msg;
 
-    // saves info about message to streambuffer
-    std::ostream os_info(&info_buffer);
-    os_info << msg_size;
+	// saves info about message to streambuffer
+	std::ostream os_info(&info_buffer);
+	os_info << msg_size;
 
-    // saves message to streambuffer
-    std::ostream os_msg(&msg_buffer);
-    os_msg << message;
+    	// saves message to streambuffer
+    	std::ostream os_msg(&msg_buffer);
+    	os_msg << message;
 
-    return msg_buffer.data();
+    	return msg_buffer.data();
 }
 
 void ucd::Data::GetMsg(asio::streambuf& str, unsigned int message_size)
@@ -118,6 +118,6 @@ ucd::Data::~Data()
 {
 	Log("Data Destructor");
 
-    msg_buffer.consume( msg_buffer.size() );
+    	msg_buffer.consume( msg_buffer.size() );
 	info_buffer.consume( info_buffer.size() );
 }
