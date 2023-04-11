@@ -50,8 +50,7 @@ UserInterface::UserInterface()
 														"QScrollBar:vertical"
 														"{"
 															"width: 4px;"
-														"}"
-													   );
+														"}");
 
 	style.SetTextEditFont(main_text_field);
 	main_text_field->setFrameStyle(QFrame::NoFrame);
@@ -87,8 +86,7 @@ UserInterface::UserInterface()
 													 "QScrollBar:vertical"
 													 "{"
 													 	"width: 5px;"
-													 "}"
-												   );
+													 "}");
 
 	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
