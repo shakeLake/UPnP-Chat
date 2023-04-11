@@ -5,9 +5,7 @@
 	0 - sent
 	1 - received 
 */
-QHBoxLayout* Design::MessageEstablishing(std::string& label_message,
-					 bool sent_received,
-					 QScrollArea* scroll_area)
+QHBoxLayout* Design::MessageEstablishing(std::string& label_message, bool sent_received, QScrollArea* scroll_area)
 {
 	int space_index = -1;
 
