@@ -35,22 +35,22 @@ UserInterface::UserInterface()
 	
 	main_text_field = new QTextEdit();
 	main_text_field->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
-														"{"
-															"border: none;"
-														"}"
-														"QScrollBar::sub-line"
-														"{"
-															"border: none;"
-														"}"
-														"QScrollBar::handle:vertical"
-														"{"
-															"background: #161C32;"
-															"border-radius: 2px;"
-														"}"
-														"QScrollBar:vertical"
-														"{"
-															"width: 4px;"
-														"}");
+							    "{"
+							   	 "border: none;"
+							    "}"
+							    "QScrollBar::sub-line"
+							    "{"
+							   	 "border: none;"
+							    "}"
+							    "QScrollBar::handle:vertical"
+							    "{"
+							   	 "background: #161C32;"
+							   	 "border-radius: 2px;"
+							    "}"
+							    "QScrollBar:vertical"
+							    "{"
+							   	 "width: 4px;"
+							    "}");
 
 	style.SetTextEditFont(main_text_field);
 	main_text_field->setFrameStyle(QFrame::NoFrame);
@@ -71,22 +71,22 @@ UserInterface::UserInterface()
 
 	scroll_area = new QScrollArea;	
 	scroll_area->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
-													 "{"
-													 	"border: none;"
-													 "}"
-													 "QScrollBar::sub-line"
-													 "{"
-													  	"border: none;"
-													 "}"
-													 "QScrollBar::handle:vertical"
-													 "{"
-													  	"background: #161C32;"
-														"border-radius: 2px;"
-													 "}"
-													 "QScrollBar:vertical"
-													 "{"
-													 	"width: 5px;"
-													 "}");
+							"{"
+								"border: none;"
+							"}"
+							"QScrollBar::sub-line"
+							"{"
+								"border: none;"
+							"}"
+							"QScrollBar::handle:vertical"
+							"{"
+								"background: #161C32;"
+								"border-radius: 2px;"
+							"}"
+							"QScrollBar:vertical"
+							"{"
+								"width: 5px;"
+							"}");
 
 	scroll_area->setFrameShape(QFrame::NoFrame);
 	scroll_area->setWidgetResizable( true );
@@ -105,7 +105,7 @@ void UserInterface::CreateToolBar()
 	tool_bar = new QToolBar();
 	tool_bar->setFixedWidth(60);
 	tool_bar->setStyleSheet("background-color: #161C32;"
-							"spacing: 15px;");
+				"spacing: 15px;");
 
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
@@ -356,10 +356,9 @@ void UserInterface::AddMessage()
 
 	try
 	{
-		message_layout->addLayout(style.MessageEstablishing(
-								  client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
-								  true, 
-								  scroll_area)
+		message_layout->addLayout(style.MessageEstablishing(client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
+								    true, 
+								    scroll_area)
 		);	
 
 	}
