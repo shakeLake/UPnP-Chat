@@ -21,8 +21,8 @@ MakeConnectionDialog::MakeConnectionDialog()
 	edit_port->setPlaceholderText("49152 - 65535");
 	edit_port->setFixedHeight(25);
 	edit_port->setStyleSheet("background-color: #F1DAC4;"
-							 "border-radius: 5px;"
-							 "color: #161C32");
+				 "border-radius: 5px;"
+				 "color: #161C32");
 	style.SetNunitoLineFont(edit_port);
 
 	cancel_button = new QPushButton("Cancel"); 
@@ -32,8 +32,8 @@ MakeConnectionDialog::MakeConnectionDialog()
 	task_button = new QPushButton("Open");
 	task_button->setFixedSize(125, 24);
 	task_button->setStyleSheet("background-color: #161C32;"
-								"color: white;"
-								"border-radius: 5px");
+				   "color: white;"
+				   "border-radius: 5px");
 
 	// main_label
 	main_layout = new QVBoxLayout(main_widget);	
