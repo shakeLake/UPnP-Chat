@@ -25,17 +25,17 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 
 	if (info_message_status)
 	{
-    	asio::async_write(sckt, msg, asio::transfer_all(), 
+    		asio::async_write(sckt, msg, asio::transfer_all(), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
-    			if (e)
-    			{
+				if (e)
+				{
 					user_data->Log(e.message());
-    			}
-    			else
-    			{
+				}
+				else
+				{
 					user_data->ClearMsgBuf(size);
-    			}
+				}
 			}
 		);
 	}	
@@ -86,24 +86,24 @@ void ClientCore::ReceiveFrom(int enum_action)
 	}
 	else if (enum_action == 0)
 	{	
-    	asio::async_read(sckt, received_message, asio::transfer_exactly(message_size), 
+    		asio::async_read(sckt, received_message, asio::transfer_exactly(message_size), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
-    			if (e)
-    			{
+				if (e)
+				{
 					user_data->Log(e.message());
 
 					received_message.consume(size);
-    			}
-    			else
-    			{
+				}
+				else
+				{
 					user_data->GetMsg(received_message, message_size);
 
 					received_message.consume(size);
-				
+
 					action = info;
 					ReceiveFrom(action);
-    			}
+				}
 			}
 		);
 	}
