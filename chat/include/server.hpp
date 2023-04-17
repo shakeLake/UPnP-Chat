@@ -13,12 +13,12 @@ namespace ucs
         asio::ip::tcp::endpoint endpnt;
         asio::ip::tcp::acceptor accptr;
 
-		// buffer
-		asio::streambuf received_message;	
+	// buffer
+	asio::streambuf received_message;	
 
 	public:
-		// connection status
-		bool connection_status;
+	// connection status
+	bool connection_status;
 			
 	private:		
 		/* listen connection */
@@ -26,18 +26,18 @@ namespace ucs
 
     public:
     	Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) 
-		:	ClientCore(io_c, u_d),
-			endpnt(asio::ip::tcp::v4(),
-			stoi(port)),
-			accptr(io_c, endpnt)
+	:	ClientCore(io_c, u_d),
+	       	endpnt(asio::ip::tcp::v4(),
+	       	stoi(port)),
+	      	accptr(io_c, endpnt)
         {
-            Listening();
+            	Listening();
         }             
             
         ~Server()
-		{
-			user_data->Log("Client Core destructor");
-		}
+	{
+		user_data->Log("Client Core destructor");
+	}
     };
 }
 
