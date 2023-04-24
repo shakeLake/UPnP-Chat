@@ -7,8 +7,6 @@ add_subdirectory("../chat" "chat-build")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_PREFIX_PATH "C:/Program Files/Qt/lib/cmake")
-
 find_package(Qt6 REQUIRED COMPONENTS Core)
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS Gui)
