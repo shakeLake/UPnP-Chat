@@ -5,39 +5,39 @@
 
 namespace ucs
 {
-    class Server : public ClientCore
-    {
-    private:
-        asio::error_code error;
+	class Server : public ClientCore
+   	{
+    	private:
+        	asio::error_code error;
 
-        asio::ip::tcp::endpoint endpnt;
-        asio::ip::tcp::acceptor accptr;
+        	asio::ip::tcp::endpoint endpnt;
+        	asio::ip::tcp::acceptor accptr;
 
-	// buffer
-	asio::streambuf received_message;	
+		// buffer
+		asio::streambuf received_message;	
 
 	public:
-	// connection status
-	bool connection_status;
+		// connection status
+		bool connection_status;
 			
 	private:		
 		/* listen connection */
-       	void Listening();
+       		void Listening();
 
-    public:
-    	Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) 
-	:	ClientCore(io_c, u_d),
-	       	endpnt(asio::ip::tcp::v4(), stoi(port)), 
-		accptr(io_c, endpnt)
-        {
-            	Listening();
-        }             
+	public:
+    		Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) 
+		:	ClientCore(io_c, u_d),
+		       	endpnt(asio::ip::tcp::v4(), stoi(port)), 
+			accptr(io_c, endpnt)
+       		{
+            		Listening();
+       		}             
             
-        ~Server()
-	{
-		user_data->Log("Client Core destructor");
-	}
-    };
+        	~Server()
+		{
+			user_data->Log("Client Core destructor");
+		}
+	};
 }
 
 #endif /* SERVER_HPP */
