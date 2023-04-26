@@ -222,7 +222,7 @@ void UserInterface::ConnectionDialogSlot()
 
 			// Start data checking
 			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-			data_checking_thread = std::thread(DataChecking, this);	
+			data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 		}
 		else
 		{
@@ -273,7 +273,7 @@ void UserInterface::MakeConnectionDialogSlot()
 
 				// Start data checking
 				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-				data_checking_thread = std::thread(DataChecking, this);	
+				data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 			}
 			else
 			{
@@ -323,7 +323,7 @@ void UserInterface::AlreadyOpenedDialogSlot()
 
 			// Start data checking
 			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
-			data_checking_thread = std::thread(DataChecking, this);	
+			data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 		}
 		else
 		{
