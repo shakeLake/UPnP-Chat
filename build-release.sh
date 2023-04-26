@@ -11,7 +11,7 @@ elif [[ "$OSTYPE" == "msys" ]]; then
 fi
 
 echo -e "Chat Build"
-cmake -G "MinGW Makefiles" -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="../qt-dpndncy/lib/cmake"
+cmake -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="../qt-dpndncy/lib/cmake"
 
 cd build
 cmake --build .
