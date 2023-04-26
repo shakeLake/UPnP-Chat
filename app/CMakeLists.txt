@@ -34,6 +34,6 @@ target_link_libraries(app-lib PUBLIC Qt6::Widgets)
 target_link_libraries(app-lib PUBLIC Qt6::Gui)
 target_link_libraries(app-lib PUBLIC upnp_chat-static)
 
-add_executable(app app.qrc main.cpp)
+add_executable(Uchat app.qrc main.cpp)
 
-target_link_libraries(app PRIVATE app-lib)
+target_link_libraries(Uchat PRIVATE app-lib)
