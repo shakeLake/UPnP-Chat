@@ -9,7 +9,6 @@
 #include <QtCore/qshareddata.h>
 #include <QtCore/qmetatype.h>
 #include <QtCore/qdatetime.h>
-#include <QtCore/qtimezone.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -127,15 +126,11 @@ public:
     bool isBundle() const;
 
     QString symLinkTarget() const;
-    QString readSymLink() const;
     QString junctionTarget() const;
 
 #if QT_CONFIG(cxx17_filesystem) || defined(Q_QDOC)
     std::filesystem::path filesystemSymLinkTarget() const
     { return QtPrivate::toFilesystemPath(symLinkTarget()); }
-
-    std::filesystem::path filesystemReadSymLink() const
-    { return QtPrivate::toFilesystemPath(readSymLink()); }
 
     std::filesystem::path filesystemJunctionTarget() const
     { return QtPrivate::toFilesystemPath(junctionTarget()); }
@@ -151,37 +146,11 @@ public:
 
     qint64 size() const;
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
     QDateTime birthTime() const { return fileTime(QFile::FileBirthTime); }
     QDateTime metadataChangeTime() const { return fileTime(QFile::FileMetadataChangeTime); }
     QDateTime lastModified() const { return fileTime(QFile::FileModificationTime); }
     QDateTime lastRead() const { return fileTime(QFile::FileAccessTime); }
     QDateTime fileTime(QFile::FileTime time) const;
-
-    QDateTime birthTime(const QTimeZone &tz) const { return fileTime(QFile::FileBirthTime, tz); }
-    QDateTime metadataChangeTime(const QTimeZone &tz) const { return fileTime(QFile::FileMetadataChangeTime, tz); }
-    QDateTime lastModified(const QTimeZone &tz) const { return fileTime(QFile::FileModificationTime, tz); }
-    QDateTime lastRead(const QTimeZone &tz) const { return fileTime(QFile::FileAccessTime, tz); }
-    QDateTime fileTime(QFile::FileTime time, const QTimeZone &tz) const;
-#else
-    QDateTime birthTime(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileBirthTime, tz);
-    }
-    QDateTime metadataChangeTime(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileMetadataChangeTime, tz);
-    }
-    QDateTime lastModified(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileModificationTime, tz);
-    }
-    QDateTime lastRead(const QTimeZone &tz = QTimeZone::LocalTime) const
-    {
-        return fileTime(QFile::FileAccessTime, tz);
-    }
-    QDateTime fileTime(QFile::FileTime time, const QTimeZone &tz = QTimeZone::LocalTime) const;
-#endif
 
     bool caching() const;
     void setCaching(bool on);

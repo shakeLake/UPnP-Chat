@@ -2009,10 +2009,7 @@ void QCommonStyle::drawControl(ControlElement element, const QStyleOption *opt,
             }
             QRect iconRect;
             d->tabLayout(tab, widget, &tr, &iconRect);
-
-            // compute tr again, unless tab is moving, because the style may override subElementRect
-            if (tab->position != QStyleOptionTab::TabPosition::Moving)
-                tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget);
+            tr = proxy()->subElementRect(SE_TabBarTabText, opt, widget); //we compute tr twice because the style may override subElementRect
 
             if (!tab->icon.isNull()) {
                 QPixmap tabIcon = tab->icon.pixmap(tab->iconSize, p->device()->devicePixelRatio(),
@@ -5199,12 +5196,9 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
         ret = 1;
         break;
 
-    case SH_UnderlineShortcut: {
-        const QPlatformTheme *theme = QGuiApplicationPrivate::platformTheme();
-        ret = theme ? theme->themeHint(QPlatformTheme::UnderlineShortcut).toInt()
-                    : QPlatformTheme::defaultThemeHint(QPlatformTheme::UnderlineShortcut).toInt();
+    case SH_UnderlineShortcut:
+        ret = 1;
         break;
-    }
 
     case SH_SpinBox_ClickAutoRepeatRate:
         ret = 150;

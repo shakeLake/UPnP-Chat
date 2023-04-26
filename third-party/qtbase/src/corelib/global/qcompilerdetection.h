@@ -175,7 +175,7 @@
 #  ifdef Q_OS_WIN
 #    define Q_DECL_EXPORT     __declspec(dllexport)
 #    define Q_DECL_IMPORT     __declspec(dllimport)
-#  else
+#  elif defined(QT_VISIBILITY_AVAILABLE)
 #    define Q_DECL_EXPORT_OVERRIDABLE __attribute__((visibility("default"), weak))
 #    ifdef QT_USE_PROTECTED_VISIBILITY
 #      define Q_DECL_EXPORT     __attribute__((visibility("protected")))
@@ -509,7 +509,8 @@
  * For library features, we assume <version> is present (this header includes it).
  *
  * For a full listing of feature test macros, see
- *  https://en.cppreference.com/w/cpp/feature_test
+ *  https://isocpp.org/std/standing-documents/sd-6-sg10-feature-test-recommendations (by macro)
+ *  https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros       (by C++ version)
  *
  * C++ extensions:
  *  Q_COMPILER_RESTRICTED_VLA       variable-length arrays, prior to __cpp_runtime_arrays
@@ -543,8 +544,7 @@
 #  endif
 
 /* C++11 features, see http://clang.llvm.org/cxx_status.html */
-#  if (defined(__cplusplus) && __cplusplus >= 201103L) \
-      || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  if __cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__)
     /* Detect C++ features using __has_feature(), see http://clang.llvm.org/docs/LanguageExtensions.html#cxx11 */
 #    if __has_feature(cxx_alignas)
 #      define Q_COMPILER_ALIGNAS
@@ -642,10 +642,10 @@
 #    if Q_CC_CLANG >= 209 /* since clang 2.9 */
 #      define Q_COMPILER_EXTERN_TEMPLATES
 #    endif
-#  endif // (defined(__cplusplus) && __cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  endif
 
 /* C++1y features, deprecated macros. Do not update this list. */
-#  if defined(__cplusplus) && __cplusplus > 201103L
+#  if __cplusplus > 201103L
 //#    if __has_feature(cxx_binary_literals)
 //#      define Q_COMPILER_BINARY_LITERALS  // see above
 //#    endif
@@ -667,7 +667,7 @@
 #    if __has_feature(cxx_runtime_array)
 #      define Q_COMPILER_VLA
 #    endif
-#  endif // if defined(__cplusplus) && __cplusplus > 201103L
+#  endif
 
 #  if defined(__STDC_VERSION__)
 #    if __has_feature(c_static_assert)
@@ -891,7 +891,7 @@
 #   endif // !_HAS_CONSTEXPR
 #  endif // !__GLIBCXX__ && !_LIBCPP_VERSION
 # endif // Q_OS_QNX
-# if defined(Q_CC_CLANG) && defined(Q_OS_DARWIN) && defined(__GNUC_LIBSTD__) \
+# if defined(Q_CC_CLANG) && defined(Q_OS_MAC) && defined(__GNUC_LIBSTD__) \
     && ((__GNUC_LIBSTD__-0) * 100 + __GNUC_LIBSTD_MINOR__-0 <= 402)
 // Apple has not updated libstdc++ since 2007, which means it does not have
 // <initializer_list> or std::move. Let's disable these features
@@ -1357,20 +1357,6 @@ QT_WARNING_DISABLE_MSVC(4530) /* C++ exception handler used, but unwind semantic
 #    define QT_NO_EXCEPTIONS
 #  endif
 #endif
-
-#if __cplusplus >= 202002L // P0846 doesn't have a feature macro :/
-#  define QT_COMPILER_HAS_P0846
-#endif
-
-#ifdef QT_COMPILER_HAS_P0846
-#   define QT_ENABLE_P0846_SEMANTICS_FOR(func)
-#else
-    class QT_CLASS_JUST_FOR_P0846_SIMULATION;
-#   define QT_ENABLE_P0846_SEMANTICS_FOR(func) \
-        template <typename T> \
-        void func (QT_CLASS_JUST_FOR_P0846_SIMULATION *); \
-        /* end */
-#endif // !P0846
 
 #endif // __cplusplus
 

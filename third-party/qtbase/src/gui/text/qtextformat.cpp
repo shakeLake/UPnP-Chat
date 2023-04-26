@@ -684,8 +684,6 @@ Q_GUI_EXPORT QDataStream &operator>>(QDataStream &stream, QTextTableCellFormat &
                             numeric lists.
     \value ListNumberSuffix Defines the text which is appended to item numbers in
                             numeric lists.
-    \value ListStart        Defines the first value of a list.
-                            This enum value has been added in Qt 6.6.
 
     Table and frame properties
 
@@ -2612,8 +2610,7 @@ QList<QTextOption::Tab> QTextBlockFormat::tabPositions() const
     The style used to decorate each item is set with setStyle() and can be read
     with the style() function. The style controls the type of bullet points and
     numbering scheme used for items in the list. Note that lists that use the
-    decimal numbering scheme begin counting at 1 rather than 0, unless it has
-    been overridden via setStart().
+    decimal numbering scheme begin counting at 1 rather than 0.
 
     Style properties can be set to further configure the appearance of list
     items; for example, the ListNumberPrefix and ListNumberSuffix properties
@@ -2650,7 +2647,6 @@ QTextListFormat::QTextListFormat()
     : QTextFormat(ListFormat)
 {
     setIndent(1);
-    setStart(1);
 }
 
 /*!
@@ -2752,32 +2748,6 @@ QTextListFormat::QTextListFormat(const QTextFormat &fmt)
     Returns the list format's number suffix.
 
     \sa setNumberSuffix()
-*/
-
-/*!
-    \fn void QTextListFormat::setStart(int start)
-    \since 6.6
-
-    Sets the list format's \a start index.
-
-    This allows you to start a list with an index other than 1. This can be
-    used with all sorted list types: for example if the style() is
-    QTextListFormat::ListLowerAlpha and start() is \c 4, the first list item
-    begins with "d". It does not have any effect on unsorted list types.
-
-    The default start is \c 1.
-
-    \sa start()
-*/
-
-/*!
-    \fn int QTextListFormat::start() const
-    \since 6.6
-
-    Returns the number to be shown by the first list item, if the style() is
-    QTextListFormat::ListDecimal, or to offset other sorted list types.
-
-    \sa setStart()
 */
 
 /*!

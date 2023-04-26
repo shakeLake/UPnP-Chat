@@ -4,7 +4,6 @@
 #ifndef QUUID_H
 #define QUUID_H
 
-#include <QtCore/qendian.h>
 #include <QtCore/qstring.h>
 
 #if defined(Q_OS_WIN) || defined(Q_QDOC)
@@ -26,6 +25,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSUUID);
 #endif
 
 QT_BEGIN_NAMESPACE
+
 
 class Q_CORE_EXPORT QUuid
 {
@@ -55,24 +55,11 @@ public:
         Id128           = 3
     };
 
-    union Id128Bytes {
-        quint8 data[16];
-        quint16 data16[8];
-        quint32 data32[4];
-        quint64 data64[2];
-
-        constexpr explicit operator QByteArrayView() const noexcept
-        {
-            return QByteArrayView(data, sizeof(data));
-        }
-    };
-
-    constexpr QUuid() noexcept {}
+    constexpr QUuid() noexcept : data1(0), data2(0), data3(0), data4{0,0,0,0,0,0,0,0} {}
 
     constexpr QUuid(uint l, ushort w1, ushort w2, uchar b1, uchar b2, uchar b3,
                            uchar b4, uchar b5, uchar b6, uchar b7, uchar b8) noexcept
         : data1(l), data2(w1), data3(w2), data4{b1, b2, b3, b4, b5, b6, b7, b8} {}
-    QUuid(Id128Bytes id128, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
 
     explicit QUuid(QAnyStringView string) noexcept
         : QUuid{fromString(string)} {}
@@ -86,15 +73,11 @@ public:
 #endif
     QString toString(StringFormat mode = WithBraces) const;
     QByteArray toByteArray(StringFormat mode = WithBraces) const;
-    Id128Bytes toBytes(QSysInfo::Endian order = QSysInfo::BigEndian) const noexcept;
     QByteArray toRfc4122() const;
-
-    static QUuid fromBytes(const void *bytes, QSysInfo::Endian order = QSysInfo::BigEndian) noexcept;
 #if QT_CORE_REMOVED_SINCE(6, 3)
     static QUuid fromRfc4122(const QByteArray &);
 #endif
     static QUuid fromRfc4122(QByteArrayView) noexcept;
-
     bool isNull() const noexcept;
 
     constexpr bool operator==(const QUuid &orig) const noexcept
@@ -175,20 +158,10 @@ public:
     NSUUID *toNSUUID() const Q_DECL_NS_RETURNS_AUTORELEASED;
 #endif
 
-    uint    data1 = 0;
-    ushort  data2 = 0;
-    ushort  data3 = 0;
-    uchar   data4[8] = {};
-
-private:
-    static constexpr Id128Bytes bswap(Id128Bytes b)
-    {
-        // 128-bit byte swap
-        b.data64[0] = qbswap(b.data64[0]);
-        b.data64[1] = qbswap(b.data64[1]);
-        qSwap(b.data64[0], b.data64[1]);
-        return b;
-    }
+    uint    data1;
+    ushort  data2;
+    ushort  data3;
+    uchar   data4[8];
 };
 
 Q_DECLARE_TYPEINFO(QUuid, Q_PRIMITIVE_TYPE);
@@ -203,35 +176,6 @@ Q_CORE_EXPORT QDebug operator<<(QDebug, const QUuid &);
 #endif
 
 Q_CORE_EXPORT size_t qHash(const QUuid &uuid, size_t seed = 0) noexcept;
-
-inline QUuid::QUuid(Id128Bytes uuid, QSysInfo::Endian order) noexcept
-{
-    if (order == QSysInfo::LittleEndian)
-        uuid = bswap(uuid);
-    data1 = qFromBigEndian<quint32>(&uuid.data[0]);
-    data2 = qFromBigEndian<quint16>(&uuid.data[4]);
-    data3 = qFromBigEndian<quint16>(&uuid.data[6]);
-    memcpy(data4, &uuid.data[8], sizeof(data4));
-}
-
-inline QUuid::Id128Bytes QUuid::toBytes(QSysInfo::Endian order) const noexcept
-{
-    Id128Bytes result = {};
-    qToBigEndian(data1, &result.data[0]);
-    qToBigEndian(data2, &result.data[4]);
-    qToBigEndian(data3, &result.data[6]);
-    memcpy(&result.data[8], data4, sizeof(data4));
-    if (order == QSysInfo::LittleEndian)
-        return bswap(result);
-    return result;
-}
-
-inline QUuid QUuid::fromBytes(const void *bytes, QSysInfo::Endian order) noexcept
-{
-    Id128Bytes result = {};
-    memcpy(result.data, bytes, sizeof(result));
-    return QUuid(result, order);
-}
 
 inline bool operator<=(const QUuid &lhs, const QUuid &rhs) noexcept
 { return !(rhs < lhs); }

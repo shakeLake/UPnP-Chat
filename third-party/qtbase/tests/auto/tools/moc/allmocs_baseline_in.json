@@ -91,7 +91,6 @@
                         "isClass": false,
                         "isFlag": false,
                         "name": "TypedEnum",
-                        "type": "char",
                         "values": [
                             "B0",
                             "B1",
@@ -103,7 +102,6 @@
                         "isClass": true,
                         "isFlag": false,
                         "name": "TypedEnumClass",
-                        "type": "char",
                         "values": [
                             "C0",
                             "C1",
@@ -149,7 +147,6 @@
                         "isClass": true,
                         "isFlag": false,
                         "name": "TypedEnumStruct",
-                        "type": "char",
                         "values": [
                             "H0",
                             "H1",
@@ -191,7 +188,6 @@
                         "isClass": false,
                         "isFlag": false,
                         "name": "TypedEnum",
-                        "type": "char",
                         "values": [
                             "B0",
                             "B1",
@@ -203,7 +199,6 @@
                         "isClass": true,
                         "isFlag": false,
                         "name": "TypedEnumClass",
-                        "type": "char",
                         "values": [
                             "C0",
                             "C1",
@@ -237,65 +232,6 @@
                 ],
                 "gadget": true,
                 "qualifiedClassName": "CXX11Enums2"
-            },
-            {
-                "className": "CXX11Enums3",
-                "enums": [
-                    {
-                        "isClass": true,
-                        "isFlag": false,
-                        "name": "EnumClass",
-                        "values": [
-                            "A0",
-                            "A1",
-                            "A2",
-                            "A3"
-                        ]
-                    },
-                    {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "TypedEnum",
-                        "type": "char",
-                        "values": [
-                            "B0",
-                            "B1",
-                            "B2",
-                            "B3"
-                        ]
-                    },
-                    {
-                        "isClass": true,
-                        "isFlag": false,
-                        "name": "TypedEnumClass",
-                        "type": "char",
-                        "values": [
-                            "C0",
-                            "C1",
-                            "C2",
-                            "C3"
-                        ]
-                    },
-                    {
-                        "isClass": false,
-                        "isFlag": false,
-                        "name": "NormalEnum",
-                        "values": [
-                            "D2",
-                            "D3",
-                            "D0",
-                            "D1"
-                        ]
-                    }
-                ],
-                "object": true,
-                "qualifiedClassName": "CXX11Enums3",
-                "superClasses": [
-                    {
-                        "access": "public",
-                        "name": "QObject"
-                    }
-                ]
             }
         ],
         "inputFile": "cxx11-enums.h",

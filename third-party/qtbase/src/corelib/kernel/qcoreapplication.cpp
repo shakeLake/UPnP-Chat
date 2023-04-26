@@ -67,7 +67,7 @@
 #include <QtCore/qjniobject.h>
 #endif
 
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 #  include "qcore_mac_p.h"
 #endif
 
@@ -122,7 +122,7 @@ Q_TRACE_POINT(qtcore, QCoreApplication_sendSpontaneousEvent, QObject *receiver, 
 Q_TRACE_POINT(qtcore, QCoreApplication_notify_entry, QObject *receiver, QEvent *event, QEvent::Type type);
 Q_TRACE_POINT(qtcore, QCoreApplication_notify_exit, bool consumed, bool filtered);
 
-#if defined(Q_OS_WIN) || defined(Q_OS_DARWIN)
+#if defined(Q_OS_WIN) || defined(Q_OS_MAC)
 extern QString qAppFileName();
 #endif
 
@@ -2850,13 +2850,6 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
 
     Q_ASSERT(slotObj);
 
-    // Used as the signalID in the metacall event and only used to
-    // verify that we are not processing an unrelated event, not to
-    // emit the right signal. So using a value that can never clash
-    // with any signal index. Clang doesn't like this to be a static
-    // member of the PermissionReceiver.
-    static constexpr ushort PermissionReceivedID = 0xffff;
-
     // If we have a context object, then we dispatch the permission response
     // asynchronously through a received object that lives in the same thread
     // as the context object. Otherwise we call the functor synchronously when
@@ -2867,12 +2860,11 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
         PermissionReceiver(QtPrivate::QSlotObjectBase *slotObject, const QObject *context)
             : slotObject(slotObject), context(context)
         {}
-
     protected:
         bool event(QEvent *event) override {
             if (event->type() == QEvent::MetaCall) {
                 auto metaCallEvent = static_cast<QMetaCallEvent *>(event);
-                if (metaCallEvent->id() == PermissionReceivedID) {
+                if (metaCallEvent->id() == ushort(-1)) {
                     Q_ASSERT(slotObject);
                     // only execute if context object is still alive
                     if (context)
@@ -2906,8 +2898,18 @@ void QCoreApplication::requestPermission(const QPermission &requestedPermission,
             permission.m_status = status;
 
             if (receiver) {
-                auto metaCallEvent = QMetaCallEvent::create(slotObj, qApp,
-                                                            PermissionReceivedID, permission);
+                const int nargs = 2;
+                auto metaCallEvent = new QMetaCallEvent(slotObj, qApp, ushort(-1), nargs);
+                Q_CHECK_PTR(metaCallEvent);
+                void **args = metaCallEvent->args();
+                QMetaType *types = metaCallEvent->types();
+                const auto voidType = QMetaType::fromType<void>();
+                const auto permissionType = QMetaType::fromType<QPermission>();
+                types[0] = voidType;
+                types[1] = permissionType;
+                args[0] = nullptr;
+                args[1] = permissionType.create(&permission);
+                Q_CHECK_PTR(args[1]);
                 qApp->postEvent(receiver, metaCallEvent);
             } else {
                 void *argv[] = { nullptr, &permission };

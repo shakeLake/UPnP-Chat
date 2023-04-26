@@ -520,15 +520,14 @@ void tst_QDeadlineTimer::overflow()
 
     // Make sure setRemainingTime underflows gracefully
     deadline.setPreciseRemainingTime(std::numeric_limits<qint64>::min() / 10, 0, timerType);
-    QVERIFY(!deadline.isForever());     // The above underflows, so make sure we don't saturate to Forever
-    QCOMPARE(deadline.remainingTimeNSecs(), 0);
+    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
     QVERIFY(deadline.remainingTime() == 0);
     // If the timer is saturated we don't want to get a valid number of milliseconds
-    QCOMPARE(deadline.deadline(), std::numeric_limits<qint64>::min());
+    QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
 
     // Check that the conversion to milliseconds and nanoseconds underflows gracefully
     deadline.setPreciseDeadline(std::numeric_limits<qint64>::min() / 10, 0, timerType);
-    QVERIFY(!deadline.isForever());     // The above underflows, make sure we don't saturate to Forever
+    QVERIFY(!deadline.isForever());     // On Win/macOS the above underflows, make sure we don't saturate to Forever
     QVERIFY(deadline.deadline() == std::numeric_limits<qint64>::min());
     QVERIFY(deadline.deadlineNSecs() == std::numeric_limits<qint64>::min());
 }
@@ -557,7 +556,6 @@ void tst_QDeadlineTimer::expire()
 void tst_QDeadlineTimer::stdchrono()
 {
     using namespace std::chrono;
-    using namespace std::chrono_literals;
     QFETCH_GLOBAL(Qt::TimerType, timerType);
 
     // create some forevers
@@ -631,13 +629,16 @@ void tst_QDeadlineTimer::stdchrono()
     QTRY_VERIFY2_WITH_TIMEOUT(timersExecuted,
         "Looks like timers didn't fire on time.", 4 * minResolution);
 
+#if defined(Q_OS_DARWIN) || defined(Q_OS_LINUX) || (defined(Q_CC_MSVC) && Q_CC_MSVC >= 1900)
     {
+        // We know for these OS/compilers that the std::chrono::steady_clock uses the same
+        // reference time as QDeadlineTimer
         qint64 before = duration_cast<nanoseconds>(steady_before.time_since_epoch()).count();
         qint64 after = duration_cast<nanoseconds>(steady_after.time_since_epoch()).count();
         QCOMPARE_GT(now.deadlineNSecs(), before);
         QCOMPARE_LT(now.deadlineNSecs(), after);
     }
-
+#endif
     {
         auto diff = duration_cast<milliseconds>(steady_after - steady_deadline);
         QCOMPARE_GT(diff.count(), minResolution / 2);
@@ -667,90 +668,82 @@ void tst_QDeadlineTimer::stdchrono()
 
     // make it regular
     now = QDeadlineTimer::current(timerType);
-    deadline.setRemainingTime(4ms * minResolution, timerType);
+    deadline.setRemainingTime(milliseconds(4 * minResolution), timerType);
     QVERIFY(!deadline.hasExpired());
     QVERIFY(!deadline.isForever());
     QCOMPARE(deadline.timerType(), timerType);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 3ms * minResolution);
-    QCOMPARE_LT(deadline.remainingTimeAsDuration(), 5ms * minResolution);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 3'000'000ns * minResolution);
-    QCOMPARE_LT(deadline.remainingTimeAsDuration(), 5'000'000ns * minResolution);
-    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + 3ms * minResolution));
-    QCOMPARE_LT(deadline.deadline<steady_clock>(), (steady_clock::now() + 5ms * minResolution));
-    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + 3ms * minResolution));
-    QCOMPARE_LT(deadline.deadline<system_clock>(), (system_clock::now() + 5ms * minResolution));
-    QCOMPARE_GT((deadline.deadline<steady_clock, milliseconds>()),
-                steady_clock::now() + 3ms * minResolution);
-    QCOMPARE_LT((deadline.deadline<steady_clock, milliseconds>()),
-                steady_clock::now() + 5ms * minResolution);
-    QCOMPARE_GT((deadline.deadline<system_clock, milliseconds>()),
-                system_clock::now() + 3ms * minResolution);
-    QCOMPARE_LT((deadline.deadline<system_clock, milliseconds>()),
-                system_clock::now() + 5ms * minResolution);
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), milliseconds(3 * minResolution));
+    QCOMPARE_LT(deadline.remainingTimeAsDuration(), milliseconds(5 * minResolution));
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), nanoseconds(3000000 * minResolution));
+    QCOMPARE_LT(deadline.remainingTimeAsDuration(), nanoseconds(5000000 * minResolution));
+    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + milliseconds(3 * minResolution)));
+    QCOMPARE_LT(deadline.deadline<steady_clock>(), (steady_clock::now() + milliseconds(5 * minResolution)));
+    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + milliseconds(3 * minResolution)));
+    QCOMPARE_LT(deadline.deadline<system_clock>(), (system_clock::now() + milliseconds(5 * minResolution)));
     if (timerType == Qt::CoarseTimer) {
-        QCOMPARE_GT(deadline, now + 3ms * minResolution);
-        QCOMPARE_LT(deadline, now + 5ms * minResolution);
-        QCOMPARE_GT(deadline, now + 3000000ns * minResolution);
-        QCOMPARE_LT(deadline, now + 5000000ns * minResolution);
-        QCOMPARE_GT(deadline, 3ms * minResolution);
-        QCOMPARE_LT(deadline, 5ms * minResolution);
-        QCOMPARE_GT(deadline, 3000000ns * minResolution);
-        QCOMPARE_LT(deadline, 5000000ns * minResolution);
+        QCOMPARE_GT(deadline, (now + milliseconds(3 * minResolution)));
+        QCOMPARE_LT(deadline, (now + milliseconds(5 * minResolution)));
+        QCOMPARE_GT(deadline, (now + nanoseconds(3000000 * minResolution)));
+        QCOMPARE_LT(deadline, (now + nanoseconds(5000000 * minResolution)));
+        QCOMPARE_GT(deadline, milliseconds(3 * minResolution));
+        QCOMPARE_LT(deadline, milliseconds(5 * minResolution));
+        QCOMPARE_GT(deadline, nanoseconds(3000000 * minResolution));
+        QCOMPARE_LT(deadline, nanoseconds(5000000 * minResolution));
         QCOMPARE_GE(deadline, steady_clock::now());
         QCOMPARE_GE(deadline, system_clock::now());
     }
 
     now = QDeadlineTimer::current(timerType);
-    deadline = QDeadlineTimer(1s, timerType);
+    deadline = QDeadlineTimer(seconds(1), timerType);
     QVERIFY(!deadline.hasExpired());
     QVERIFY(!deadline.isForever());
     QCOMPARE(deadline.timerType(), timerType);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.remainingTimeAsDuration(), 1s);
-    QCOMPARE_GT(deadline.deadline<steady_clock>(), steady_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<steady_clock>(), steady_clock::now() + 1s + 1ms * minResolution);
-    QCOMPARE_GT(deadline.deadline<system_clock>(), system_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<system_clock>(), system_clock::now() + 1s + 1ms * minResolution);
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), (seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.remainingTimeAsDuration(), seconds(1));
+    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) + milliseconds(minResolution)));
+    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) + milliseconds(minResolution)));
     if (timerType == Qt::CoarseTimer) {
-        QCOMPARE_GT(deadline, 1s - 1ms * minResolution);
-        QCOMPARE_LE(deadline, 1s);
+        QCOMPARE_GT(deadline, (seconds(1) - milliseconds(minResolution)));
+        QCOMPARE_LE(deadline, seconds(1));
     }
 
     now = QDeadlineTimer::current(timerType);
-    deadline.setRemainingTime(1h, timerType);
+    deadline.setRemainingTime(hours(1), timerType);
     QVERIFY(!deadline.hasExpired());
     QVERIFY(!deadline.isForever());
     QCOMPARE(deadline.timerType(), timerType);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 1h - 1ms * minResolution);
-    QCOMPARE_LE(deadline.remainingTimeAsDuration(), 1h);
-    QCOMPARE_GT(deadline.deadline<steady_clock>(), steady_clock::now() + 1h - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<steady_clock>(), steady_clock::now() + 1h + 1ms * minResolution);
-    QCOMPARE_GT(deadline.deadline<system_clock>(), system_clock::now() + 1h - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<system_clock>(), system_clock::now() + 1h + 1ms * minResolution);
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), (hours(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.remainingTimeAsDuration(), hours(1));
+    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + hours(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<steady_clock>(), (steady_clock::now() + hours(1) + milliseconds(minResolution)));
+    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + hours(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<system_clock>(), (system_clock::now() + hours(1) + milliseconds(minResolution)));
 
     now = QDeadlineTimer::current(timerType);
-    deadline.setDeadline(system_clock::now() + 1s, timerType);
+    deadline.setDeadline(system_clock::now() + seconds(1), timerType);
     QVERIFY(!deadline.hasExpired());
     QVERIFY(!deadline.isForever());
     QCOMPARE(deadline.timerType(), timerType);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.remainingTimeAsDuration(), 1s);
-    QCOMPARE_GT(deadline.deadline<steady_clock>(), steady_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<steady_clock>(), steady_clock::now() + 1s + 1ms * minResolution);
-    QCOMPARE_GT(deadline.deadline<system_clock>(), system_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<system_clock>(), system_clock::now() + 1s + 1ms * minResolution);
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), (seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.remainingTimeAsDuration(), seconds(1));
+    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) + milliseconds(minResolution)));
+    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) + milliseconds(minResolution)));
 
     now = QDeadlineTimer::current(timerType);
-    deadline.setDeadline(steady_clock::now() + 1s, timerType);
+    deadline.setDeadline(steady_clock::now() + seconds(1), timerType);
     QVERIFY(!deadline.hasExpired());
     QVERIFY(!deadline.isForever());
     QCOMPARE(deadline.timerType(), timerType);
-    QCOMPARE_GT(deadline.remainingTimeAsDuration(), 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.remainingTimeAsDuration(), 1s);
-    QCOMPARE_GT(deadline.deadline<steady_clock>(), steady_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<steady_clock>(), steady_clock::now() + 1s + 1ms * minResolution);
-    QCOMPARE_GT(deadline.deadline<system_clock>(), system_clock::now() + 1s - 1ms * minResolution);
-    QCOMPARE_LE(deadline.deadline<system_clock>(), system_clock::now() + 1s + 1ms * minResolution);
+    QCOMPARE_GT(deadline.remainingTimeAsDuration(), (seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.remainingTimeAsDuration(), seconds(1));
+    QCOMPARE_GT(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<steady_clock>(), (steady_clock::now() + seconds(1) + milliseconds(minResolution)));
+    QCOMPARE_GT(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) - milliseconds(minResolution)));
+    QCOMPARE_LE(deadline.deadline<system_clock>(), (system_clock::now() + seconds(1) + milliseconds(minResolution)));
 }
 
 QTEST_MAIN(tst_QDeadlineTimer)

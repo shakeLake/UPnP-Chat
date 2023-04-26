@@ -53,16 +53,6 @@ Q_CORE_EXPORT void beginPropertyUpdateGroup();
 Q_CORE_EXPORT void endPropertyUpdateGroup();
 }
 
-class [[nodiscard]] QScopedPropertyUpdateGroup
-{
-    Q_DISABLE_COPY_MOVE(QScopedPropertyUpdateGroup)
-public:
-    QScopedPropertyUpdateGroup()
-    { Qt::beginPropertyUpdateGroup(); }
-    ~QScopedPropertyUpdateGroup() noexcept(false)
-    { Qt::endPropertyUpdateGroup(); }
-};
-
 template <typename T>
 class QPropertyData : public QUntypedPropertyData
 {
@@ -227,9 +217,7 @@ public:
         ObserverNotifiesBinding, // observer was installed to notify bindings that obsverved property changed
         ObserverNotifiesChangeHandler, // observer is a change handler, which runs on every change
         ObserverIsPlaceholder,  // the observer before this one is currently evaluated in QPropertyObserver::notifyObservers.
-#if QT_DEPRECATED_SINCE(6, 6)
         ObserverIsAlias
-#endif
     };
 protected:
     using ChangeHandler = void (*)(QPropertyObserver*, QUntypedPropertyData *);
@@ -269,9 +257,7 @@ public:
 
 protected:
     QPropertyObserver(ChangeHandler changeHandler);
-#if QT_DEPRECATED_SINCE(6, 6)
-    QT_DEPRECATED QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
-#endif
+    QPropertyObserver(QUntypedPropertyData *aliasedPropertyPtr);
 
     QUntypedPropertyData *aliasedProperty() const
     {
@@ -881,16 +867,13 @@ public:
     }
 };
 
-#if QT_DEPRECATED_SINCE(6, 6)
 template<typename T>
-class QT_DEPRECATED_X("Class was only meant for internal use, use a QProperty and add a binding to the target")
-QPropertyAlias : public QPropertyObserver
+class QPropertyAlias : public QPropertyObserver
 {
     Q_DISABLE_COPY_MOVE(QPropertyAlias)
     const QtPrivate::QBindableInterface *iface = nullptr;
 
 public:
-    QT_WARNING_PUSH QT_WARNING_DISABLE_DEPRECATED
     QPropertyAlias(QProperty<T> *property)
         : QPropertyObserver(property),
           iface(&QtPrivate::QBindableInterfaceForProperty<QProperty<T>>::iface)
@@ -1006,9 +989,7 @@ public:
     {
         return aliasedProperty() != nullptr;
     }
-    QT_WARNING_POP
 };
-#endif
 
 template<typename Class, typename T, auto Offset, auto Signal = nullptr>
 class QObjectBindableProperty : public QPropertyData<T>

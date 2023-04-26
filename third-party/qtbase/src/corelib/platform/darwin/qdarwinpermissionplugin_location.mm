@@ -99,7 +99,7 @@ struct PermissionRequest
             return self.manager.authorizationStatus;
     }
 
-    return QT_IGNORE_DEPRECATIONS(CLLocationManager.authorizationStatus);
+    return CLLocationManager.authorizationStatus;
 }
 
 - (Qt::PermissionStatus)accuracyAuthorization:(QLocationPermission)permission

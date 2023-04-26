@@ -140,7 +140,7 @@ WRAP(indexOf, QLatin1StringView)
     \value DTD The reader reports a DTD in text(), notation
     declarations in notationDeclarations(), and entity declarations in
     entityDeclarations(). Details of the DTD declaration are reported
-    in dtdName(), dtdPublicId(), and dtdSystemId().
+    in in dtdName(), dtdPublicId(), and dtdSystemId().
 
     \value EntityReference The reader reports an entity reference that
     could not be resolved.  The name of the reference is reported in
@@ -2575,11 +2575,37 @@ Returns the entity's value.
 /*!  Returns the value of the attribute \a name in the namespace
   described with \a namespaceUri, or an empty string reference if the
   attribute is not defined. The \a namespaceUri can be empty.
-
-  \note In Qt versions prior to 6.6, this function was implemented as an
-  overload set accepting combinations of QString and QLatin1StringView only.
  */
-QStringView QXmlStreamAttributes::value(QAnyStringView namespaceUri, QAnyStringView name) const noexcept
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, const QString &name) const
+{
+    for (const QXmlStreamAttribute &attribute : *this) {
+        if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
+            return attribute.value();
+    }
+    return QStringView();
+}
+
+/*!\overload
+  Returns the value of the attribute \a name in the namespace
+  described with \a namespaceUri, or an empty string reference if the
+  attribute is not defined. The \a namespaceUri can be empty.
+ */
+QStringView QXmlStreamAttributes::value(const QString &namespaceUri, QLatin1StringView name) const
+{
+    for (const QXmlStreamAttribute &attribute : *this) {
+        if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
+            return attribute.value();
+    }
+    return QStringView();
+}
+
+/*!\overload
+  Returns the value of the attribute \a name in the namespace
+  described with \a namespaceUri, or an empty string reference if the
+  attribute is not defined. The \a namespaceUri can be empty.
+ */
+QStringView QXmlStreamAttributes::value(QLatin1StringView namespaceUri,
+                                        QLatin1StringView name) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.name() == name && attribute.namespaceUri() == namespaceUri)
@@ -2599,12 +2625,29 @@ QStringView QXmlStreamAttributes::value(QAnyStringView namespaceUri, QAnyStringV
   different prefixes can point to the same namespace), you shouldn't
   use qualified names, but a resolved namespaceUri and the attribute's
   local name.
-
-  \note In Qt versions prior to 6.6, this function was implemented as an
-  overload set accepting QString and QLatin1StringView only.
-
  */
-QStringView QXmlStreamAttributes::value(QAnyStringView qualifiedName) const noexcept
+QStringView QXmlStreamAttributes::value(const QString &qualifiedName) const
+{
+    for (const QXmlStreamAttribute &attribute : *this) {
+        if (attribute.qualifiedName() == qualifiedName)
+            return attribute.value();
+    }
+    return QStringView();
+}
+
+/*!\overload
+
+  Returns the value of the attribute with qualified name \a
+  qualifiedName , or an empty string reference if the attribute is not
+  defined. A qualified name is the raw name of an attribute in the XML
+  data. It consists of the namespace prefix, followed by colon,
+  followed by the attribute's local name. Since the namespace prefix
+  is not unique (the same prefix can point to different namespaces and
+  different prefixes can point to the same namespace), you shouldn't
+  use qualified names, but a resolved namespaceUri and the attribute's
+  local name.
+ */
+QStringView QXmlStreamAttributes::value(QLatin1StringView qualifiedName) const
 {
     for (const QXmlStreamAttribute &attribute : *this) {
         if (attribute.qualifiedName() == qualifiedName)
@@ -2833,7 +2876,7 @@ public:
     uint hasIoError :1;
     uint hasEncodingError :1;
     uint autoFormatting :1;
-    std::string autoFormattingIndent;
+    QByteArray autoFormattingIndent;
     NamespaceDeclaration emptyNamespace;
     qsizetype lastNamespaceDeclaration;
 
@@ -3193,14 +3236,13 @@ bool QXmlStreamWriter::autoFormatting() const
 void QXmlStreamWriter::setAutoFormattingIndent(int spacesOrTabs)
 {
     Q_D(QXmlStreamWriter);
-    d->autoFormattingIndent.assign(size_t(qAbs(spacesOrTabs)), spacesOrTabs >= 0 ? ' ' : '\t');
+    d->autoFormattingIndent = QByteArray(qAbs(spacesOrTabs), spacesOrTabs >= 0 ? ' ' : '\t');
 }
 
 int QXmlStreamWriter::autoFormattingIndent() const
 {
     Q_D(const QXmlStreamWriter);
-    const QLatin1StringView indent(d->autoFormattingIndent);
-    return indent.count(u' ') - indent.count(u'\t');
+    return d->autoFormattingIndent.count(' ') - d->autoFormattingIndent.count('\t');
 }
 
 /*!

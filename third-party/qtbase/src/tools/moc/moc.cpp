@@ -243,7 +243,7 @@ bool Moc::parseEnum(EnumDef *def)
     }
     if (test(COLON)) { // C++11 strongly typed enum
         // enum Foo : unsigned long { ... };
-        def->type = normalizeType(parseType().name);
+        parseType(); //ignore the result
     }
     if (!test(LBRACE))
         return false;
@@ -862,10 +862,7 @@ void Moc::parse()
                         error("Template classes not supported by Q_GADGET");
                     break;
                 case Q_PROPERTY_TOKEN:
-                    parseProperty(&def, Named);
-                    break;
-                case QT_ANONYMOUS_PROPERTY_TOKEN:
-                    parseProperty(&def, Anonymous);
+                    parseProperty(&def);
                     break;
                 case Q_PLUGIN_METADATA_TOKEN:
                     parsePluginData(&def);
@@ -900,10 +897,7 @@ void Moc::parse()
                     parseSlotInPrivate(&def, access);
                     break;
                 case Q_PRIVATE_PROPERTY_TOKEN:
-                    parsePrivateProperty(&def, Named);
-                    break;
-                case QT_ANONYMOUS_PRIVATE_PROPERTY_TOKEN:
-                    parsePrivateProperty(&def, Anonymous);
+                    parsePrivateProperty(&def);
                     break;
                 case ENUM: {
                     EnumDef enumDef;
@@ -1250,7 +1244,7 @@ void Moc::parseSignals(ClassDef *def)
     }
 }
 
-void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::PropertyMode mode)
+void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex)
 {
     propDef.location = index;
     propDef.relativeIndex = propertyIndex;
@@ -1280,10 +1274,8 @@ void Moc::createPropertyDef(PropertyDef &propDef, int propertyIndex, Moc::Proper
 
     propDef.type = type;
 
-    if (mode == Moc::Named) {
-        next();
-        propDef.name = lexem();
-    }
+    next();
+    propDef.name = lexem();
 
     parsePropertyAttributes(propDef);
 }
@@ -1424,11 +1416,11 @@ void Moc::parsePropertyAttributes(PropertyDef &propDef)
     }
 }
 
-void Moc::parseProperty(ClassDef *def, Moc::PropertyMode mode)
+void Moc::parseProperty(ClassDef *def)
 {
     next(LPAREN);
     PropertyDef propDef;
-    createPropertyDef(propDef, int(def->propertyList.size()), mode);
+    createPropertyDef(propDef, int(def->propertyList.size()));
     next(RPAREN);
 
     def->propertyList += propDef;
@@ -1514,7 +1506,7 @@ QByteArray Moc::parsePropertyAccessor()
     return accessor;
 }
 
-void Moc::parsePrivateProperty(ClassDef *def, Moc::PropertyMode mode)
+void Moc::parsePrivateProperty(ClassDef *def)
 {
     next(LPAREN);
     PropertyDef propDef;
@@ -1522,7 +1514,7 @@ void Moc::parsePrivateProperty(ClassDef *def, Moc::PropertyMode mode)
 
     next(COMMA);
 
-    createPropertyDef(propDef, int(def->propertyList.size()), mode);
+    createPropertyDef(propDef, int(def->propertyList.size()));
 
     def->propertyList += propDef;
 }
@@ -2107,8 +2099,6 @@ QJsonObject EnumDef::toJson(const ClassDef &cdef) const
     def["name"_L1] = QString::fromUtf8(name);
     if (!enumName.isEmpty())
         def["alias"_L1] = QString::fromUtf8(enumName);
-    if (!type.isEmpty())
-        def["type"_L1] = QString::fromUtf8(type);
     def["isFlag"_L1] = cdef.enumDeclarations.value(name);
     def["isClass"_L1] = isEnumClass;
 

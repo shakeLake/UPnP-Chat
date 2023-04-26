@@ -164,8 +164,7 @@ public:
         MouseDoubleClickDistance,
         FlickStartDistance,
         FlickMaximumVelocity,
-        FlickDeceleration,
-        UnderlineShortcut,
+        FlickDeceleration
     };
 
     virtual QVariant styleHint(StyleHint hint) const;

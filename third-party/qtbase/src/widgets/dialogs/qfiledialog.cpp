@@ -2315,8 +2315,13 @@ void QFileDialog::getOpenFileContent(const QString &nameFilter, const std::funct
         fileOpenCompleted(fileName, fileContent);
     };
 
+    auto dialogClosed = [=](int code) {
+        Q_UNUSED(code);
+        dialog->deleteLater();
+    };
+
     connect(dialog, &QFileDialog::fileSelected, fileSelected);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QFileDialog::finished, dialogClosed);
     dialog->show();
 #endif
 }
@@ -2355,8 +2360,13 @@ void QFileDialog::saveFileContent(const QByteArray &fileContent, const QString &
         }
     };
 
+    auto dialogClosed = [=](int code) {
+        Q_UNUSED(code);
+        dialog->deleteLater();
+    };
+
     connect(dialog, &QFileDialog::fileSelected, fileSelected);
-    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    connect(dialog, &QFileDialog::finished, dialogClosed);
     dialog->show();
 #endif
 }

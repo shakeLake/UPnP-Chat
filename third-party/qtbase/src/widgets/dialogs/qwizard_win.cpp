@@ -33,7 +33,9 @@ Q_DECLARE_METATYPE(QMargins)
 
 QT_BEGIN_NAMESPACE
 
+int QVistaHelper::instanceCount = 0;
 int QVistaHelper::m_devicePixelRatio = 1;
+QVistaHelper::VistaState QVistaHelper::cachedVistaState = QVistaHelper::Dirty;
 
 /******************************************************************************
 ** QVistaBackButton
@@ -116,14 +118,18 @@ QVistaHelper::QVistaHelper(QWizard *wizard)
     , backButton_(0)
 {
     QVistaHelper::m_devicePixelRatio = wizard->devicePixelRatio();
-
+    if (instanceCount++ == 0)
+        cachedVistaState = Dirty;
     backButton_ = new QVistaBackButton(wizard);
     backButton_->hide();
 
     iconSpacing = QStyleHelper::dpiScaled(7, wizard);
 }
 
-QVistaHelper::~QVistaHelper() = default;
+QVistaHelper::~QVistaHelper()
+{
+    --instanceCount;
+}
 
 void QVistaHelper::updateCustomMargins(bool vistaMargins)
 {
@@ -142,6 +148,24 @@ void QVistaHelper::updateCustomMargins(bool vistaMargins)
         if (auto platformWindow = dynamic_cast<QWindowsWindow *>(window->handle()))
             platformWindow->setCustomMargins(customMarginsDp);
     }
+}
+
+bool QVistaHelper::isCompositionEnabled()
+{
+    return true;
+}
+
+bool QVistaHelper::isThemeActive()
+{
+    return IsThemeActive();
+}
+
+QVistaHelper::VistaState QVistaHelper::vistaState()
+{
+    if (instanceCount == 0 || cachedVistaState == Dirty)
+        cachedVistaState =
+            isCompositionEnabled() ? VistaAero : isThemeActive() ? VistaBasic : Classic;
+    return cachedVistaState;
 }
 
 void QVistaHelper::disconnectBackButton()
@@ -164,16 +188,18 @@ QColor QVistaHelper::basicWindowFrameColor()
 
 bool QVistaHelper::setDWMTitleBar(TitleBarChangeType type)
 {
-    MARGINS mar = {0, 0, 0, 0};
-    if (type == NormalTitleBar)
-        mar.cyTopHeight = 0;
-    else
-        mar.cyTopHeight = (titleBarSize() + topOffset(wizard)) * QVistaHelper::m_devicePixelRatio;
-    if (const HWND wizardHandle = wizardHWND()) {
-        if (SUCCEEDED(DwmExtendFrameIntoClientArea(wizardHandle, &mar)))
-            return true;
+    bool value = false;
+    if (vistaState() == VistaAero) {
+        MARGINS mar = {0, 0, 0, 0};
+        if (type == NormalTitleBar)
+            mar.cyTopHeight = 0;
+        else
+            mar.cyTopHeight = (titleBarSize() + topOffset(wizard)) * QVistaHelper::m_devicePixelRatio;
+        if (const HWND wizardHandle = wizardHWND())
+            if (SUCCEEDED(DwmExtendFrameIntoClientArea(wizardHandle, &mar)))
+                value = true;
     }
-    return false;
+    return value;
 }
 
 Q_GUI_EXPORT HICON qt_pixmapToWinHICON(const QPixmap &);
@@ -209,7 +235,7 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
     const bool isWindow = wizard->isWindow();
     const HDC hdc = QVistaHelper::backingStoreDC(wizard, &origin);
 
-    if (isWindow)
+    if (vistaState() == VistaAero && isWindow)
         drawBlackRect(QRect(0, 0, wizard->width(),
                             titleBarSize() + topOffset(wizard)), hdc);
     // The button is positioned in QWizardPrivate::handleAeroStyleChange(),
@@ -224,9 +250,15 @@ void QVistaHelper::drawTitleBar(QPainter *painter)
         font = QApplication::font("QMdiSubWindowTitleBar");
     const QFontMetrics fontMetrics(font);
     const QRect brect = fontMetrics.boundingRect(text);
-    const int glowOffset = glowSize(wizard);
-    int textHeight = brect.height() + 2 * glowOffset;
-    int textWidth = brect.width() + 2 * glowOffset;
+    int textHeight = brect.height();
+    int textWidth = brect.width();
+    int glowOffset = 0;
+
+    if (vistaState() == VistaAero) {
+        glowOffset = glowSize(wizard);
+        textHeight += 2 * glowOffset;
+        textWidth += 2 * glowOffset;
+    }
 
     const int titleLeft = (wizard->layoutDirection() == Qt::LeftToRight
                            ? titleOffset() - glowOffset
@@ -333,8 +365,11 @@ void QVistaHelper::mouseEvent(QEvent *event)
 
 bool QVistaHelper::handleWinEvent(MSG *message, qintptr *result)
 {
+    if (message->message == WM_THEMECHANGED || message->message == WM_DWMCOMPOSITIONCHANGED)
+        cachedVistaState = Dirty;
+
     bool status = false;
-    if (wizard->wizardStyle() == QWizard::AeroStyle) {
+    if (wizard->wizardStyle() == QWizard::AeroStyle && vistaState() == VistaAero) {
         status = winEvent(message, result);
         if (message->message == WM_NCPAINT)
             wizard->update();
@@ -347,6 +382,8 @@ void QVistaHelper::resizeEvent(QResizeEvent * event)
     Q_UNUSED(event);
     rtTop = QRect (0, 0, wizard->width(), frameSize());
     int height = captionSize() + topOffset(wizard);
+    if (vistaState() == VistaBasic)
+        height -= titleBarSize();
     rtTitle = QRect (0, frameSize(), wizard->width(), height);
 }
 
@@ -385,7 +422,7 @@ void QVistaHelper::mouseMoveEvent(QMouseEvent *event)
         }
         wizard->setGeometry(rect);
 
-    } else {
+    } else if (vistaState() == VistaAero) {
         setMouseCursor(event->pos());
     }
     event->ignore();
@@ -403,10 +440,11 @@ void QVistaHelper::mousePressEvent(QMouseEvent *event)
     if (rtTitle.contains(event->pos())) {
         change = movePosition;
     } else if (rtTop.contains(event->pos()))
-        change = resizeTop;
+        change = (vistaState() == VistaAero) ? resizeTop : movePosition;
 
     if (change != noChange) {
-        setMouseCursor(event->pos());
+        if (vistaState() == VistaAero)
+            setMouseCursor(event->pos());
         pressed = true;
         pressedPos = event->pos();
     } else {
@@ -420,7 +458,8 @@ void QVistaHelper::mouseReleaseEvent(QMouseEvent *event)
     if (pressed) {
         pressed = false;
         wizard->releaseMouse();
-        setMouseCursor(event->pos());
+        if (vistaState() == VistaAero)
+            setMouseCursor(event->pos());
     }
     event->ignore();
 }
@@ -508,83 +547,90 @@ HWND QVistaHelper::wizardHWND() const
     return 0;
 }
 
-void QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc)
+bool QVistaHelper::drawTitleText(QPainter *painter, const QString &text, const QRect &rect, HDC hdc)
 {
-    Q_UNUSED(painter);
+    bool value = false;
+    if (vistaState() == VistaAero) {
+        const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
+                                   rect.size() * QVistaHelper::m_devicePixelRatio);
+        const HANDLE hTheme = OpenThemeData(GetDesktopWindow(), L"WINDOW");
+        if (!hTheme) return false;
+        // Set up a memory DC and bitmap that we'll draw into
+        HDC dcMem;
+        HBITMAP bmp;
+        BITMAPINFO dib;
+        ZeroMemory(&dib, sizeof(dib));
+        dcMem = CreateCompatibleDC(hdc);
 
-    const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
-                               rect.size() * QVistaHelper::m_devicePixelRatio);
-    const HANDLE hTheme = OpenThemeData(GetDesktopWindow(), L"WINDOW");
-    if (!hTheme)
-        return;
-    // Set up a memory DC and bitmap that we'll draw into
-    HDC dcMem;
-    HBITMAP bmp;
-    BITMAPINFO dib;
-    ZeroMemory(&dib, sizeof(dib));
-    dcMem = CreateCompatibleDC(hdc);
+        dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        dib.bmiHeader.biWidth = rectDp.width();
+        dib.bmiHeader.biHeight = -rectDp.height();
+        dib.bmiHeader.biPlanes = 1;
+        dib.bmiHeader.biBitCount = 32;
+        dib.bmiHeader.biCompression = BI_RGB;
 
-    dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    dib.bmiHeader.biWidth = rectDp.width();
-    dib.bmiHeader.biHeight = -rectDp.height();
-    dib.bmiHeader.biPlanes = 1;
-    dib.bmiHeader.biBitCount = 32;
-    dib.bmiHeader.biCompression = BI_RGB;
+        bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
 
-    bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
+        // Set up the DC
+        const LOGFONT captionLogFont = getCaptionLogFont(hTheme);
+        const HFONT hCaptionFont = CreateFontIndirect(&captionLogFont);
+        auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
+        auto hOldFont = reinterpret_cast<HFONT>(SelectObject(dcMem, (HGDIOBJ) hCaptionFont));
 
-    // Set up the DC
-    const LOGFONT captionLogFont = getCaptionLogFont(hTheme);
-    const HFONT hCaptionFont = CreateFontIndirect(&captionLogFont);
-    auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
-    auto hOldFont = reinterpret_cast<HFONT>(SelectObject(dcMem, (HGDIOBJ) hCaptionFont));
+        // Draw the text!
+        DTTOPTS dto;
+        memset(&dto, 0, sizeof(dto));
+        dto.dwSize = sizeof(dto);
+        const UINT uFormat = DT_SINGLELINE|DT_CENTER|DT_VCENTER|DT_NOPREFIX;
+        RECT rctext ={0,0, rectDp.width(), rectDp.height()};
 
-    // Draw the text!
-    DTTOPTS dto;
-    memset(&dto, 0, sizeof(dto));
-    dto.dwSize = sizeof(dto);
-    const UINT uFormat = DT_SINGLELINE|DT_CENTER|DT_VCENTER|DT_NOPREFIX;
-    RECT rctext ={0,0, rectDp.width(), rectDp.height()};
+        dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
+        dto.iGlowSize = glowSize(wizard);
 
-    dto.dwFlags = DTT_COMPOSITED|DTT_GLOWSIZE;
-    dto.iGlowSize = glowSize(wizard);
-
-    DrawThemeTextEx(hTheme, dcMem, 0, 0, reinterpret_cast<LPCWSTR>(text.utf16()), -1, uFormat, &rctext, &dto );
-    BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
-    SelectObject(dcMem, (HGDIOBJ) hOldBmp);
-    SelectObject(dcMem, (HGDIOBJ) hOldFont);
-    DeleteObject(bmp);
-    DeleteObject(hCaptionFont);
-    DeleteDC(dcMem);
-    //ReleaseDC(hwnd, hdc);
+        DrawThemeTextEx(hTheme, dcMem, 0, 0, reinterpret_cast<LPCWSTR>(text.utf16()), -1, uFormat, &rctext, &dto );
+        BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
+        SelectObject(dcMem, (HGDIOBJ) hOldBmp);
+        SelectObject(dcMem, (HGDIOBJ) hOldFont);
+        DeleteObject(bmp);
+        DeleteObject(hCaptionFont);
+        DeleteDC(dcMem);
+        //ReleaseDC(hwnd, hdc);
+    } else if (vistaState() == VistaBasic) {
+        painter->drawText(rect, text);
+    }
+    return value;
 }
 
-void QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
+bool QVistaHelper::drawBlackRect(const QRect &rect, HDC hdc)
 {
-    // Set up a memory DC and bitmap that we'll draw into
-    const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
+    bool value = false;
+    if (vistaState() == VistaAero) {
+        // Set up a memory DC and bitmap that we'll draw into
+        const QRect rectDp = QRect(rect.topLeft() * QVistaHelper::m_devicePixelRatio,
                                    rect.size() * QVistaHelper::m_devicePixelRatio);
-    HDC dcMem;
-    HBITMAP bmp;
-    BITMAPINFO dib;
-    ZeroMemory(&dib, sizeof(dib));
-    dcMem = CreateCompatibleDC(hdc);
+        HDC dcMem;
+        HBITMAP bmp;
+        BITMAPINFO dib;
+        ZeroMemory(&dib, sizeof(dib));
+        dcMem = CreateCompatibleDC(hdc);
 
-    dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    dib.bmiHeader.biWidth = rectDp.width();
-    dib.bmiHeader.biHeight = -rectDp.height();
-    dib.bmiHeader.biPlanes = 1;
-    dib.bmiHeader.biBitCount = 32;
-    dib.bmiHeader.biCompression = BI_RGB;
+        dib.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        dib.bmiHeader.biWidth = rectDp.width();
+        dib.bmiHeader.biHeight = -rectDp.height();
+        dib.bmiHeader.biPlanes = 1;
+        dib.bmiHeader.biBitCount = 32;
+        dib.bmiHeader.biCompression = BI_RGB;
 
-    bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
-    auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
+        bmp = CreateDIBSection(hdc, &dib, DIB_RGB_COLORS, NULL, NULL, 0);
+        auto hOldBmp = reinterpret_cast<HBITMAP>(SelectObject(dcMem, (HGDIOBJ) bmp));
 
-    BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
-    SelectObject(dcMem, (HGDIOBJ) hOldBmp);
+        BitBlt(hdc, rectDp.left(), rectDp.top(), rectDp.width(), rectDp.height(), dcMem, 0, 0, SRCCOPY);
+        SelectObject(dcMem, (HGDIOBJ) hOldBmp);
 
-    DeleteObject(bmp);
-    DeleteDC(dcMem);
+        DeleteObject(bmp);
+        DeleteDC(dcMem);
+    }
+    return value;
 }
 
 int QVistaHelper::frameSizeDp()
@@ -615,6 +661,8 @@ int QVistaHelper::glowSize(const QPaintDevice *device)
 
 int QVistaHelper::topOffset(const QPaintDevice *device)
 {
+    if (vistaState() != VistaAero)
+        return titleBarSize() + 3;
     static const int aeroOffset = QStyleHelper::dpiScaled(13, device);
     return aeroOffset + titleBarSize();
 }

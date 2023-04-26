@@ -19,9 +19,8 @@ ClientArea::ClientArea(QWasmWindow *window, QWasmScreen *screen, emscripten::val
     : m_screen(screen), m_window(window), m_element(element)
 {
     const auto callback = std::function([this](emscripten::val event) {
-        processPointer(*PointerEvent::fromWeb(event));
-        event.call<void>("preventDefault");
-        event.call<void>("stopPropagation");
+        if (processPointer(*PointerEvent::fromWeb(event)))
+            event.call<void>("preventDefault");
     });
 
     m_pointerDownCallback =

@@ -9,7 +9,6 @@
 #include <private/qfutureinterface_p.h>
 
 using namespace QtConcurrent;
-using namespace std::chrono_literals;
 
 #include <QTest>
 
@@ -901,13 +900,13 @@ QT_WARNING_POP
     QFuture<int> future = QtConcurrent::mapped(&pool, values, [&](int value) {
         ++count;
         // Sleep, to make sure not all threads will start at once.
-        QThread::sleep(50ms);
+        QThread::msleep(50);
         return value;
     });
     watcher.setFuture(future);
 
     // Allow some threads to start before suspending.
-    QThread::sleep(200ms);
+    QThread::msleep(200);
 
     watcher.suspend();
     watcher.suspend();
@@ -922,7 +921,7 @@ QT_WARNING_POP
     QCOMPARE(resultReadyAfterPaused, count);
 
     // Make sure no more results are reported before resuming.
-    QThread::sleep(200ms);
+    QThread::msleep(200);
     QCOMPARE(resultReadyAfterPaused, resultReadySpy.size());
     resultReadySpy.clear();
 
@@ -1140,7 +1139,7 @@ public:
 
 void tst_QFutureWatcher::warnRace()
 {
-#ifndef Q_OS_DARWIN // I don't know why it is not working on mac
+#ifndef Q_OS_MAC //I don't know why it is not working on mac
 #ifndef QT_NO_DEBUG
     QTest::ignoreMessage(QtWarningMsg, "QFutureWatcher::connect: connecting after calling setFuture() is likely to produce race");
 #endif

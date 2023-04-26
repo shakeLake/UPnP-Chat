@@ -48,10 +48,9 @@ private:
     QPoint randomItemPosition();
     QColor initialItemColor();
     QColor randomItemColor();
-    template<typename PointerToMemberFunction>
     QToolButton *createToolButton(const QString &toolTip, const QIcon &icon,
 //! [1]
-                                  const PointerToMemberFunction &member);
+                                  const char *member);
 
 //! [2]
     QList<ShapeItem *> shapeItems;

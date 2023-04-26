@@ -18,8 +18,6 @@
 #include "qfilesystementry_p.h"
 #include "qfilesystemmetadata_p.h"
 
-#include <QtCore/qmutex.h>
-
 #include <memory>
 
 QT_BEGIN_NAMESPACE
@@ -39,10 +37,11 @@ public:
                          QDir::SortFlags sort_ = QDir::SortFlags(QDir::Name | QDir::IgnoreCase),
                          QDir::Filters filters_ = QDir::AllEntries);
 
-    explicit QDirPrivate(const QDirPrivate &copy); // Copies everything except mutex and fileEngine
+    explicit QDirPrivate(const QDirPrivate &copy);
 
     bool exists() const;
 
+    void initFileEngine();
     void initFileLists(const QDir &dir) const;
 
     static void sortFileList(QDir::SortFlags, const QFileInfoList &, QStringList *, QFileInfoList *);
@@ -53,10 +52,13 @@ public:
 
     void setPath(const QString &path);
 
-    enum MetaDataClearing { KeepMetaData, IncludingMetaData };
-    void clearCache(MetaDataClearing mode);
+    void clearFileLists();
 
-    QString resolveAbsoluteEntry() const;
+    void resolveAbsoluteEntry() const;
+
+    mutable bool fileListsInitialized;
+    mutable QStringList files;
+    mutable QFileInfoList fileInfos;
 
     QStringList nameFilters;
     QDir::SortFlags sort;
@@ -65,17 +67,8 @@ public:
     std::unique_ptr<QAbstractFileEngine> fileEngine;
 
     QFileSystemEntry dirEntry;
-
-    struct FileCache
-    {
-        QMutex mutex;
-        QStringList files;
-        QFileInfoList fileInfos;
-        std::atomic<bool> fileListsInitialized = false;
-        QFileSystemEntry absoluteDirEntry;
-        QFileSystemMetaData metaData;
-    };
-    mutable FileCache fileCache;
+    mutable QFileSystemEntry absoluteDirEntry;
+    mutable QFileSystemMetaData metaData;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QDirPrivate::PathNormalizations)

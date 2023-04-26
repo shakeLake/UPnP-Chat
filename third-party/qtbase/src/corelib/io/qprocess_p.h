@@ -279,6 +279,9 @@ public:
     bool openChannels();
     bool openChannelsForDetached();
     bool openChannel(Channel &channel);
+#if defined(Q_OS_UNIX)
+    void commitChannels();
+#endif
     void closeChannel(Channel *channel);
     void closeWriteChannel();
     void closeChannels();
@@ -305,8 +308,7 @@ public:
     void start(QIODevice::OpenMode mode);
     void startProcess();
 #if defined(Q_OS_UNIX)
-    void commitChannels() const;
-    void execChild(const char *workingDirectory, char **argv, char **envp) const;
+    void execChild(const char *workingDirectory, char **argv, char **envp);
 #endif
     bool processStarted(QString *errorMessage = nullptr);
     void processFinished();

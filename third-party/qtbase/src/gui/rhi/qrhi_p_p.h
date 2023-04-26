@@ -120,7 +120,6 @@ public:
     virtual const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) = 0;
     virtual void beginExternal(QRhiCommandBuffer *cb) = 0;
     virtual void endExternal(QRhiCommandBuffer *cb) = 0;
-    virtual double lastCompletedGpuTime(QRhiCommandBuffer *cb) = 0;
 
     virtual QList<int> supportedSampleCounts() const = 0;
     virtual int ubufAlignment() const = 0;
@@ -141,8 +140,6 @@ public:
     virtual QByteArray pipelineCacheData() = 0;
     virtual void setPipelineCacheData(const QByteArray &data) = 0;
 
-    void prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags);
-
     bool isCompressedFormat(QRhiTexture::Format format) const;
     void compressedFormatInfo(QRhiTexture::Format format, const QSize &size,
                               quint32 *bpl, quint32 *byteSize,
@@ -150,19 +147,20 @@ public:
     void textureFormatInfo(QRhiTexture::Format format, const QSize &size,
                            quint32 *bpl, quint32 *byteSize, quint32 *bytesPerPixel) const;
 
-    void registerResource(QRhiResource *res, bool ownsNativeResources = true)
+    // only really care about resources that own native graphics resources underneath
+    void registerResource(QRhiResource *res)
     {
-        // The ownsNativeResources is relevant for the (graphics resource) leak
-        // check in ~QRhiImplementation; when false, the registration's sole
-        // purpose is to automatically null out the resource's m_rhi pointer in
-        // case the rhi goes away first. (which should not happen in
-        // well-written applications but we try to be graceful)
-        resources.insert(res, ownsNativeResources);
+        resources.insert(res);
     }
 
     void unregisterResource(QRhiResource *res)
     {
         resources.remove(res);
+    }
+
+    QSet<QRhiResource *> activeResources() const
+    {
+        return resources;
     }
 
     void addDeleteLater(QRhiResource *res)
@@ -176,6 +174,22 @@ public:
     void addCleanupCallback(const QRhi::CleanupCallback &callback)
     {
         cleanupCallbacks.append(callback);
+    }
+
+    void addGpuFrameTimeCallback(const QRhi::GpuFrameTimeCallback &callback)
+    {
+        gpuFrameTimeCallbacks.append(callback);
+    }
+
+    bool hasGpuFrameTimeCallback() const
+    {
+        return !gpuFrameTimeCallbacks.isEmpty();
+    }
+
+    void runGpuFrameTimeCallbacks(float t)
+    {
+        for (const QRhi::GpuFrameTimeCallback &f : std::as_const(gpuFrameTimeCallbacks))
+            f(t);
     }
 
     bool sanityCheckGraphicsPipeline(QRhiGraphicsPipeline *ps);
@@ -206,21 +220,6 @@ public:
     QRhiVertexInputAttribute::Format shaderDescVariableFormatToVertexInputFormat(QShaderDescription::VariableType type) const;
     quint32 byteSizePerVertexForVertexInputFormat(QRhiVertexInputAttribute::Format format) const;
 
-    static const QRhiShaderResourceBinding::Data *shaderResourceBindingData(const QRhiShaderResourceBinding &binding)
-    {
-        return &binding.d;
-    }
-
-    static QRhiShaderResourceBinding::Data *shaderResourceBindingData(QRhiShaderResourceBinding &binding)
-    {
-        return &binding.d;
-    }
-
-    static bool sortedBindingLessThan(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
-    {
-        return a.d.binding < b.d.binding;
-    }
-
     QRhi *q;
 
     static const int MAX_SHADER_CACHE_ENTRIES = 128;
@@ -235,9 +234,10 @@ private:
     QVarLengthArray<QRhiResourceUpdateBatch *, 4> resUpdPool;
     quint64 resUpdPoolMap = 0;
     int lastResUpdIdx = -1;
-    QHash<QRhiResource *, bool> resources;
+    QSet<QRhiResource *> resources;
     QSet<QRhiResource *> pendingDeleteResources;
     QVarLengthArray<QRhi::CleanupCallback, 4> cleanupCallbacks;
+    QVarLengthArray<QRhi::GpuFrameTimeCallback, 4> gpuFrameTimeCallbacks;
     QElapsedTimer pipelineCreationTimer;
     qint64 accumulatedPipelineCreationTime = 0;
 
@@ -283,10 +283,8 @@ bool qrhi_toTopLeftRenderTargetRect(const QSize &outputSize, const std::array<T,
         *w = *x < outputWidth ? qMax<T>(0, inputWidth - widthOffset) : 0;
         *h = *y < outputHeight ? qMax<T>(0, inputHeight - heightOffset) : 0;
 
-        if (outputWidth > 0)
-            *x = qBound<T>(0, *x, outputWidth - 1);
-        if (outputHeight > 0)
-            *y = qBound<T>(0, *y, outputHeight - 1);
+        *x = qBound<T>(0, *x, outputWidth - 1);
+        *y = qBound<T>(0, *y, outputHeight - 1);
 
         if (*x + *w > outputWidth)
             *w = qMax<T>(0, outputWidth - *x);
@@ -384,7 +382,7 @@ public:
         quint32 offset;
         QRhiBufferData data;
         quint32 readSize;
-        QRhiReadbackResult *result;
+        QRhiBufferReadbackResult *result;
 
         static BufferOp dynamicUpdate(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data)
         {
@@ -426,7 +424,7 @@ public:
             op->data.assign(reinterpret_cast<const char *>(data), effectiveSize);
         }
 
-        static BufferOp read(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result)
+        static BufferOp read(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
         {
             BufferOp op = {};
             op.type = Read;
@@ -739,8 +737,9 @@ inline bool operator!=(const QRhiRenderTargetAttachmentTracker::ResId &a, const 
 template<typename TexType, typename RenderBufferType>
 void QRhiRenderTargetAttachmentTracker::updateResIdList(const QRhiTextureRenderTargetDescription &desc, ResIdList *dst)
 {
+    const quintptr colorAttCount = desc.cendColorAttachments() - desc.cbeginColorAttachments();
     const bool hasDepthStencil = desc.depthStencilBuffer() || desc.depthTexture();
-    dst->resize(desc.colorAttachmentCount() * 2 + (hasDepthStencil ? 1 : 0));
+    dst->resize(colorAttCount * 2 + (hasDepthStencil ? 1 : 0));
     int n = 0;
     for (auto it = desc.cbeginColorAttachments(), itEnd = desc.cendColorAttachments(); it != itEnd; ++it, ++n) {
         const QRhiColorAttachment &colorAtt(*it);

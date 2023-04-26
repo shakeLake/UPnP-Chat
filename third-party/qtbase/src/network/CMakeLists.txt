@@ -225,18 +225,6 @@ qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
         ${FWSystemConfiguration}
 )
 
-qt_internal_extend_target(Network CONDITION APPLE AND NOT UIKIT
-    LIBRARIES
-        ${FWCoreServices}
-        ${FWSystemConfiguration}
-)
-
-qt_internal_extend_target(Network CONDITION APPLE
-    LIBRARIES
-        ${FWCFNetwork}
-)
-
-
 qt_internal_extend_target(Network CONDITION IOS OR MACOS
     SOURCES
         kernel/qnetconmonitor_darwin.mm
@@ -264,9 +252,9 @@ qt_internal_extend_target(Network CONDITION UIKIT
         kernel/qnetworkinterface_uikit_p.h
 )
 
-qt_internal_extend_target(Network CONDITION APPLE
+qt_internal_extend_target(Network CONDITION MACOS
     SOURCES
-        kernel/qnetworkproxy_darwin.cpp
+        kernel/qnetworkproxy_mac.cpp
 )
 
 qt_internal_extend_target(Network CONDITION QT_FEATURE_libproxy AND UNIX AND NOT MACOS
@@ -282,7 +270,7 @@ qt_internal_extend_target(Network CONDITION ANDROID
         kernel/qnetworkproxy_android.cpp
 )
 
-qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT APPLE AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
+qt_internal_extend_target(Network CONDITION UNIX AND NOT ANDROID AND NOT MACOS AND NOT QT_FEATURE_libproxy AND (UNIX OR WINRT)
     SOURCES
         kernel/qnetworkproxy_generic.cpp
 )
@@ -335,11 +323,6 @@ qt_internal_extend_target(Network CONDITION QT_FEATURE_localserver AND WIN32
         socket/qlocalsocket_win.cpp
 )
 
-qt_internal_extend_target(Network CONDITION QT_FEATURE_openssl_linked AND QT_FEATURE_opensslv30
-    LIBRARIES
-        WrapOpenSSL::WrapOpenSSL
-)
-
 qt_internal_extend_target(Network CONDITION QT_FEATURE_system_proxies
     DEFINES
         QT_USE_SYSTEM_PROXIES
@@ -377,11 +360,9 @@ qt_internal_add_docs(Network
     doc/qtnetwork.qdocconf
 )
 
-# See mkspecs/common/msvc-desktop.conf
-qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32)
+qt_internal_extend_target(Network CONDITION WIN32 PUBLIC_LIBRARIES ws2_32) # special case: mkspecs/common/msvc-desktop.conf
 
-# See mkspecs/common/qcc-base-qnx.conf
-qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket)
+qt_internal_extend_target(Network CONDITION QNX PUBLIC_LIBRARIES socket) # special case: mkspecs/common/qcc-base-qnx.conf
 
 qt_internal_extend_target(Network CONDITION SOLARIS PUBLIC_LIBRARIES socket nsl)
 

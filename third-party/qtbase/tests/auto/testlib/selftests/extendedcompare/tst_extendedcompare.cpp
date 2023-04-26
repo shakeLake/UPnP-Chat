@@ -161,115 +161,107 @@ void tst_ExtendedCompare::initTestCase_data()
     QTest::newRow("GE") << QTest::ComparisonOperation::GreaterThanOrEqual;
 }
 
-template <typename T> static void generateData(T val1, T val2)
-{
-    Q_ASSERT(val1 < val2);
-    QTest::addColumn<T>("lhs");
-    QTest::addColumn<T>("rhs");
-    QTest::newRow("left == right") << val1 << val1;
-    QTest::newRow("left < right") << val1 << val2;
-    QTest::newRow("left > right") << val2 << val1;
-}
+#define GENERATE_DATA_FOR_TYPE(Type, val1, val2) \
+do { \
+    Q_ASSERT(val1 < val2); \
+    QTest::addColumn<Type>("lhs"); \
+    QTest::addColumn<Type>("rhs"); \
+    QTest::newRow("left == right") << val1 << val1; \
+    QTest::newRow("left < right") << val1 << val2; \
+    QTest::newRow("left > right") << val2 << val1; \
+} while (false)
 
-template <typename T> static void executeComparison()
-{
-    QFETCH_GLOBAL(QTest::ComparisonOperation, operation);
-    QFETCH(T, lhs);
-    QFETCH(T, rhs);
-    switch (operation) {
-    case QTest::ComparisonOperation::CustomCompare:      QCOMPARE(lhs, rhs); break;
-    case QTest::ComparisonOperation::Equal:              QCOMPARE_EQ(lhs, rhs); break;
-    case QTest::ComparisonOperation::NotEqual:           QCOMPARE_NE(lhs, rhs); break;
-    case QTest::ComparisonOperation::LessThan:           QCOMPARE_LT(lhs, rhs); break;
-    case QTest::ComparisonOperation::LessThanOrEqual:    QCOMPARE_LE(lhs, rhs); break;
-    case QTest::ComparisonOperation::GreaterThan:        QCOMPARE_GT(lhs, rhs); break;
-    case QTest::ComparisonOperation::GreaterThanOrEqual: QCOMPARE_GE(lhs, rhs); break;
-    }
-}
+#define EXECUTE_COMPARISON_FOR_TYPE(Type) \
+do { \
+    QFETCH_GLOBAL(QTest::ComparisonOperation, operation); \
+    QFETCH(Type, lhs); \
+    QFETCH(Type, rhs); \
+    COMPARE_WITH_TYPE(operation, lhs, rhs); \
+} while (false)
 
 void tst_ExtendedCompare::compareInts_data()
 {
-    generateData(1, 2);
+    GENERATE_DATA_FOR_TYPE(int, 1, 2);
 }
 
 void tst_ExtendedCompare::compareInts()
 {
-    executeComparison<int>();
+    EXECUTE_COMPARISON_FOR_TYPE(int);
 }
 
 void tst_ExtendedCompare::compareFloats_data()
 {
-    generateData(1.0f, 1.1f);
+    GENERATE_DATA_FOR_TYPE(float, 1.0f, 1.1f);
 }
 
 void tst_ExtendedCompare::compareFloats()
 {
-    executeComparison<float>();
+    EXECUTE_COMPARISON_FOR_TYPE(float);
 }
 
 void tst_ExtendedCompare::compareDoubles_data()
 {
-    generateData(0.0, 0.1);
+    GENERATE_DATA_FOR_TYPE(double, 0.0, 0.1);
 }
 
 void tst_ExtendedCompare::compareDoubles()
 {
-    executeComparison<double>();
+    EXECUTE_COMPARISON_FOR_TYPE(double);
 }
 
 void tst_ExtendedCompare::comparePointers_data()
 {
     static constexpr int values[] = { 1, 2 };
-    generateData(&values[0], &values[1]);
+    GENERATE_DATA_FOR_TYPE(const int *, &values[0], &values[1]);
 }
 
 void tst_ExtendedCompare::comparePointers()
 {
-    executeComparison<const int *>();
+    EXECUTE_COMPARISON_FOR_TYPE(const int *);
 }
 
 void tst_ExtendedCompare::compareToNullptr_data()
 {
     static const int *ptr = nullptr;
     static const int value = 1;
-    generateData(ptr, &value);
+    GENERATE_DATA_FOR_TYPE(const int *, ptr, &value);
 }
 
 void tst_ExtendedCompare::compareToNullptr()
 {
-    executeComparison<const int *>();
+    EXECUTE_COMPARISON_FOR_TYPE(const int *);
 }
 
 void tst_ExtendedCompare::compareUnregistereEnum_data()
 {
-    generateData(MyUnregisteredEnumValue1, MyUnregisteredEnumValue2);
+    GENERATE_DATA_FOR_TYPE(MyUnregisteredEnum, MyUnregisteredEnumValue1, MyUnregisteredEnumValue2);
 }
 
 void tst_ExtendedCompare::compareUnregistereEnum()
 {
-    executeComparison<MyUnregisteredEnum>();
+    EXECUTE_COMPARISON_FOR_TYPE(MyUnregisteredEnum);
 }
 
 void tst_ExtendedCompare::compareRegistereEnum_data()
 {
-    generateData(Qt::Monday, Qt::Sunday);
+    GENERATE_DATA_FOR_TYPE(Qt::DayOfWeek, Qt::Monday, Qt::Sunday);
 }
 
 void tst_ExtendedCompare::compareRegistereEnum()
 {
-    executeComparison<Qt::DayOfWeek>();
+    EXECUTE_COMPARISON_FOR_TYPE(Qt::DayOfWeek);
 }
 
 void tst_ExtendedCompare::compareCustomTypes_data()
 {
     static const MyClass val1(1);
     static const MyClass val2(2);
-    generateData(val1, val2);
+    GENERATE_DATA_FOR_TYPE(MyClass, val1, val2);
 }
 
 void tst_ExtendedCompare::compareCustomTypes()
 {
-    executeComparison<MyClass>();
+    EXECUTE_COMPARISON_FOR_TYPE(MyClass);
 }
 
 void tst_ExtendedCompare::checkComparisonForTemporaryObjects()

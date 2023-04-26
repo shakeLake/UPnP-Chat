@@ -42,16 +42,16 @@ if(QT_FEATURE_vnc AND TARGET Qt::Network)
     add_subdirectory(vnc)
 endif()
 if(FREEBSD)
-    # add_subdirectory(bsdfb) # TODO: QTBUG-112768
+    # add_subdirectory(bsdfb) # special case TODO
 endif()
 if(HAIKU)
-    # add_subdirectory(haiku) # TODO: QTBUG-112768
+    # add_subdirectory(haiku) # special case TODO
 endif()
 if(WASM)
      add_subdirectory(wasm)
 endif()
 if(QT_FEATURE_integrityfb)
-    # add_subdirectory(integrity) # TODO: QTBUG-112768
+    # add_subdirectory(integrity) # special case TODO
 endif()
 if(QT_FEATURE_vkkhrdisplay)
     add_subdirectory(vkkhrdisplay)

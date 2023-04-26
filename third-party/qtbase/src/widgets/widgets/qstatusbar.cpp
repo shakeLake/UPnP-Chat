@@ -286,7 +286,7 @@ int QStatusBar::insertWidget(int index, QWidget *widget, int stretch)
     minimum of space.
 
     Permanently means that the widget may not be obscured by temporary
-    messages. It is located at the far right of the status bar.
+    messages. It is is located at the far right of the status bar.
 
     \sa insertPermanentWidget(), removeWidget(), addWidget()
 */
@@ -297,6 +297,7 @@ void QStatusBar::addPermanentWidget(QWidget * widget, int stretch)
         return;
     insertPermanentWidget(d_func()->items.size(), widget, stretch);
 }
+
 
 /*!
     \since 4.2
@@ -312,7 +313,7 @@ void QStatusBar::addPermanentWidget(QWidget * widget, int stretch)
     minimum of space.
 
     Permanently means that the widget may not be obscured by temporary
-    messages. It is located at the far right of the status bar.
+    messages. It is is located at the far right of the status bar.
 
     \sa addPermanentWidget(), removeWidget(), addWidget()
 */

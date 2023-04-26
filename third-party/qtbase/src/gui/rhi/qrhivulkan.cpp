@@ -183,7 +183,7 @@ QT_BEGIN_NAMESPACE
     in recording state, while recording a frame. That is, between a
     \l{QRhi::beginFrame()}{beginFrame()} - \l{QRhi::endFrame()}{endFrame()} or
     \l{QRhi::beginOffscreenFrame()}{beginOffscreenFrame()} -
-    \l{QRhi::endOffscreenFrame()}{endOffscreenFrame()} pair.
+    \l{QRhi::endOffsrceenFrame()}{endOffscreenFrame()} pair.
  */
 
 /*!
@@ -1671,24 +1671,6 @@ void QRhiVulkan::ensureCommandPoolForNewFrame()
     df->vkResetCommandPool(dev, cmdPool[currentFrameSlot], flags);
 }
 
-double QRhiVulkan::elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok)
-{
-    quint64 mask = 0;
-    for (quint64 i = 0; i < timestampValidBits; i += 8)
-        mask |= 0xFFULL << i;
-    const quint64 ts0 = timestamp[0] & mask;
-    const quint64 ts1 = timestamp[1] & mask;
-    const float nsecsPerTick = physDevProperties.limits.timestampPeriod;
-    if (!qFuzzyIsNull(nsecsPerTick)) {
-        const float elapsedMs = float(ts1 - ts0) * nsecsPerTick / 1000000.0f;
-        const double elapsedSec = elapsedMs / 1000.0;
-        *ok = true;
-        return elapsedSec;
-    }
-    *ok = false;
-    return 0;
-}
-
 QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::BeginFrameFlags)
 {
     QVkSwapChain *swapChainD = QRHI_RES(QVkSwapChain, swapChain);
@@ -1738,6 +1720,30 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     // mess up A's in-flight commands (as they are not in flight anymore).
     waitCommandCompletion(frameResIndex);
 
+    // Now is the time to read the timestamps for the previous frame for this slot.
+    if (frame.timestampQueryIndex >= 0) {
+        quint64 timestamp[2] = { 0, 0 };
+        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(frame.timestampQueryIndex), 2,
+                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
+                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
+        timestampQueryPoolMap.clearBit(frame.timestampQueryIndex / 2);
+        frame.timestampQueryIndex = -1;
+        if (err == VK_SUCCESS) {
+            quint64 mask = 0;
+            for (quint64 i = 0; i < timestampValidBits; i += 8)
+                mask |= 0xFFULL << i;
+            const quint64 ts0 = timestamp[0] & mask;
+            const quint64 ts1 = timestamp[1] & mask;
+            const float nsecsPerTick = physDevProperties.limits.timestampPeriod;
+            if (!qFuzzyIsNull(nsecsPerTick)) {
+                const float elapsedMs = float(ts1 - ts0) * nsecsPerTick / 1000000.0f;
+                runGpuFrameTimeCallbacks(elapsedMs);
+            }
+        } else {
+            qWarning("Failed to query timestamp: %d", err);
+        }
+    }
+
     currentFrameSlot = int(swapChainD->currentFrameSlot);
     currentSwapChain = swapChainD;
     if (swapChainD->ds)
@@ -1751,34 +1757,9 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
     if (cbres != QRhi::FrameOpSuccess)
         return cbres;
 
-    swapChainD->cbWrapper.cb = frame.cmdBuf;
-
-    QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
-    swapChainD->rtWrapper.d.fb = image.fb;
-
-    prepareNewFrame(&swapChainD->cbWrapper);
-
-    // Read the timestamps for the previous frame for this slot.
-    if (frame.timestampQueryIndex >= 0) {
-        quint64 timestamp[2] = { 0, 0 };
-        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(frame.timestampQueryIndex), 2,
-                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
-                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
-        timestampQueryPoolMap.clearBit(frame.timestampQueryIndex / 2);
-        frame.timestampQueryIndex = -1;
-        if (err == VK_SUCCESS) {
-            bool ok = false;
-            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
-            if (ok)
-                swapChainD->cbWrapper.lastGpuTime = elapsedSec;
-        } else {
-            qWarning("Failed to query timestamp: %d", err);
-        }
-    }
-
-    // No timestamps if the client did not opt in, or when not having at least 2 frames in flight.
-    if (rhiFlags.testFlag(QRhi::EnableTimestamps) && swapChainD->bufferCount > 1) {
-        int timestampQueryIdx = -1;
+    // when profiling is enabled, pick a free query (pair) from the pool
+    int timestampQueryIdx = -1;
+    if (hasGpuFrameTimeCallback() && swapChainD->bufferCount > 1) { // no timestamps if not having at least 2 frames in flight
         for (int i = 0; i < timestampQueryPoolMap.size(); ++i) {
             if (!timestampQueryPoolMap.testBit(i)) {
                 timestampQueryPoolMap.setBit(i);
@@ -1786,14 +1767,21 @@ QRhi::FrameOpResult QRhiVulkan::beginFrame(QRhiSwapChain *swapChain, QRhi::Begin
                 break;
             }
         }
-        if (timestampQueryIdx >= 0) {
-            df->vkCmdResetQueryPool(frame.cmdBuf, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
-            // record timestamp at the start of the command buffer
-            df->vkCmdWriteTimestamp(frame.cmdBuf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                    timestampQueryPool, uint32_t(timestampQueryIdx));
-            frame.timestampQueryIndex = timestampQueryIdx;
-        }
     }
+    if (timestampQueryIdx >= 0) {
+        df->vkCmdResetQueryPool(frame.cmdBuf, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
+        // record timestamp at the start of the command buffer
+        df->vkCmdWriteTimestamp(frame.cmdBuf, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                                timestampQueryPool, uint32_t(timestampQueryIdx));
+        frame.timestampQueryIndex = timestampQueryIdx;
+    }
+
+    swapChainD->cbWrapper.cb = frame.cmdBuf;
+
+    QVkSwapChain::ImageResources &image(swapChainD->imageRes[swapChainD->currentImageIndex]);
+    swapChainD->rtWrapper.d.fb = image.fb;
+
+    prepareNewFrame(&swapChainD->cbWrapper);
 
     return QRhi::FrameOpSuccess;
 }
@@ -2043,24 +2031,6 @@ QRhi::FrameOpResult QRhiVulkan::beginOffscreenFrame(QRhiCommandBuffer **cb, QRhi
     prepareNewFrame(cbWrapper);
     ofr.active = true;
 
-    if (rhiFlags.testFlag(QRhi::EnableTimestamps)) {
-        int timestampQueryIdx = -1;
-        for (int i = 0; i < timestampQueryPoolMap.size(); ++i) {
-            if (!timestampQueryPoolMap.testBit(i)) {
-                timestampQueryPoolMap.setBit(i);
-                timestampQueryIdx = i * 2;
-                break;
-            }
-        }
-        if (timestampQueryIdx >= 0) {
-            df->vkCmdResetQueryPool(cbWrapper->cb, timestampQueryPool, uint32_t(timestampQueryIdx), 2);
-            // record timestamp at the start of the command buffer
-            df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-                                    timestampQueryPool, uint32_t(timestampQueryIdx));
-            ofr.timestampQueryIndex = timestampQueryIdx;
-        }
-    }
-
     *cb = cbWrapper;
     return QRhi::FrameOpSuccess;
 }
@@ -2073,12 +2043,6 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
 
     QVkCommandBuffer *cbWrapper(ofr.cbWrapper[currentFrameSlot]);
     recordPrimaryCommandBuffer(cbWrapper);
-
-    // record another timestamp, when enabled
-    if (ofr.timestampQueryIndex >= 0) {
-        df->vkCmdWriteTimestamp(cbWrapper->cb, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                                timestampQueryPool, uint32_t(ofr.timestampQueryIndex + 1));
-    }
 
     if (!ofr.cmdFence) {
         VkFenceCreateInfo fenceInfo = {};
@@ -2101,24 +2065,6 @@ QRhi::FrameOpResult QRhiVulkan::endOffscreenFrame(QRhi::EndFrameFlags flags)
     // Here we know that executing the host-side reads for this (or any
     // previous) frame is safe since we waited for completion above.
     finishActiveReadbacks(true);
-
-    // Read the timestamps, if we wrote them.
-    if (ofr.timestampQueryIndex >= 0) {
-        quint64 timestamp[2] = { 0, 0 };
-        VkResult err = df->vkGetQueryPoolResults(dev, timestampQueryPool, uint32_t(ofr.timestampQueryIndex), 2,
-                                                 2 * sizeof(quint64), timestamp, sizeof(quint64),
-                                                 VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT);
-        timestampQueryPoolMap.clearBit(ofr.timestampQueryIndex / 2);
-        ofr.timestampQueryIndex = -1;
-        if (err == VK_SUCCESS) {
-            bool ok = false;
-            const double elapsedSec = elapsedSecondsFromTimestamp(timestamp, &ok);
-            if (ok)
-                cbWrapper->lastGpuTime = elapsedSec;
-        } else {
-            qWarning("Failed to query timestamp: %d", err);
-        }
-    }
 
     return QRhi::FrameOpSuccess;
 }
@@ -2518,7 +2464,7 @@ void QRhiVulkan::dispatch(QRhiCommandBuffer *cb, int x, int y, int z)
         QVkShaderResourceBindings *srbD = QRHI_RES(QVkShaderResourceBindings, cbD->currentComputeSrb);
         const int bindingCount = srbD->m_bindings.size();
         for (int i = 0; i < bindingCount; ++i) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->m_bindings.at(i));
+            const QRhiShaderResourceBinding::Data *b = srbD->m_bindings.at(i).data();
             switch (b->type) {
             case QRhiShaderResourceBinding::ImageLoad:
             case QRhiShaderResourceBinding::ImageStore:
@@ -2676,7 +2622,7 @@ void QRhiVulkan::updateShaderResourceBindings(QRhiShaderResourceBindings *srb, i
     int frameSlot = updateAll ? 0 : descSetIdx;
     while (frameSlot < (updateAll ? QVK_FRAMES_IN_FLIGHT : descSetIdx + 1)) {
         for (int i = 0, ie = srbD->sortedBindings.size(); i != ie; ++i) {
-            const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings.at(i));
+            const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings.at(i).data();
             QVkShaderResourceBindings::BoundResourceData &bd(srbD->boundResourceData[frameSlot][i]);
 
             VkWriteDescriptorSet writeInfo = {};
@@ -4319,12 +4265,6 @@ bool QRhiVulkan::isFeatureSupported(QRhi::Feature feature) const
         return true;
     case QRhi::OneDimensionalTextureMipmaps:
         return true;
-    case QRhi::HalfAttributes:
-        return true;
-    case QRhi::RenderToOneDimensionalTexture:
-        return true;
-    case QRhi::ThreeDimensionalTextureMipmaps:
-        return true;
     default:
         Q_UNREACHABLE_RETURN(false);
     }
@@ -4629,7 +4569,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
     // Do host writes and mark referenced shader resources as in-use.
     // Also prepare to ensure the descriptor set we are going to bind refers to up-to-date Vk objects.
     for (int i = 0, ie = srbD->sortedBindings.size(); i != ie; ++i) {
-        const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(srbD->sortedBindings[i]);
+        const QRhiShaderResourceBinding::Data *b = srbD->sortedBindings[i].data();
         QVkShaderResourceBindings::BoundResourceData &bd(descSetBd[i]);
         switch (b->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
@@ -4776,7 +4716,7 @@ void QRhiVulkan::setShaderResources(QRhiCommandBuffer *cb, QRhiShaderResourceBin
             // and neither srb nor dynamicOffsets has any such ordering
             // requirement.
             for (const QRhiShaderResourceBinding &binding : std::as_const(srbD->sortedBindings)) {
-                const QRhiShaderResourceBinding::Data *b = shaderResourceBindingData(binding);
+                const QRhiShaderResourceBinding::Data *b = binding.data();
                 if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.hasDynamicOffset) {
                     uint32_t offset = 0;
                     for (int i = 0; i < dynamicOffsetCount; ++i) {
@@ -5207,12 +5147,6 @@ void QRhiVulkan::endExternal(QRhiCommandBuffer *cb)
     cbD->resetCachedState();
 }
 
-double QRhiVulkan::lastCompletedGpuTime(QRhiCommandBuffer *cb)
-{
-    QVkCommandBuffer *cbD = QRHI_RES(QVkCommandBuffer, cb);
-    return cbD->lastGpuTime;
-}
-
 void QRhiVulkan::setObjectName(uint64_t object, VkObjectType type, const QByteArray &name, int slot)
 {
 #ifdef VK_EXT_debug_utils
@@ -5345,14 +5279,6 @@ static inline VkFormat toVkAttributeFormat(QRhiVertexInputAttribute::Format form
         return VK_FORMAT_R32G32_SINT;
     case QRhiVertexInputAttribute::SInt:
         return VK_FORMAT_R32_SINT;
-    case QRhiVertexInputAttribute::Half4:
-        return VK_FORMAT_R16G16B16A16_SFLOAT;
-    case QRhiVertexInputAttribute::Half3:
-        return VK_FORMAT_R16G16B16_SFLOAT;
-    case QRhiVertexInputAttribute::Half2:
-        return VK_FORMAT_R16G16_SFLOAT;
-    case QRhiVertexInputAttribute::Half:
-        return VK_FORMAT_R16_SFLOAT;
     default:
         Q_UNREACHABLE_RETURN(VK_FORMAT_R32G32B32A32_SFLOAT);
     }
@@ -6567,7 +6493,8 @@ bool QVkTextureRenderTarget::create()
     if (d.fb)
         destroy();
 
-    Q_ASSERT(m_desc.colorAttachmentCount() > 0 || m_desc.depthTexture());
+    const bool hasColorAttachments = m_desc.cbeginColorAttachments() != m_desc.cendColorAttachments();
+    Q_ASSERT(hasColorAttachments || m_desc.depthTexture());
     Q_ASSERT(!m_desc.depthStencilBuffer() || !m_desc.depthTexture());
     const bool hasDepthStencil = m_desc.depthStencilBuffer() || m_desc.depthTexture();
 
@@ -6770,12 +6697,16 @@ bool QVkShaderResourceBindings::create()
 
     sortedBindings.clear();
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
+    std::sort(sortedBindings.begin(), sortedBindings.end(),
+              [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
+    {
+        return a.data()->binding < b.data()->binding;
+    });
 
     hasSlottedResource = false;
     hasDynamicOffset = false;
     for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
-        const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         if (b->type == QRhiShaderResourceBinding::UniformBuffer && b->u.ubuf.buf) {
             if (QRHI_RES(QVkBuffer, b->u.ubuf.buf)->type() == QRhiBuffer::Dynamic)
                 hasSlottedResource = true;
@@ -6786,7 +6717,7 @@ bool QVkShaderResourceBindings::create()
 
     QVarLengthArray<VkDescriptorSetLayoutBinding, 4> vkbindings;
     for (const QRhiShaderResourceBinding &binding : std::as_const(sortedBindings)) {
-        const QRhiShaderResourceBinding::Data *b = QRhiImplementation::shaderResourceBindingData(binding);
+        const QRhiShaderResourceBinding::Data *b = binding.data();
         VkDescriptorSetLayoutBinding vkbinding = {};
         vkbinding.binding = uint32_t(b->binding);
         vkbinding.descriptorType = toVkDescriptorType(b);
@@ -6835,8 +6766,13 @@ void QVkShaderResourceBindings::updateResources(UpdateFlags flags)
 {
     sortedBindings.clear();
     std::copy(m_bindings.cbegin(), m_bindings.cend(), std::back_inserter(sortedBindings));
-    if (!flags.testFlag(BindingsAreSorted))
-        std::sort(sortedBindings.begin(), sortedBindings.end(), QRhiImplementation::sortedBindingLessThan);
+    if (!flags.testFlag(BindingsAreSorted)) {
+        std::sort(sortedBindings.begin(), sortedBindings.end(),
+                  [](const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b)
+        {
+            return a.data()->binding < b.data()->binding;
+        });
+    }
 
     // Reset the state tracking table too - it can deal with assigning a
     // different QRhiBuffer/Texture/Sampler for a binding point, but it cannot

@@ -12,7 +12,7 @@
 
 namespace QTestLocaleChange {
 
-    inline QLocale resetSystemLocale()
+    QLocale resetSystemLocale()
     {
 #ifndef QT_NO_SYSTEMLOCALE
         { // Transient instance marks system locale data as stale:

@@ -28,7 +28,7 @@ public:
     uint tristate : 1;
     uint noChange : 1;
     uint hovering : 1;
-    Qt::CheckState publishedState : 2;
+    uint publishedState : 2;
 
     void init();
 };
@@ -89,7 +89,6 @@ public:
     \sa QAbstractButton, QRadioButton
 */
 
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
 /*!
     \fn void QCheckBox::stateChanged(int state)
 
@@ -98,16 +97,6 @@ public:
 
     \a state contains the checkbox's new Qt::CheckState.
 */
-#else
-/*!
-    \fn void QCheckBox::stateChanged(Qt::CheckState state)
-
-    This signal is emitted whenever the checkbox's state changes, i.e.,
-    whenever the user checks or unchecks it.
-
-    \a state contains the checkbox's new Qt::CheckState.
-*/
-#endif
 
 /*!
     \property QCheckBox::tristate
@@ -235,7 +224,7 @@ void QCheckBox::setCheckState(Qt::CheckState state)
     setChecked(state != Qt::Unchecked);
     d->blockRefresh = false;
     d->refresh();
-    if (state != d->publishedState) {
+    if ((uint)state != d->publishedState) {
         d->publishedState = state;
         emit stateChanged(state);
     }
@@ -330,7 +319,7 @@ void QCheckBox::checkStateSet()
     Q_D(QCheckBox);
     d->noChange = false;
     Qt::CheckState state = checkState();
-    if (state != d->publishedState) {
+    if ((uint)state != d->publishedState) {
         d->publishedState = state;
         emit stateChanged(state);
     }

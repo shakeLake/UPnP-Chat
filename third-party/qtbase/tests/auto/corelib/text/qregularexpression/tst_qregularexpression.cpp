@@ -2446,75 +2446,54 @@ void tst_QRegularExpression::wildcard_data()
 {
     QTest::addColumn<QString>("pattern");
     QTest::addColumn<QString>("string");
-    QTest::addColumn<bool>("matchesPathGlob");
-    QTest::addColumn<bool>("matchesNonPathGlob");
-    QTest::addColumn<bool>("anchored");
+    QTest::addColumn<qsizetype>("foundIndex");
 
-    auto addRow = [](const char *pattern, const char *string, bool matchesPathGlob, bool matchesNonPathGlob, bool anchored = true) {
-        QTest::addRow("%s@%s", pattern, string) << pattern << string << matchesPathGlob << matchesNonPathGlob << anchored;
+    auto addRow = [](const char *pattern, const char *string, qsizetype foundIndex) {
+        QTest::addRow("%s@%s", pattern, string) << pattern << string << foundIndex;
     };
 
-    addRow("*.html", "test.html", true, true);
-    addRow("*.html", "test.htm", false, false);
-    addRow("*bar*", "foobarbaz", true, true);
-    addRow("*", "Qt Rocks!", true, true);
-    addRow("*.h", "test.cpp", false, false);
-    addRow("*.???l", "test.html", true, true);
-    addRow("*?", "test.html", true, true);
-    addRow("*?ml", "test.html", true, true);
-    addRow("*[*]", "test.html", false, false);
-    addRow("*[?]","test.html", false, false);
-    addRow("*[?]ml","test.h?ml", true, true);
-    addRow("*[[]ml","test.h[ml", true, true);
-    addRow("*[]]ml","test.h]ml", true, true);
-    addRow("*.h[a-z]ml", "test.html", true, true);
-    addRow("*.h[A-Z]ml", "test.html", false, false);
-    addRow("*.h[A-Z]ml", "test.hTml", true, true);
-    addRow("*.h[!A-Z]ml", "test.hTml", false, false);
-    addRow("*.h[!A-Z]ml", "test.html", true, true);
-    addRow("*.h[!T]ml", "test.hTml", false, false);
-    addRow("*.h[!T]ml", "test.html", true, true);
-    addRow("*.h[!T]m[!L]", "test.htmL", false, false);
-    addRow("*.h[!T]m[!L]", "test.html", true, true);
-    addRow("*.h[][!]ml", "test.h]ml", true, true);
-    addRow("*.h[][!]ml", "test.h[ml", true, true);
-    addRow("*.h[][!]ml", "test.h!ml", true, true);
+    addRow("*.html", "test.html", 0);
+    addRow("*.html", "test.htm", -1);
+    addRow("*bar*", "foobarbaz", 0);
+    addRow("*", "Qt Rocks!", 0);
+    addRow("*.h", "test.cpp", -1);
+    addRow("*.???l", "test.html", 0);
+    addRow("*?", "test.html", 0);
+    addRow("*?ml", "test.html", 0);
+    addRow("*[*]", "test.html", -1);
+    addRow("*[?]","test.html", -1);
+    addRow("*[?]ml","test.h?ml", 0);
+    addRow("*[[]ml","test.h[ml", 0);
+    addRow("*[]]ml","test.h]ml", 0);
+    addRow("*.h[a-z]ml", "test.html", 0);
+    addRow("*.h[A-Z]ml", "test.html", -1);
+    addRow("*.h[A-Z]ml", "test.hTml", 0);
+    addRow("*.h[!A-Z]ml", "test.hTml", -1);
+    addRow("*.h[!A-Z]ml", "test.html", 0);
+    addRow("*.h[!T]ml", "test.hTml", -1);
+    addRow("*.h[!T]ml", "test.html", 0);
+    addRow("*.h[!T]m[!L]", "test.htmL", -1);
+    addRow("*.h[!T]m[!L]", "test.html", 0);
+    addRow("*.h[][!]ml", "test.h]ml", 0);
+    addRow("*.h[][!]ml", "test.h[ml", 0);
+    addRow("*.h[][!]ml", "test.h!ml", 0);
 
-    addRow("foo/*/bar", "foo/baz/bar", true, true);
-    addRow("foo/*/bar", "foo/fie/baz/bar", false, true);
-    addRow("foo?bar", "foo/bar", false, true);
-    addRow("foo/(*)/bar", "foo/baz/bar", false, false);
-    addRow("foo/(*)/bar", "foo/(baz)/bar", true, true);
-    addRow("foo/?/bar", "foo/Q/bar", true, true);
-    addRow("foo/?/bar", "foo/Qt/bar", false, false);
-    addRow("foo/(?)/bar", "foo/Q/bar", false, false);
-    addRow("foo/(?)/bar", "foo/(Q)/bar", true, true);
-
-    addRow("foo*bar", "foo/fie/baz/bar", false, true);
-
-    // different anchor modes
-    addRow("foo", "afoob", false, false, true);
-    addRow("foo", "afoob", true, true, false);
-
-    addRow("fie*bar", "foo/fie/baz/bar", false, false, true);
-    addRow("fie*bar", "foo/fie/baz/bar", false, true, false);
+    addRow("foo/*/bar", "foo/baz/bar", 0);
+    addRow("foo/(*)/bar", "foo/baz/bar", -1);
+    addRow("foo/(*)/bar", "foo/(baz)/bar", 0);
+    addRow("foo/?/bar", "foo/Q/bar", 0);
+    addRow("foo/?/bar", "foo/Qt/bar", -1);
+    addRow("foo/(?)/bar", "foo/Q/bar", -1);
+    addRow("foo/(?)/bar", "foo/(Q)/bar", 0);
 
 #ifdef Q_OS_WIN
-    addRow("foo\\*\\bar", "foo\\baz\\bar", true, true);
-    addRow("foo\\*\\bar", "foo/baz/bar", true, false);
-    addRow("foo\\*\\bar", "foo/baz\\bar", true, false);
-    addRow("foo\\*\\bar", "foo\\fie\\baz\\bar", false, true);
-    addRow("foo\\*\\bar", "foo/fie/baz/bar", false, false);
-    addRow("foo/*/bar", "foo\\baz\\bar", true, false);
-    addRow("foo/*/bar", "foo/baz/bar", true, true);
-    addRow("foo/*/bar", "foo\\fie\\baz\\bar", false, false);
-    addRow("foo/*/bar", "foo/fie/baz/bar", false, true);
-    addRow("foo\\(*)\\bar", "foo\\baz\\bar", false, false);
-    addRow("foo\\(*)\\bar", "foo\\(baz)\\bar", true, true);
-    addRow("foo\\?\\bar", "foo\\Q\\bar", true, true);
-    addRow("foo\\?\\bar", "foo\\Qt\\bar", false, false);
-    addRow("foo\\(?)\\bar", "foo\\Q\\bar", false, false);
-    addRow("foo\\(?)\\bar", "foo\\(Q)\\bar", true, true);
+    addRow("foo\\*\\bar", "foo\\baz\\bar", 0);
+    addRow("foo\\(*)\\bar", "foo\\baz\\bar", -1);
+    addRow("foo\\(*)\\bar", "foo\\(baz)\\bar", 0);
+    addRow("foo\\?\\bar", "foo\\Q\\bar", 0);
+    addRow("foo\\?\\bar", "foo\\Qt\\bar", -1);
+    addRow("foo\\(?)\\bar", "foo\\Q\\bar", -1);
+    addRow("foo\\(?)\\bar", "foo\\(Q)\\bar", 0);
 #endif
 }
 
@@ -2522,22 +2501,12 @@ void tst_QRegularExpression::wildcard()
 {
     QFETCH(QString, pattern);
     QFETCH(QString, string);
-    QFETCH(bool, matchesPathGlob);
-    QFETCH(bool, matchesNonPathGlob);
-    QFETCH(bool, anchored);
+    QFETCH(qsizetype, foundIndex);
 
-    QRegularExpression::WildcardConversionOptions options = {};
-    if (!anchored)
-        options |= QRegularExpression::UnanchoredWildcardConversion;
+    QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern));
+    QRegularExpressionMatch match = re.match(string);
 
-    {
-        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern, options));
-        QCOMPARE(string.contains(re), matchesPathGlob);
-    }
-    {
-        QRegularExpression re(QRegularExpression::wildcardToRegularExpression(pattern, options | QRegularExpression::NonPathWildcardConversion));
-        QCOMPARE(string.contains(re), matchesNonPathGlob);
-    }
+    QCOMPARE(match.capturedStart(), foundIndex);
 }
 
 void tst_QRegularExpression::testInvalidWildcard_data()

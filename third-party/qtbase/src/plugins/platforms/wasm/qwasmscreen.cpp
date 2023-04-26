@@ -4,6 +4,7 @@
 #include "qwasmscreen.h"
 
 #include "qwasmcompositor.h"
+#include "qwasmstring.h"
 #include "qwasmcssstyle.h"
 #include "qwasmintegration.h"
 #include "qwasmkeytranslator.h"
@@ -95,6 +96,7 @@ QWasmScreen::~QWasmScreen()
 
 void QWasmScreen::deleteScreen()
 {
+    m_compositor->onScreenDeleting();
     // Deletes |this|!
     QWindowSystemInterface::handleScreenRemoved(this);
 }
@@ -182,7 +184,7 @@ qreal QWasmScreen::devicePixelRatio() const
 
 QString QWasmScreen::name() const
 {
-    return QString::fromJsString(m_shadowContainer["id"]);
+    return QWasmString::toQString(m_shadowContainer["id"]);
 }
 
 QPlatformCursor *QWasmScreen::cursor() const
@@ -260,6 +262,7 @@ void QWasmScreen::updateQScreenAndCanvasRenderSize()
     };
 
     setGeometry(QRect(getElementBodyPosition(m_shadowContainer), cssSize.toSize()));
+    m_compositor->requestUpdateAllWindows();
 }
 
 void QWasmScreen::canvasResizeObserverCallback(emscripten::val entries, emscripten::val)

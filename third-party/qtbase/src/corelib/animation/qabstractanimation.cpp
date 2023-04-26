@@ -1121,7 +1121,7 @@ void QAbstractAnimation::setDirection(Direction direction)
         return;
     }
 
-    const QScopedPropertyUpdateGroup guard;
+    Qt::beginPropertyUpdateGroup();
     const int oldCurrentLoop = d->currentLoop;
     if (state() == Stopped) {
         if (direction == Backward) {
@@ -1148,6 +1148,7 @@ void QAbstractAnimation::setDirection(Direction direction)
     if (d->currentLoop != oldCurrentLoop)
         d->currentLoop.notify();
     d->direction.notify();
+    Qt::endPropertyUpdateGroup();
 }
 
 QBindable<QAbstractAnimation::Direction> QAbstractAnimation::bindableDirection()

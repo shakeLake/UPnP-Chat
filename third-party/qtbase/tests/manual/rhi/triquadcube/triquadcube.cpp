@@ -35,6 +35,7 @@ struct {
     QSize lastOutputSize;
     int frameCount = 0;
     QFile profOut;
+    QVarLengthArray<float, 64> gpuFrameTimes;
     QElapsedTimer gpuFrameTimePrintTimer;
 } d;
 
@@ -135,8 +136,20 @@ void Window::customInit()
     // With Vulkan at least we should see some details from the memory allocator.
     qDebug() << m_r->statistics();
 
-    // Every two seconds try printing last known gpu frame time.
+    // Every two seconds try printing an average of the gpu frame times.
     d.gpuFrameTimePrintTimer.start();
+    m_r->addGpuFrameTimeCallback([](float elapsedMs) {
+        d.gpuFrameTimes.append(elapsedMs);
+        if (d.gpuFrameTimePrintTimer.elapsed() > 2000) {
+            float at = 0.0f;
+            for (float t : d.gpuFrameTimes)
+                at += t;
+            at /= d.gpuFrameTimes.count();
+            qDebug() << "Average GPU frame time" << at;
+            d.gpuFrameTimes.clear();
+            d.gpuFrameTimePrintTimer.restart();
+        }
+    });
 }
 
 void Window::customRelease()
@@ -156,11 +169,6 @@ void Window::customRender()
 {
     const QSize outputSize = m_sc->currentPixelSize();
     QRhiCommandBuffer *cb = m_sc->currentFrameCommandBuffer();
-
-    if (d.gpuFrameTimePrintTimer.elapsed() > 2000) {
-        qDebug() << "Last completed GPU frame time" << cb->lastCompletedGpuTime() << "seconds";
-        d.gpuFrameTimePrintTimer.restart();
-    }
 
     if (outputSize != d.lastOutputSize) {
         d.triRenderer.resize(outputSize);

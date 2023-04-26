@@ -14,7 +14,6 @@
 #endif
 #ifdef Q_OS_WIN
 #include "qrhid3d11_p_p.h"
-#include "qrhid3d12_p_p.h"
 #endif
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include "qrhimetal_p_p.h"
@@ -78,8 +77,6 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     present, for example to enable multisample framebuffers.
 
     \li Direct3D 11.1
-
-    \li Direct3D 12
 
     \li Metal
 
@@ -407,7 +404,6 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value Vulkan
     \value OpenGLES2
     \value D3D11
-    \value D3D12
     \value Metal
  */
 
@@ -415,18 +411,13 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \enum QRhi::Flag
     Describes what special features to enable.
 
+    \value EnableProfiling This flag has currently no effect.
+
     \value EnableDebugMarkers Enables debug marker groups. Without this frame
     debugging features like making debug groups and custom resource name
     visible in external GPU debugging tools will not be available and functions
-    like QRhiCommandBuffer::debugMarkBegin() will become no-ops. Avoid enabling
-    in production builds as it may involve a small performance impact. Has no
-    effect when the QRhi::DebugMarkers feature is not reported as supported.
-
-    \value EnableTimestamps Enables GPU timestamp collection. When not set,
-    QRhiCommandBuffer::lastCompletedGpuTime() always returns 0. Enable this
-    only when needed since there may be a small amount of extra work involved
-    (e.g. timestamp queries), depending on the underlying graphics API. Has no
-    effect when the QRhi::Timestamps feature is not reported as supported.
+    like QRhiCommandBuffer::debugMarkBegin() will become a no-op. Avoid
+    enabling in production builds as it may involve a performance penalty.
 
     \value PreferSoftwareRenderer Indicates that backends should prefer
     choosing an adapter or physical device that renders in software on the CPU.
@@ -497,9 +488,8 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     QRhiCommandBuffer::debugMarkBegin()) are supported.
 
     \value Timestamps Indicates that command buffer timestamps are supported.
-    Relevant for QRhiCommandBuffer::lastCompletedGpuTime(). Can be expected to
-    be supported on Metal, Vulkan, and Direct 3D, assuming the underlying
-    implementation supports timestamp queries or similar.
+    Relevant for addGpuFrameTimeCallback(). Can be expected to be supported on
+    D3D11 and Vulkan, assuming the underlying implementation supports it.
 
     \value Instancing Indicates that instanced drawing is supported. In
     practice this feature will be unsupported with OpenGL ES 2.0 and OpenGL
@@ -597,7 +587,7 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
 
     \value TriangleFanTopology Indicates that QRhiGraphicsPipeline::setTopology()
     supports QRhiGraphicsPipeline::TriangleFan. In practice this feature will be
-    unsupported with Metal and Direct 3D 11/12.
+    unsupported with Metal and Direct 3D 11.
 
     \value ReadBackNonUniformBuffer Indicates that
     \l{QRhiResourceUpdateBatch::readBackBuffer()}{reading buffer contents} is
@@ -741,29 +731,11 @@ Q_LOGGING_CATEGORY(QRHI_LOG_INFO, "qt.rhi.general")
     \value OneDimensionalTextures Indicates that 1D textures are supported.
     In practice this feature will be unsupported on OpenGL ES.
 
-    \value OneDimensionalTextureMipmaps Indicates that generating 1D texture
-    mipmaps are supported. In practice this feature will be unsupported on
-    backends that do not report support for
-    \l{OneDimensionalTextures}, Metal, and Direct 3D 12.
-
-    \value HalfAttributes Indicates that specifying input attributes with half
-    precision (16bit) floating point types for a shader pipeline is supported.
-    When not supported, build() will succeed but just show a warning message
-    and the values of the target attributes will be broken. In practice this
-    feature will be unsupported in some OpenGL ES 2.0 and OpenGL 2.x
-    implementations. Note that while D3D does support half precision input
-    attributes, it does not support the half3 type. The D3D backends pass
-    half3 attributes as half4. To ensure cross platform compatibility, half3
-    inputs should be padded to 8 bytes.
-
-    \value RenderToOneDimensionalTexture Indicates that 1D texture render
-    targets are supported. In practice this feature will be unsupported on
-    backends that do not report support for
+    \value OneDimensionalTextureMipmaps Indicates that 1D texture mipmaps and
+    1D texture render targets are supported. In practice this feature will be
+    unsupported on backends that do not report support for
     \l{OneDimensionalTextures}, and Metal.
 
-    \value ThreeDimensionalTextureMipmaps Indicates that generating 3D texture
-    mipmaps are supported. In practice this feature will be unsupported with
-    Direct 3D 12.
  */
 
 /*!
@@ -907,25 +879,37 @@ QRhiDepthStencilClearValue::QRhiDepthStencilClearValue(float d, quint32 s)
 }
 
 /*!
-    \fn bool QRhiDepthStencilClearValue::operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-
     \return \c true if the values in the two QRhiDepthStencilClearValue objects
     \a a and \a b are equal.
+
+    \relates QRhiDepthStencilClearValue
  */
+bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+{
+    return a.depthClearValue() == b.depthClearValue()
+            && a.stencilClearValue() == b.stencilClearValue();
+}
 
 /*!
-    \fn bool QRhiDepthStencilClearValue::operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-
     \return \c false if the values in the two QRhiDepthStencilClearValue
     objects \a a and \a b are equal; otherwise returns \c true.
 
+    \relates QRhiDepthStencilClearValue
 */
+bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiDepthStencilClearValue::qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiDepthStencilClearValue
  */
+size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed) noexcept
+{
+    return seed * (uint(qFloor(qreal(v.depthClearValue()) * 100)) + v.stencilClearValue());
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiDepthStencilClearValue &v)
@@ -990,24 +974,40 @@ QRhiViewport::QRhiViewport(float x, float y, float w, float h, float minDepth, f
 }
 
 /*!
-    \fn bool QRhiViewport::operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
-
     \return \c true if the values in the two QRhiViewport objects
     \a a and \a b are equal.
+
+    \relates QRhiViewport
  */
+bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
+{
+    return a.viewport() == b.viewport()
+            && a.minDepth() == b.minDepth()
+            && a.maxDepth() == b.maxDepth();
+}
 
 /*!
-    \fn bool QRhiViewport::operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
-
     \return \c false if the values in the two QRhiViewport
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiViewport
 */
+bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiViewport::qHash(const QRhiViewport &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiViewport
  */
+size_t qHash(const QRhiViewport &v, size_t seed) noexcept
+{
+    const std::array<float, 4> r = v.viewport();
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3])
+            + uint(qFloor(qreal(v.minDepth()) * 100)) + uint(qFloor(qreal(v.maxDepth()) * 100));
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiViewport &v)
@@ -1067,24 +1067,37 @@ QRhiScissor::QRhiScissor(int x, int y, int w, int h)
 }
 
 /*!
-    \fn bool QRhiScissor::operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
-
     \return \c true if the values in the two QRhiScissor objects
     \a a and \a b are equal.
+
+    \relates QRhiScissor
  */
+bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
+{
+    return a.scissor() == b.scissor();
+}
 
 /*!
-    \fn bool QRhiScissor::operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
-
     \return \c false if the values in the two QRhiScissor
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiScissor
 */
+bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiScissor::qHash(const QRhiScissor &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiScissor
  */
+size_t qHash(const QRhiScissor &v, size_t seed) noexcept
+{
+    const std::array<int, 4> r = v.scissor();
+    return seed + uint(r[0]) + uint(r[1]) + uint(r[2]) + uint(r[3]);
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiScissor &s)
@@ -1186,24 +1199,38 @@ QRhiVertexInputBinding::QRhiVertexInputBinding(quint32 stride, Classification cl
 }
 
 /*!
-    \fn bool QRhiVertexInputBinding::operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-
     \return \c true if the values in the two QRhiVertexInputBinding objects
     \a a and \a b are equal.
+
+    \relates QRhiVertexInputBinding
  */
+bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+{
+    return a.stride() == b.stride()
+            && a.classification() == b.classification()
+            && a.instanceStepRate() == b.instanceStepRate();
+}
 
 /*!
-    \fn bool QRhiVertexInputBinding::operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-
     \return \c false if the values in the two QRhiVertexInputBinding
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiVertexInputBinding
 */
+bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiVertexInputBinding::qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiVertexInputBinding
  */
+size_t qHash(const QRhiVertexInputBinding &v, size_t seed) noexcept
+{
+    return seed + v.stride() + v.classification();
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
@@ -1311,16 +1338,6 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputBinding &b)
     \value SInt3 Three component signed integer vector
     \value SInt2 Two component signed integer vector
     \value SInt Signed integer
-    \value Half4 Four component half precision (16bit) float vector
-    \value Half3 Three component half precision (16bit) float vector
-    \value Half2 Two component half precision (16bit) float vector
-    \value Half half precision (16bit) float
-
-    \note Support for half precision floating point attributes is indicated at
-    run time by the QRhi::Feature::HalfAttributes feature flag. Note that D3D
-    supports half input attributes, but does not support the Half3 type. The
-    D3D backends pass through Half3 as Half4. To ensure cross platform
-    compatibility, Half3 inputs should be padded to 8 bytes.
  */
 
 /*!
@@ -1349,24 +1366,39 @@ QRhiVertexInputAttribute::QRhiVertexInputAttribute(int binding, int location, Fo
 }
 
 /*!
-    \fn bool QRhiVertexInputAttribute::operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-
     \return \c true if the values in the two QRhiVertexInputAttribute objects
     \a a and \a b are equal.
+
+    \relates QRhiVertexInputAttribute
  */
+bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+{
+    return a.binding() == b.binding()
+            && a.location() == b.location()
+            && a.format() == b.format()
+            && a.offset() == b.offset();
+}
 
 /*!
-    \fn bool QRhiVertexInputAttribute::operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-
     \return \c false if the values in the two QRhiVertexInputAttribute
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiVertexInputAttribute
 */
+bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiVertexInputAttribute::qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiVertexInputAttribute
  */
+size_t qHash(const QRhiVertexInputAttribute &v, size_t seed) noexcept
+{
+    return seed + uint(v.binding()) + uint(v.location()) + uint(v.format()) + v.offset();
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputAttribute &a)
@@ -1411,15 +1443,6 @@ QRhiVertexInputAttribute::Format QRhiImplementation::shaderDescVariableFormatToV
     case QShaderDescription::Uint:
         return QRhiVertexInputAttribute::UInt;
 
-    case QShaderDescription::Half4:
-        return QRhiVertexInputAttribute::Half4;
-    case QShaderDescription::Half3:
-        return QRhiVertexInputAttribute::Half3;
-    case QShaderDescription::Half2:
-        return QRhiVertexInputAttribute::Half2;
-    case QShaderDescription::Half:
-        return QRhiVertexInputAttribute::Half;
-
     default:
         Q_UNREACHABLE_RETURN(QRhiVertexInputAttribute::Float);
     }
@@ -1462,15 +1485,6 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
     case QRhiVertexInputAttribute::SInt:
         return sizeof(qint32);
 
-    case QRhiVertexInputAttribute::Half4:
-        return 4 * sizeof(qfloat16);
-    case QRhiVertexInputAttribute::Half3:
-        return 4 * sizeof(qfloat16); // half3 still takes 8 bytes
-    case QRhiVertexInputAttribute::Half2:
-        return 2 * sizeof(qfloat16);
-    case QRhiVertexInputAttribute::Half:
-        return sizeof(qfloat16);
-
     default:
         Q_UNREACHABLE_RETURN(1);
     }
@@ -1493,24 +1507,36 @@ quint32 QRhiImplementation::byteSizePerVertexForVertexInputFormat(QRhiVertexInpu
  */
 
 /*!
-    \fn bool QRhiVertexInputLayout::operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-
     \return \c true if the values in the two QRhiVertexInputLayout objects
     \a a and \a b are equal.
+
+    \relates QRhiVertexInputLayout
  */
+bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+{
+    return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
+}
 
 /*!
-    \fn bool QRhiVertexInputLayout::operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-
     \return \c false if the values in the two QRhiVertexInputLayout
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiVertexInputLayout
 */
+bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiVertexInputLayout::qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiVertexInputLayout
  */
+size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept
+{
+    return qHash(v.m_bindings, seed) + qHash(v.m_attributes, seed);
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
@@ -1536,10 +1562,10 @@ QDebug operator<<(QDebug dbg, const QRhiVertexInputLayout &v)
 
     \value Vertex Vertex stage
 
-    \value TessellationControl Tessellation control (hull shader) stage. Must
-    be used only when the QRhi::Tessellation feature is supported.
+    \value TessellationControlStage Tessellation control (hull shader) stage.
+    Must be used only when the QRhi::Tessellation feature is supported.
 
-    \value TessellationEvaluation Tessellation evaluation (domain shader)
+    \value TessellationEvaluationStage Tessellation evaluation (domain shader)
     stage. Must be used only when the QRhi::Tessellation feature is supported.
 
     \value Fragment Fragment (pixel shader) stage
@@ -1575,24 +1601,38 @@ QRhiShaderStage::QRhiShaderStage(Type type, const QShader &shader, QShader::Vari
 }
 
 /*!
-    \fn bool QRhiShaderStage::operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-
     \return \c true if the values in the two QRhiShaderStage objects
     \a a and \a b are equal.
+
+    \relates QRhiShaderStage
  */
+bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+{
+    return a.type() == b.type()
+            && a.shader() == b.shader()
+            && a.shaderVariant() == b.shaderVariant();
+}
 
 /*!
-    \fn bool QRhiShaderStage::operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-
     \return \c false if the values in the two QRhiShaderStage
     objects \a a and \a b are equal; otherwise returns \c true.
+
+    \relates QRhiShaderStage
 */
+bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
+{
+    return !(a == b);
+}
 
 /*!
-    \fn size_t QRhiShaderStage::qHash(const QRhiShaderStage &v, size_t seed = 0) noexcept
-
     \return the hash value for \a v, using \a seed to seed the calculation.
+
+    \relates QRhiShaderStage
  */
+size_t qHash(const QRhiShaderStage &v, size_t seed) noexcept
+{
+    return v.type() + qHash(v.shader(), seed) + v.shaderVariant();
+}
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiShaderStage &s)
@@ -2127,17 +2167,11 @@ QRhiResource::~QRhiResource()
     requirement of not altering QRhiResource objects that are referenced by the
     frame being recorded.
 
-    If the QRhi that created this object is already destroyed, the object is
-    deleted immediately.
-
     \sa destroy()
  */
 void QRhiResource::deleteLater()
 {
-    if (m_rhi)
-        m_rhi->addDeleteLater(this);
-    else
-        delete this;
+    m_rhi->addDeleteLater(this);
 }
 
 /*!
@@ -2186,13 +2220,10 @@ quint64 QRhiResource::globalResourceId() const
 
 /*!
     \return the QRhi that created this resource.
-
-    If the QRhi that created this object is already destroyed, the result is
-    \nullptr.
  */
 QRhi *QRhiResource::rhi() const
 {
-    return m_rhi ? m_rhi->q : nullptr;
+    return m_rhi->q;
 }
 
 /*!
@@ -2247,9 +2278,9 @@ QRhi *QRhiResource::rhi() const
     not supported, this usage can only be combined with the type Dynamic.
 
     \value StorageBuffer Storage buffer. This allows the QRhiBuffer to be used
-    in combination with \l{QRhiShaderResourceBinding::BufferLoad}{BufferLoad},
-    \l{QRhiShaderResourceBinding::BufferStore}{BufferStore}, or
-    \l{QRhiShaderResourceBinding::BufferLoadStore}{BufferLoadStore}. This usage
+    in combination with \l{BufferLoad}{QRhiShaderResourceBinding::BufferLoad},
+    \l{BufferStore}{QRhiShaderResourceBinding::BufferStore}, or
+    \l{BufferLoadStore}{QRhiShaderResourceBinding::BufferLoadStore}. This usage
     can only be combined with the types Immutable or Static, and is only
     available when the \l{QRhi::Compute}{Compute feature} is reported as
     supported.
@@ -2616,14 +2647,6 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
      QRhi::TextureArrays feature. When rendering into, or uploading data to a
      texture array, the \c layer specified in the render target's color
      attachment or the upload description selects a single element in the array.
-
-     \value OneDimensional The texture is a 1D texture. Such textures can be
-     created by passing a 0 height and depth to QRhi::newTexture(). Note that
-     there can be limitations on one dimensional textures depending on the
-     underlying graphics API. For example, rendering to them or using them with
-     mipmap-based filtering may be unsupported. This is indicated by the
-     QRhi::OneDimensionalTextures and QRhi::OneDimensionalTextureMipmaps
-     feature flags.
  */
 
 /*!
@@ -2657,7 +2680,7 @@ bool QRhiRenderBuffer::createFrom(NativeRenderBuffer src)
 
     \value R32F One component, 32-bit float.
 
-    \value RGB10A2 Four components, unsigned normalized 10 bit R, G, and B,
+    \value RGBA10A2 Four components, unsigned normalized 10 bit R, G, and B,
     2-bit alpha. This is a packed format so native endianness applies. Note
     that there is no BGR10A2. This is because RGB10A2 maps to
     DXGI_FORMAT_R10G10B10A2_UNORM with D3D, MTLPixelFormatRGB10A2Unorm with
@@ -2800,7 +2823,7 @@ bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 /*!
     With some graphics APIs, such as Vulkan, integrating custom rendering code
     that uses the graphics API directly needs special care when it comes to
-    image layouts. This function allows communicating the expected \a layout the
+    image layouts. This function allows communicating the expected layout the
     image backing the QRhiTexture is in after the native rendering commands.
 
     For example, consider rendering into a QRhiTexture's VkImage directly with
@@ -2816,9 +2839,6 @@ bool QRhiTexture::createFrom(QRhiTexture::NativeTexture src)
 
     This function has no effect with QRhi backends where the underlying
     graphics API does not expose a concept of image layouts.
-
-    \note With Vulkan \a layout is a \c VkImageLayout. With Direct 3D 12 \a
-    layout is a value composed of the bits from \c D3D12_RESOURCE_STATES.
  */
 void QRhiTexture::setNativeLayout(int layout)
 {
@@ -3345,7 +3365,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
     srb->m_layoutDesc.clear();
     auto layoutDescAppender = std::back_inserter(srb->m_layoutDesc);
     for (const QRhiShaderResourceBinding &b : std::as_const(srb->m_bindings)) {
-        const QRhiShaderResourceBinding::Data *d = &b.d;
+        const QRhiShaderResourceBinding::Data *d = b.data();
         srb->m_layoutDescHash ^= uint(d->binding) ^ uint(d->stage) ^ uint(d->type)
             ^ uint(d->arraySize());
         layoutDescAppender = d->serialize(layoutDescAppender);
@@ -3369,15 +3389,7 @@ void QRhiImplementation::updateLayoutDesc(QRhiShaderResourceBindings *srb)
 
     \value UniformBuffer Uniform buffer
 
-    \value SampledTexture Combined image sampler (a texture and sampler pair).
-    Even when the shading language associated with the underlying 3D API has no
-    support for this concept (e.g. D3D and HLSL), this is still supported
-    because the shader translation layer takes care of the appropriate
-    translation and remapping of binding points or shader registers.
-
-    \value Texture Texture (separate)
-
-    \value Sampler Sampler (separate)
+    \value SampledTexture Combined image sampler
 
     \value ImageLoad Image load (with GLSL this maps to doing imageLoad() on a
     single level - and either one or all layers - of a texture exposed to the
@@ -3552,14 +3564,6 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::uniformBufferWithDynamicOff
     together with another, layout compatible QRhiShaderResourceBindings with
     resources present passed to QRhiCommandBuffer::setShaderResources().
 
-    \note A shader may not be able to consume more than 16 textures/samplers,
-    depending on the underlying graphics API. This hard limit must be kept in
-    mind in renderer design. This does not apply to texture arrays which
-    consume a single binding point (shader register) and can contain 256-2048
-    textures, depending on the underlying graphics API. Arrays of textures (see
-    sampledTextures()) are however no different in this regard than using the
-    same number of individual textures.
-
     \sa sampledTextures()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTexture(
@@ -3645,14 +3649,6 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::sampledTextures(
     Vulkan-compatible GLSL code separate textures are declared as \c texture2D
     as opposed to \c sampler2D: \c{layout(binding = 1) uniform texture2D tex;}
 
-    \note A shader may not be able to consume more than 16 textures, depending
-    on the underlying graphics API. This hard limit must be kept in mind in
-    renderer design. This does not apply to texture arrays which consume a
-    single binding point (shader register) and can contain 256-2048 textures,
-    depending on the underlying graphics API. Arrays of textures (see
-    sampledTextures()) are however no different in this regard than using the
-    same number of individual textures.
-
     \sa textures(), sampler()
  */
 QRhiShaderResourceBinding QRhiShaderResourceBinding::texture(int binding, StageFlags stage, QRhiTexture *tex)
@@ -3724,10 +3720,6 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::textures(int binding, Stage
     With both a \c texture2D and \c sampler present, they can be used together
     to sample the texture: \c{fragColor = texture(sampler2D(tex, samp),
     texcoord);}.
-
-    \note A shader may not be able to consume more than 16 samplers, depending
-    on the underlying graphics API. This hard limit must be kept in mind in
-    renderer design.
 
     \sa texture()
  */
@@ -4069,8 +4061,8 @@ QRhiShaderResourceBinding QRhiShaderResourceBinding::bufferLoadStore(
  */
 bool operator==(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBinding &b) noexcept
 {
-    const QRhiShaderResourceBinding::Data *da = QRhiImplementation::shaderResourceBindingData(a);
-    const QRhiShaderResourceBinding::Data *db = QRhiImplementation::shaderResourceBindingData(b);
+    const QRhiShaderResourceBinding::Data *da = a.data();
+    const QRhiShaderResourceBinding::Data *db = b.data();
 
     if (da == db)
         return true;
@@ -4159,44 +4151,41 @@ bool operator!=(const QRhiShaderResourceBinding &a, const QRhiShaderResourceBind
  */
 size_t qHash(const QRhiShaderResourceBinding &b, size_t seed) noexcept
 {
-    const QRhiShaderResourceBinding::Data *d = QRhiImplementation::shaderResourceBindingData(b);
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, d->binding);
-    seed = hash(seed, d->stage);
-    seed = hash(seed, d->type);
+    const QRhiShaderResourceBinding::Data *d = b.data();
+    size_t h = uint(d->binding) ^ uint(d->stage) ^ uint(d->type) ^ seed;
     switch (d->type) {
     case QRhiShaderResourceBinding::UniformBuffer:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.ubuf.buf));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.ubuf.buf));
         break;
     case QRhiShaderResourceBinding::SampledTexture:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::Texture:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].tex));
         break;
     case QRhiShaderResourceBinding::Sampler:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.stex.texSamplers[0].sampler));
         break;
     case QRhiShaderResourceBinding::ImageLoad:
     case QRhiShaderResourceBinding::ImageStore:
     case QRhiShaderResourceBinding::ImageLoadStore:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.simage.tex));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.simage.tex));
         break;
     case QRhiShaderResourceBinding::BufferLoad:
     case QRhiShaderResourceBinding::BufferStore:
     case QRhiShaderResourceBinding::BufferLoadStore:
-        seed = hash(seed, reinterpret_cast<quintptr>(d->u.sbuf.buf));
+        h ^= qHash(reinterpret_cast<quintptr>(d->u.sbuf.buf));
         break;
     }
-    return seed;
+    return h;
 }
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug dbg, const QRhiShaderResourceBinding &b)
 {
     QDebugStateSaver saver(dbg);
-    const QRhiShaderResourceBinding::Data *d = QRhiImplementation::shaderResourceBindingData(b);
+    const QRhiShaderResourceBinding::Data *d = b.data();
     dbg.nospace() << "QRhiShaderResourceBinding("
                   << "binding=" << d->binding
                   << " stage=" << d->stage
@@ -4861,21 +4850,11 @@ QRhiResource::Type QRhiSwapChain::resourceType() const
 /*!
     \fn QRhiCommandBuffer *QRhiSwapChain::currentFrameCommandBuffer()
 
-    \return a command buffer on which rendering commands and resource updates
-    can be recorded within a \l{QRhi::beginFrame()}{beginFrame} -
-    \l{QRhi::endFrame()}{endFrame} block, assuming beginFrame() was called with
-    this swapchain.
+    \return a command buffer on which rendering commands can be recorded. Only
+    valid within a QRhi::beginFrame() - QRhi::endFrame() block where
+    beginFrame() was called with this swapchain.
 
-    \note The returned object is valid also after endFrame(), up until the next
-    beginFrame(), but the returned command buffer should not be used to record
-    any commands then. Rather, it can be used to query data collected during
-    the frame (or previous frames), for example by calling
-    \l{QRhiCommandBuffer::lastCompletedGpuTime()}{lastCompletedGpuTime()}.
-
-    \note The value must not be cached and reused between frames. The caller
-    should not hold on to the returned object once
-    \l{QRhi::beginFrame()}{beginFrame()} is called again. Instead, the command
-    buffer object should be queried again by calling this function.
+    \note the value must not be cached and reused between frames
 */
 
 /*!
@@ -5127,7 +5106,7 @@ QRhiResource::Type QRhiCommandBuffer::resourceType() const
     return CommandBuffer;
 }
 
-static const char *resourceTypeStr(const QRhiResource *res)
+static const char *resourceTypeStr(QRhiResource *res)
 {
     switch (res->resourceType()) {
     case QRhiResource::Buffer:
@@ -5178,10 +5157,8 @@ QRhiImplementation::~QRhiImplementation()
             qWarning("QRhi %p going down with %d unreleased resources that own native graphics objects. This is not nice.",
                      q, int(resources.size()));
         }
-        for (auto it = resources.cbegin(), end = resources.cend(); it != end; ++it) {
-            QRhiResource *res = it.key();
-            const bool ownsNativeResources = it.value();
-            if (leakCheck && ownsNativeResources)
+        for (QRhiResource *res : std::as_const(resources)) {
+            if (leakCheck)
                 qWarning("  %s resource %p (%s)", resourceTypeStr(res), res, res->m_objectName.constData());
 
             // Null out the resource's rhi pointer. This is why it makes sense to do null
@@ -5432,7 +5409,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
     const int CHECKED_BINDINGS_COUNT = 64;
     bool bindingSeen[CHECKED_BINDINGS_COUNT] = {};
     for (auto it = srb->cbeginBindings(), end = srb->cendBindings(); it != end; ++it) {
-        const int binding = shaderResourceBindingData(*it)->binding;
+        const int binding = it->data()->binding;
         if (binding >= CHECKED_BINDINGS_COUNT)
             continue;
         if (binding < 0) {
@@ -5440,7 +5417,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             bindingsOk = false;
             continue;
         }
-        switch (shaderResourceBindingData(*it)->type) {
+        switch (it->data()->type) {
         case QRhiShaderResourceBinding::UniformBuffer:
             if (!bindingSeen[binding]) {
                 bindingSeen[binding] = true;
@@ -5494,7 +5471,7 @@ bool QRhiImplementation::sanityCheckShaderResourceBindings(QRhiShaderResourceBin
             }
             break;
         default:
-            qWarning("Unknown binding type %d", int(shaderResourceBindingData(*it)->type));
+            qWarning("Unknown binding type %d", int(it->data()->type));
             bindingsOk = false;
             break;
         }
@@ -5534,30 +5511,14 @@ QRhi::~QRhi()
     delete d;
 }
 
-void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, QRhi::Flags flags)
-{
-    q = rhi;
-
-    // Play nice with QSG_INFO since that is still the most commonly used
-    // way to get graphics info printed from Qt Quick apps, and the Quick
-    // scenegraph is our primary user.
-    if (qEnvironmentVariableIsSet("QSG_INFO"))
-        const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
-
-    debugMarkers = flags.testFlag(QRhi::EnableDebugMarkers);
-
-    implType = impl;
-    implThread = QThread::currentThread();
-}
-
 /*!
     \return a new QRhi instance with a backend for the graphics API specified
     by \a impl with the specified \a flags.
 
     \a params must point to an instance of one of the backend-specific
     subclasses of QRhiInitParams, such as, QRhiVulkanInitParams,
-    QRhiMetalInitParams, QRhiD3D11InitParams, QRhiD3D12InitParams,
-    QRhiGles2InitParams. See these classes for examples on creating a QRhi.
+    QRhiMetalInitParams, QRhiD3D11InitParams, QRhiGles2InitParams. See these
+    classes for examples on creating a QRhi.
 
     QRhi by design does not implement any fallback logic: if the specified API
     cannot be initialized, create() will fail, with warnings printed on the
@@ -5570,13 +5531,6 @@ void QRhiImplementation::prepareForCreate(QRhi *rhi, QRhi::Implementation impl, 
     lightweight manner as opposed to create(), which performs full
     initialization of the infrastructure and is wasteful if that QRhi instance
     is then thrown immediately away.
-
-    \a importDevice allows using an already existing graphics device, without
-    QRhi creating its own. When not null, this parameter must point to an
-    instance of one of the subclasses of QRhiNativeHandles:
-    QRhiVulkanNativeHandles, QRhiD3D11NativeHandles, QRhiD3D12NativeHandles,
-    QRhiMetalNativeHandles, QRhiGles2NativeHandles. The exact details and
-    semantics depend on the backand and the underlying graphics API.
 
     \sa probe()
  */
@@ -5625,21 +5579,24 @@ QRhi *QRhi::create(Implementation impl, QRhiInitParams *params, Flags flags, QRh
         qWarning("This platform has no Metal support");
         break;
 #endif
-    case D3D12:
-#ifdef Q_OS_WIN
-        r->d = new QRhiD3D12(static_cast<QRhiD3D12InitParams *>(params),
-                             static_cast<QRhiD3D12NativeHandles *>(importDevice));
-        break;
-#else
-        qWarning("This platform has no Direct3D 12 support");
-        break;
-#endif
     }
 
     if (r->d) {
-        r->d->prepareForCreate(r.get(), impl, flags);
-        if (r->d->create(flags))
+        r->d->q = r.get();
+
+        // Play nice with QSG_INFO since that is still the most commonly used
+        // way to get graphics info printed from Qt Quick apps, and the Quick
+        // scenegraph is our primary user.
+        if (qEnvironmentVariableIsSet("QSG_INFO"))
+            const_cast<QLoggingCategory &>(QRHI_LOG_INFO()).setEnabled(QtDebugMsg, true);
+
+        r->d->debugMarkers = flags.testFlag(EnableDebugMarkers);
+
+        if (r->d->create(flags)) {
+            r->d->implType = impl;
+            r->d->implThread = QThread::currentThread();
             return r.release();
+        }
     }
 
     return nullptr;
@@ -5747,8 +5704,6 @@ const char *QRhi::backendName(Implementation impl)
         return "D3D11";
     case QRhi::Metal:
         return "Metal";
-    case QRhi::D3D12:
-        return "D3D12";
     }
 
     Q_UNREACHABLE_RETURN("Unknown");
@@ -5780,6 +5735,7 @@ const char *QRhi::backendName() const
     \struct QRhiDriverInfo
     \internal
     \inmodule QtGui
+    \since 6.1
 
     \brief Describes the physical device, adapter, or graphics API
     implementation that is used by an initialized QRhi.
@@ -5873,6 +5829,36 @@ void QRhi::runCleanup()
         f(this);
 
     d->cleanupCallbacks.clear();
+}
+
+/*!
+    Registers a \a callback that is called with an elapsed time calculated from
+    GPU timestamps asynchronously after a timestamp becomes available at some
+    point after presenting a frame.
+
+    The callback is called with a float value that is meant to be in
+    milliseconds and represents the elapsed time on the GPU side for a given
+    frame. Care must be exercised with the interpretation of the value, as what
+    it exactly is is not controlled by Qt and depends on the underlying
+    graphics API and its implementation. In particular, comparing the values
+    between different graphics APIs is discouraged and may be meaningless.
+
+    The timing values become available asynchronously, sometimes several frames
+    after the frame has been submitted in endFrame(). There is currently no way
+    to identify the frame. The callback is invoked whenever the timestamp
+    queries complete.
+
+    \note This is only supported when the Timestamp feature is reported as
+    supported from isFeatureSupported(). Otherwise the \a callback is never
+    called.
+
+    The \a callback is always called on the thread the QRhi lives and operates
+    on. While not guaranteed, it is typical that the callback is invoked from
+    within beginFrame().
+ */
+void QRhi::addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback)
+{
+    d->addGpuFrameTimeCallback(callback);
 }
 
 /*!
@@ -6057,7 +6043,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 
     A readback is asynchronous. \a result contains a callback that is invoked
     when the operation has completed. The data is provided in
-    QRhiReadbackResult::data. Upon successful completion that QByteArray
+    QRhiBufferReadbackResult::data. Upon successful completion that QByteArray
     will have a size equal to \a size. On failure the QByteArray will be empty.
 
     \note Reading buffers with a usage different than QRhiBuffer::UniformBuffer
@@ -6074,7 +6060,7 @@ void QRhiResourceUpdateBatch::uploadStaticBuffer(QRhiBuffer *buf, const void *da
 
    \sa readBackTexture(), QRhi::isFeatureSupported(), QRhi::resourceLimit()
  */
-void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result)
+void QRhiResourceUpdateBatch::readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result)
 {
     const int idx = d->activeBufferOpCount++;
     if (idx < d->bufferOps.size())
@@ -6336,10 +6322,9 @@ void QRhiResourceUpdateBatchPrivate::trimOpLists()
 }
 
 /*!
-    Sometimes committing resource updates is necessary or just more convenient
-    without starting a render pass. Calling this function with \a
-    resourceUpdates is an alternative to passing \a resourceUpdates to a
-    beginPass() call (or endPass(), which would be typical in case of readbacks).
+    Sometimes committing resource updates is necessary without starting a
+    render pass. Not often needed, updates should typically be passed to
+    beginPass (or endPass, in case of readbacks) instead.
 
     \note Cannot be called inside a pass.
  */
@@ -6396,11 +6381,7 @@ void QRhiCommandBuffer::resourceUpdate(QRhiResourceUpdateBatch *resourceUpdates)
       cb->beginPass(rt, ...); // this is ok, no explicit rt->create() is required before
     \endcode
 
-    \a flags allow controlling certain advanced functionality. One commonly used
-    flag is \c ExternalContents. This should be specified whenever
-    beginExternal() will be called within the pass started by this function.
-
-    \sa endPass(), BeginPassFlags
+    \sa endPass()
  */
 void QRhiCommandBuffer::beginPass(QRhiRenderTarget *rt,
                                   const QColor &colorClearValue,
@@ -6695,9 +6676,8 @@ void QRhiCommandBuffer::drawIndexed(quint32 indexCount,
 }
 
 /*!
-    Records a named debug group on the command buffer with the specified \a
-    name. This is shown in graphics debugging tools such as
-    \l{https://renderdoc.org/}{RenderDoc} and
+    Records a named debug group on the command buffer. This is shown in
+    graphics debugging tools such as \l{https://renderdoc.org/}{RenderDoc} and
     \l{https://developer.apple.com/xcode/}{XCode}. The end of the grouping is
     indicated by debugMarkEnd().
 
@@ -6755,8 +6735,6 @@ void QRhiCommandBuffer::debugMarkMsg(const QByteArray &msg)
 
     \note Compute is only available when the \l{QRhi::Compute}{Compute} feature
     is reported as supported.
-
-    \a flags is not currently used.
  */
 void QRhiCommandBuffer::beginComputePass(QRhiResourceUpdateBatch *resourceUpdates, BeginPassFlags flags)
 {
@@ -6890,41 +6868,6 @@ void QRhiCommandBuffer::endExternal()
 }
 
 /*!
-    \return the last available timestamp, in seconds. The value indicates the
-    elapsed time on the GPU during the last completed frame.
-
-    Care must be exercised with the interpretation of the value, as its
-    precision and granularity is often not controlled by Qt, and depends on the
-    underlying graphics API and its implementation. In particular, comparing
-    the values between different graphics APIs and hardware is discouraged and
-    may be meaningless.
-
-    The timing values may become available asynchronously. The returned value
-    may therefore be 0 or the last known value referring to some previous
-    frame. The value my also become 0 again under certain conditions, such as
-    when resizing the window. It can be expected that the most up-to-date
-    available value is retrieved in beginFrame() and becomes queriable via this
-    function once beginFrame() returns.
-
-    \note Do not assume that the value refers to the previous
-    (\c{currently_recorded - 1}) frame. It may refer to \c{currently_recorded -
-    2} or \c{currently_recorded - 3} as well. The exact behavior may depend on
-    the graphics API and its implementation.
-
-    \note The result is always 0 when the QRhi::Timestamps feature is not
-    reported as supported, or when QRhi::EnableTimestamps was not passed to
-    QRhi::create(). There are exceptions to the latter, because with some
-    graphics APIs timings are available without having to perform extra
-    operations, but portable applications should always consciously opt-in to
-    timestamp collection when they know it is needed, and call this function
-    accordingly.
- */
-double QRhiCommandBuffer::lastCompletedGpuTime()
-{
-    return m_rhi->lastCompletedGpuTime(this);
-}
-
-/*!
     \return the value (typically an offset) \a v aligned to the uniform buffer
     alignment given by by ubufAlignment().
  */
@@ -6937,7 +6880,7 @@ int QRhi::ubufAligned(int v) const
 /*!
     \return the number of mip levels for a given \a size.
  */
-int QRhi::mipLevelsForSize(const QSize &size)
+int QRhi::mipLevelsForSize(const QSize &size) const
 {
     return qFloor(std::log2(qMax(size.width(), size.height()))) + 1;
 }
@@ -6946,7 +6889,7 @@ int QRhi::mipLevelsForSize(const QSize &size)
     \return the texture image size for a given \a mipLevel, calculated based on
     the level 0 size given in \a baseLevelSize.
  */
-QSize QRhi::sizeForMipLevel(int mipLevel, const QSize &baseLevelSize)
+QSize QRhi::sizeForMipLevel(int mipLevel, const QSize &baseLevelSize) const
 {
     const int w = qMax(1, baseLevelSize.width() >> mipLevel);
     const int h = qMax(1, baseLevelSize.height() >> mipLevel);
@@ -7161,7 +7104,7 @@ bool QRhi::isDeviceLost() const
 }
 
 /*!
-    \return a binary data blob with data collected from the
+    \return a binary \a data blob with data collected from the
     QRhiGraphicsPipeline and QRhiComputePipeline successfully created during
     the lifetime of this QRhi.
 
@@ -7276,7 +7219,6 @@ QDebug operator<<(QDebug dbg, const QRhiStats &info)
                   << " allocCount=" << info.allocCount
                   << " usedBytes=" << info.usedBytes
                   << " unusedBytes=" << info.unusedBytes
-                  << " totalUsageBytes=" << info.totalUsageBytes
                   << ')';
     return dbg;
 }
@@ -7294,15 +7236,6 @@ QDebug operator<<(QDebug dbg, const QRhiStats &info)
     With Vulkan in particular, the values are valid always, and are queried
     from the underlying memory allocator library. This gives an insight into
     the memory requirements of the active buffers and textures.
-
-    The same is true for Direct 3D 12. In addition to the memory allocator
-    library's statistics, here the result also includes a \c totalUsageBytes
-    field which reports the total size including additional resources that are
-    not under the memory allocator library's control (swapchain buffers,
-    descriptor heaps, etc.), as reported by DXGI.
-
-    The values correspond to all types of memory used, combined. (i.e. video +
-    system in case of a discreet GPU)
 
     Additional data, such as the total time in milliseconds spent in graphics
     and compute pipeline creation (which usually involves shader compilation or
@@ -7765,9 +7698,7 @@ QRhi::FrameOpResult QRhi::beginOffscreenFrame(QRhiCommandBuffer **cb, BeginFrame
 }
 
 /*!
-    Ends, submits, and waits for the offscreen frame.
-
-    \a flags is not currently used.
+    Ends and waits for the offscreen frame.
 
     \sa beginOffscreenFrame()
  */

@@ -414,7 +414,7 @@ struct QGles2CommandBuffer : public QRhiCommandBuffer
                 const void *data; // must come from retainData()
             } bufferSubData;
             struct {
-                QRhiReadbackResult *result;
+                QRhiBufferReadbackResult *result;
                 GLenum target;
                 GLuint buffer;
                 int offset;
@@ -806,7 +806,6 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
-    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;
@@ -962,8 +961,7 @@ public:
               tessellation(false),
               geometryShader(false),
               texture1D(false),
-              hasDrawBuffersFunc(false),
-              halfAttributes(false)
+              hasDrawBuffersFunc(false)
         { }
         int ctxMajor;
         int ctxMinor;
@@ -1016,7 +1014,6 @@ public:
         uint geometryShader : 1;
         uint texture1D : 1;
         uint hasDrawBuffersFunc : 1;
-        uint halfAttributes : 1;
     } caps;
     QGles2SwapChain *currentSwapChain = nullptr;
     QSet<GLint> supportedCompressedFormats;

@@ -16,8 +16,6 @@
 #include <qsysinfo.h>
 #if defined(Q_OS_UNIX) && !defined(Q_OS_VXWORKS)
 #include <unistd.h>
-
-#include <sys/stat.h> // utimensat
 #include <sys/time.h>
 #elif defined(Q_OS_WIN)
 #  include <qt_windows.h>
@@ -25,8 +23,6 @@
 #endif
 
 #include <private/qlockfile_p.h>  // for getLockFileHandle()
-
-using namespace std::chrono_literals;
 
 class tst_QLockFile : public QObject
 {
@@ -98,7 +94,7 @@ void tst_QLockFile::lockUnlock()
     QVERIFY(lockFile.getLockInfo(&pid, &hostname, &appname));
     QCOMPARE(pid, QCoreApplication::applicationPid());
     QCOMPARE(appname, qAppName());
-    QVERIFY(!lockFile.tryLock(200ms));
+    QVERIFY(!lockFile.tryLock(200));
     QCOMPARE(int(lockFile.error()), int(QLockFile::LockFailedError));
 
     // Unlock deletes the lock file
@@ -343,8 +339,8 @@ void tst_QLockFile::staleLongLockFromBusyProcess()
     QTRY_VERIFY(QFile::exists(fileName));
 
     QLockFile secondLock(fileName);
-    secondLock.setStaleLockTime(0ms);
-    QVERIFY(!secondLock.tryLock(100ms)); // never stale
+    secondLock.setStaleLockTime(0);
+    QVERIFY(!secondLock.tryLock(100)); // never stale
     QCOMPARE(int(secondLock.error()), int(QLockFile::LockFailedError));
     qint64 pid;
     QTRY_VERIFY(secondLock.getLockInfo(&pid, NULL, NULL));
@@ -512,15 +508,15 @@ void tst_QLockFile::corruptedLockFile()
     }
 
     QLockFile secondLock(fileName);
-    secondLock.setStaleLockTime(100ms);
-    QVERIFY(secondLock.tryLock(10s));
+    secondLock.setStaleLockTime(100);
+    QVERIFY(secondLock.tryLock(10000));
     QCOMPARE(int(secondLock.error()), int(QLockFile::NoError));
 }
 
 void tst_QLockFile::corruptedLockFileInTheFuture()
 {
 #if !defined(Q_OS_UNIX)
-    QSKIP("This test needs utimensat");
+    QSKIP("This tests needs utimes");
 #else
     // This test is the same as the previous one, but the corruption was so there is a corrupted
     // .rmlock whose timestamp is in the future
@@ -532,12 +528,11 @@ void tst_QLockFile::corruptedLockFileInTheFuture()
         QVERIFY(file.open(QFile::WriteOnly));
     }
 
-    struct timespec times[2];
-    clock_gettime(CLOCK_REALTIME, times);
-    times[0].tv_sec += 600;
-    times[1].tv_sec = times[0].tv_sec;
-    times[1].tv_nsec = times[0].tv_nsec;
-    utimensat(0 /* ignored */, fileName.toLocal8Bit(), times, 0);
+    struct timeval times[2];
+    gettimeofday(times, 0);
+    times[1].tv_sec = (times[0].tv_sec += 600);
+    times[1].tv_usec = times[0].tv_usec;
+    utimes(fileName.toLocal8Bit(), times);
 
     QTest::ignoreMessage(QtInfoMsg, "QLockFile: Lock file '" + fileName.toUtf8() + "' has a modification time in the future");
     corruptedLockFile();
@@ -566,7 +561,7 @@ void tst_QLockFile::hostnameChange()
     {
         // we should fail to lock
         QLockFile lock2(lockFile);
-        QVERIFY(!lock2.tryLock(1s));
+        QVERIFY(!lock2.tryLock(1000));
     }
 }
 
@@ -593,7 +588,7 @@ void tst_QLockFile::differentMachines()
     {
         // we should fail to lock
         QLockFile lock2(lockFile);
-        QVERIFY(!lock2.tryLock(1s));
+        QVERIFY(!lock2.tryLock(1000));
     }
 }
 
@@ -622,7 +617,7 @@ void tst_QLockFile::reboot()
     f.close();
 
     // we should succeed in locking
-    QVERIFY(lock1.tryLock(0ms));
+    QVERIFY(lock1.tryLock(0));
 }
 
 bool tst_QLockFile::overwritePidInLockFile(const QString &filePath, qint64 pid)

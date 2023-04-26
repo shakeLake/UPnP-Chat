@@ -106,7 +106,7 @@ bool QCocoaMessageDialog::show(Qt::WindowFlags windowFlags, Qt::WindowModality w
     m_alert.messageText = text.toNSString();
     m_alert.informativeText = toPlainText(options()->informativeText()).toNSString();
 
-    switch (options()->standardIcon()) {
+    switch (auto standardIcon = options()->icon()) {
     case QMessageDialogOptions::NoIcon: {
         // We only reflect the pixmap icon if the standard icon is unset,
         // as setting a standard icon will also set a corresponding pixmap

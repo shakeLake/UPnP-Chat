@@ -8,7 +8,7 @@
 #include <QtNetwork/qtnetworkglobal.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qbytearray.h>
-#include <QtCore/qshareddata.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtNetwork/qssl.h>
 
 QT_BEGIN_NAMESPACE

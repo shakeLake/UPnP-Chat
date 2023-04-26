@@ -65,7 +65,6 @@ public:
     QMargins frameMargins() const override;
     WId winId() const override;
     void propagateSizeHints() override;
-    void setOpacity(qreal level) override;
     void raise() override;
     void lower() override;
     QRect normalGeometry() const override;
@@ -93,11 +92,9 @@ public:
 
 private:
     friend class QWasmScreen;
-    static constexpr auto minSizeForRegularWindows = 100;
 
     void invalidate();
-    bool hasBorder() const;
-    bool hasShadow() const;
+    bool hasFrame() const;
     bool hasMaximizeButton() const;
     void applyWindowState();
 

@@ -10,7 +10,6 @@
 #endif
 #include "private/qgregoriancalendar_p.h"
 #include "private/qnumeric_p.h"
-#include "private/qtenvironmentvariables_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
 #endif
@@ -165,7 +164,78 @@ struct tm timeToTm(qint64 localDay, int secs, QDateTimePrivate::DaylightStatus d
     return local;
 }
 
+bool qtLocalTime(time_t utc, struct tm *local)
+{
+    // This should really be done under the environmentMutex wrapper qglobal.cpp
+    // uses in qTzSet() and friends. However, the only sane way to do that would
+    // be to move this whole function there (and replace its qTzSet() with a
+    // naked tzset(), since it'd already be mutex-protected).
+#if defined(Q_OS_WIN)
+    // The doc of localtime_s() says that localtime_s() corrects for the same
+    // things _tzset() sets the globals for, but doesn't explicitly say that it
+    // calls _tzset(), and QTBUG-109974 reveals the need for a _tzset() call.
+    qTzSet();
+    return !localtime_s(local, &utc);
+#elif QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
+    // Use the reentrant version of localtime() where available, as it is
+    // thread-safe and doesn't use a shared static data area.
+    // As localtime() is specified to work as if it called tzset(), but
+    // localtime_r() does not have this constraint, make an explicit call.
+    // The explicit call should also request a re-parse of timezone info.
+    qTzSet();
+    if (tm *res = localtime_r(&utc, local)) {
+        Q_ASSERT(res == local);
+        return true;
+    }
+    return false;
+#else
+    // POSIX mandates that localtime() behaves as if it called tzset().
+    // Returns shared static data which may be overwritten at any time
+    // So copy the result asap:
+    if (tm *res = localtime(&utc)) {
+        *local = *res;
+        return true;
+    }
+    return false;
+#endif
+}
+
+// Returns the tzname, assume tzset has been called already
+QString qt_tzname(QDateTimePrivate::DaylightStatus daylightStatus)
+{
+    int isDst = (daylightStatus == QDateTimePrivate::DaylightTime) ? 1 : 0;
+#if defined(Q_CC_MSVC)
+    size_t s = 0;
+    char name[512];
+    if (_get_tzname(&s, name, 512, isDst))
+        return QString();
+    return QString::fromLocal8Bit(name);
+#else
+    return QString::fromLocal8Bit(tzname[isDst]);
+#endif // Q_OS_WIN
+}
+
 } // namespace
+
+#if QT_CONFIG(datetimeparser)
+/*
+  \internal
+  Implemented here to share qt_tzname()
+*/
+int QDateTimeParser::startsWithLocalTimeZone(QStringView name)
+{
+    QDateTimePrivate::DaylightStatus zones[2] = {
+        QDateTimePrivate::StandardTime,
+        QDateTimePrivate::DaylightTime
+    };
+    for (const auto z : zones) {
+        QString zone(qt_tzname(z));
+        if (name.startsWith(zone))
+            return zone.size();
+    }
+    return 0;
+}
+#endif // datetimeparser
 
 namespace QLocalTime {
 
@@ -176,52 +246,35 @@ int getCurrentStandardUtcOffset()
 {
 #ifdef Q_OS_WIN
     TIME_ZONE_INFORMATION tzInfo;
-    if (GetTimeZoneInformation(&tzInfo) != TIME_ZONE_ID_INVALID) {
-        int bias = tzInfo.Bias; // In minutes.
-        // StandardBias is usually zero, but include it if given:
-        if (tzInfo.StandardDate.wMonth) // Zero month means ignore StandardBias.
-            bias += tzInfo.StandardBias;
-        // MS's bias is +ve in the USA, so minutes *behind* UTC - we want seconds *ahead*:
-        return -bias * SECS_PER_MIN;
-    }
+    GetTimeZoneInformation(&tzInfo);
+    return -tzInfo.Bias * SECS_PER_MIN;
 #else
     qTzSet();
     const time_t curr = time(nullptr);
-    if (curr != -1) {
-        /* Set t to the UTC representation of curr; the time whose local
-           standard time representation coincides with that differs from curr by
-           local time's standard offset.  Note that gmtime() leaves the tm_isdst
-           flag set to 0, so mktime() will, even if local time is currently
-           using DST, return the time since epoch at which local standard time
-           would have the same representation as UTC's representation of
-           curr. The fact that mktime() also flips tm_isdst and updates the time
-           fields to the DST-equivalent time needn't concern us here; all that
-           matters is that it returns the time after epoch at which standard
-           time's representation would have matched UTC's, had it been in
-           effect.
-        */
+    /* Set t to the UTC representation of curr; the time whose local standard
+       time representation coincides with that differs from curr by local time's
+       standard offset.  Note that gmtime() leaves the tm_isdst flag set to 0,
+       so mktime() will, even if local time is currently using DST, return the
+       time since epoch at which local standard time would have the same
+       representation as UTC's representation of curr. The fact that mktime()
+       also flips tm_isdst and updates the time fields to the DST-equivalent
+       time needn't concern us here; all that matters is that it returns the
+       time after epoch at which standard time's representation would have
+       matched UTC's, had it been in effect.
+    */
 #  if defined(_POSIX_THREAD_SAFE_FUNCTIONS)
-        struct tm t;
-        if (gmtime_r(&curr, &t)) {
-            time_t mkt = qMkTime(&t);
-            int offset = int(curr - mkt);
-            Q_ASSERT(std::abs(offset) <= SECS_PER_DAY);
-            return offset;
-        }
+    struct tm t;
+    if (gmtime_r(&curr, &t))
+        return curr - qMkTime(&t);
 #  else
-        if (struct tm *tp = gmtime(&curr)) {
-            struct tm t = *tp; // Copy it quick, hopefully before it can get stomped
-            time_t mkt = qMkTime(&t);
-            int offset = int(curr - mkt);
-            Q_ASSERT(std::abs(offset) <= SECS_PER_DAY);
-            return offset;
-        }
+    if (struct tm *tp = gmtime(&curr)) {
+        struct tm t = *tp; // Copy it quick, hopefully before it can get stomped
+        return curr - qMkTime(&t);
+    }
 #  endif
-    } // else, presumably: errno == EOVERFLOW
-#endif // Platform choice
-    qDebug("Unable to determine current standard time offset from UTC");
     // We can't tell, presume UTC.
     return 0;
+#endif // Platform choice
 }
 
 // This is local time's offset (in seconds), at the specified time, including
@@ -254,15 +307,14 @@ inline bool secondsAndMillisOverflow(qint64 epochSeconds, qint64 millis, qint64 
 // returns the local milliseconds, offset from UTC and DST status.
 QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 {
-    const auto epoch = QRoundingDown::qDivMod<MSECS_PER_SEC>(utcMillis);
-    const time_t epochSeconds = epoch.quotient;
-    const int msec = epoch.remainder;
+    const time_t epochSeconds = QRoundingDown::qDiv(utcMillis, MSECS_PER_SEC);
+    const int msec = utcMillis - epochSeconds * MSECS_PER_SEC;
     Q_ASSERT(msec >= 0 && msec < MSECS_PER_SEC);
     if (qint64(epochSeconds) * MSECS_PER_SEC + msec != utcMillis) // time_t range too narrow
         return {utcMillis};
 
     tm local;
-    if (!qLocalTime(epochSeconds, &local))
+    if (!qtLocalTime(epochSeconds, &local))
         return {utcMillis};
 
     qint64 jd;
@@ -284,25 +336,26 @@ QDateTimePrivate::ZoneState utcToLocal(qint64 utcMillis)
 
 QString localTimeAbbbreviationAt(qint64 local, QDateTimePrivate::DaylightStatus dst)
 {
-    const auto localDayMilli = QRoundingDown::qDivMod<MSECS_PER_DAY>(local);
-    qint64 millis = localDayMilli.remainder;
+    const qint64 localDays = QRoundingDown::qDiv(local, MSECS_PER_DAY);
+    qint64 millis = local - localDays * MSECS_PER_DAY;
     Q_ASSERT(0 <= millis && millis < MSECS_PER_DAY); // Definition of QRD::qDiv.
-    struct tm tmLocal = timeToTm(localDayMilli.quotient, int(millis / MSECS_PER_SEC), dst);
+    struct tm tmLocal = timeToTm(localDays, int(millis / MSECS_PER_SEC), dst);
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {};
-    return qTzName(tmLocal.tm_isdst > 0 ? 1 : 0);
+    return qt_tzname(tmLocal.tm_isdst > 0 ? QDateTimePrivate::DaylightTime
+                                          : QDateTimePrivate::StandardTime);
 }
 
 QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::DaylightStatus dst)
 {
     qint64 localSecs = local / MSECS_PER_SEC;
     qint64 millis = local - localSecs * MSECS_PER_SEC; // 0 or with same sign as local
-    const auto localDaySec = QRoundingDown::qDivMod<SECS_PER_DAY>(localSecs);
-    qint64 daySecs = localDaySec.remainder;
+    const qint64 localDays = QRoundingDown::qDiv(localSecs, SECS_PER_DAY);
+    qint64 daySecs = localSecs - localDays * SECS_PER_DAY;
     Q_ASSERT(0 <= daySecs && daySecs < SECS_PER_DAY); // Definition of QRD::qDiv.
 
-    struct tm tmLocal = timeToTm(localDaySec.quotient, daySecs, dst);
+    struct tm tmLocal = timeToTm(localDays, daySecs, dst);
     time_t utcSecs;
     if (!callMkTime(&tmLocal, &utcSecs))
         return {local};
@@ -310,7 +363,7 @@ QDateTimePrivate::ZoneState mapLocalTime(qint64 local, QDateTimePrivate::Dayligh
     // TODO: for glibc, we could use tmLocal.tm_gmtoff
     // That would give us offset directly, hence localSecs = offset + utcSecs
     // Provisional offset, until we have a revised localSeconds:
-    int offset = QRoundingDown::qDiv<MSECS_PER_SEC>(local) - utcSecs;
+    int offset = QRoundingDown::qDiv(local, MSECS_PER_SEC) - utcSecs;
     dst = tmLocal.tm_isdst > 0 ? QDateTimePrivate::DaylightTime : QDateTimePrivate::StandardTime;
     qint64 jd;
     if (Q_UNLIKELY(!QGregorianCalendar::julianFromParts(

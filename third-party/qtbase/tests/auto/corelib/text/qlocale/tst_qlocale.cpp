@@ -23,7 +23,7 @@
 #include <math.h>
 #include <fenv.h>
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
 #    include <stdlib.h>
 #endif
 
@@ -43,7 +43,7 @@ private slots:
 #if defined(Q_OS_WIN)
     void windowsDefaultLocale();
 #endif
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
     void macDefaultLocale();
 #endif
 
@@ -78,10 +78,6 @@ private slots:
     void formatTimeZone();
     void toDateTime_data();
     void toDateTime();
-    void doubleRoundTrip_data();
-    void doubleRoundTrip();
-    void integerRoundTrip_data();
-    void integerRoundTrip();
     void negativeNumbers();
     void numberOptions();
     void dayName_data();
@@ -207,8 +203,8 @@ void tst_QLocale::ctor()
 
     {
         QLocale l;
-        QCOMPARE(l.language(), default_lang);
-        QCOMPARE(l.territory(), default_country);
+        QVERIFY(l.language() == default_lang);
+        QVERIFY(l.territory() == default_country);
     }
 
 #define TEST_CTOR(req_lang, req_script, req_country, exp_lang, exp_script, exp_country) \
@@ -263,42 +259,7 @@ void tst_QLocale::ctor()
     TEST_CTOR(Chinese, LatinScript, UnitedStates,
               Chinese, SimplifiedHanScript, China);
 
-    // Incompletely specified; find what likely subtags imply:
-    TEST_CTOR(AnyLanguage, AnyScript, Canada,
-              English, LatinScript, Canada);
-
 #undef TEST_CTOR
-
-    // QTBUG-64940: QLocale(Any, Any, land).territory() should normally be land:
-    constexpr QLocale::Territory exceptions[] = {
-        // There are, however, some exceptions:
-        QLocale::AmericanSamoa,
-        QLocale::Antarctica,
-        QLocale::AscensionIsland,
-        QLocale::BouvetIsland,
-        QLocale::CaribbeanNetherlands,
-        QLocale::ClippertonIsland,
-        QLocale::Curacao,
-        QLocale::Europe,
-        QLocale::EuropeanUnion,
-        QLocale::FrenchSouthernTerritories,
-        QLocale::Haiti,
-        QLocale::HeardAndMcDonaldIslands,
-        QLocale::OutlyingOceania,
-        QLocale::Palau,
-        QLocale::Samoa,
-        QLocale::SouthGeorgiaAndSouthSandwichIslands,
-        QLocale::TokelauTerritory,
-        QLocale::TristanDaCunha,
-        QLocale::TuvaluTerritory,
-        QLocale::Vanuatu
-    };
-    for (int i = int(QLocale::AnyTerritory) + 1; i <= int(QLocale::LastTerritory); ++i) {
-        const auto land = QLocale::Territory(i);
-        if (std::find(std::begin(exceptions), std::end(exceptions), land) != std::end(exceptions))
-            continue;
-        QCOMPARE(QLocale(QLocale::AnyLanguage, QLocale::AnyScript, land).territory(), land);
-    }
 }
 
 void tst_QLocale::defaulted_ctor()
@@ -910,15 +871,13 @@ void tst_QLocale::toReal_data()
         << u"fa_IR"_s << u"\u06f4\u00d7\u200e\u2212\u06f0\u06f3"_s << false << 0.0;
     QTest::newRow("fa_IR 4x!3") // Only first character of exponent and sign
         << u"fa_IR"_s << u"\u06f4\u00d7\u200e\u06f0\u06f3"_s << false << 0.0;
-
-    // Cyrillic has its own E; only officially used by Ukrainian as exponent,
-    // with other Cyrillic locales using the Latin E. QLocale allows that there
-    // may be some cross-over between these.
-    QTest::newRow("uk_UA Cyrillic E") << u"uk_UA"_s << u"4\u0415-3"_s << true << 4e-3; // Official
-    QTest::newRow("uk_UA Latin E") << u"uk_UA"_s << u"4E-3"_s << true << 4e-3;
-    QTest::newRow("ru_RU Latin E") << u"ru_RU"_s << u"4E-3"_s << true << 4e-3; // Official
-    QTest::newRow("ru_RU Cyrillic E") << u"ru_RU"_s << u"4\u0415-3"_s << true << 4e-3;
 }
+#define EXPECT_NONSINGLE_FAILURES do { \
+        QEXPECT_FAIL("sv_SE 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("se_NO 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("ar_EG 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+        QEXPECT_FAIL("fa_IR 4e-3", "Code wrongly assumes single character, QTBUG-107801", Abort); \
+    } while (0)
 
 void tst_QLocale::stringToDouble_data()
 {
@@ -961,6 +920,7 @@ void tst_QLocale::stringToDouble()
 
     bool ok;
     double d = locale.toDouble(num_str, &ok);
+    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     {
@@ -1053,6 +1013,7 @@ void tst_QLocale::stringToFloat()
     }
     bool ok;
     float f = locale.toFloat(num_str, &ok);
+    EXPECT_NONSINGLE_FAILURES;
     QCOMPARE(ok, good);
 
     if constexpr (std::numeric_limits<double>::has_denorm != std::denorm_present) {
@@ -1092,6 +1053,7 @@ void tst_QLocale::stringToFloat()
     }
 #undef MY_FLOAT_EPSILON
 }
+#undef EXPECT_NONSINGLE_FAILURES
 
 void tst_QLocale::doubleToString_data()
 {
@@ -1324,10 +1286,6 @@ void tst_QLocale::strtod_data()
     // Overflow, ends with cruft - fails but reports right length:
     QTest::newRow("1e2000 cruft")     << QString("1e2000 cruft")     << qInf()        << 6  << false;
     QTest::newRow("-1e2000 cruft")    << QString("-1e2000 cruft")    << -qInf()       << 7  << false;
-
-    // NaN and nan
-    QTest::newRow("NaN") << QString("NaN") << qQNaN() << 3 << true;
-    QTest::newRow("nan") << QString("nan") << qQNaN() << 3 << true;
 
     // Underflow, ends with cruft - fails but reports right length:
     QTest::newRow("1e-2000 cruft")    << QString("1e-2000 cruft")    << 0.0           << 7  << false;
@@ -2185,63 +2143,7 @@ void tst_QLocale::toDateTime()
         QCOMPARE(l.toDateTime(string, QLocale::ShortFormat), result);
 }
 
-void tst_QLocale::doubleRoundTrip_data()
-{
-    QTest::addColumn<QString>("localeName");
-    QTest::addColumn<QString>("numberText");
-    QTest::addColumn<char>("numberFormat");
-
-    // Signs and exponent separator aren't single characters:
-    QTest::newRow("sv_SE 4e-06 g") // Swedish, Sweden
-        << u"sv_SE"_s << u"4\u00d7" "10^\u2212" "06"_s << 'g';
-    QTest::newRow("se_NO 4e-06 g") // Northern Sami, Norway
-        << u"se_NO"_s << u"4\u00b7" "10^\u2212" "06"_s << 'g';
-    QTest::newRow("ar_EG 4e-06 g") // Arabic, Egypt
-        << u"ar_EG"_s << u"\u0664\u0627\u0633\u061c-\u0660\u0666"_s << 'g';
-    QTest::newRow("fa_IR 4e-06 g") // Farsi, Iran
-        << u"fa_IR"_s << u"\u06f4\u00d7\u06f1\u06f0^\u200e\u2212\u06f0\u06f6"_s << 'g';
-}
-
-void tst_QLocale::doubleRoundTrip()
-{
-    QFETCH(QString, localeName);
-    QFETCH(QString, numberText);
-    QFETCH(char, numberFormat);
-
-    QLocale locale(localeName);
-    bool ok;
-
-    double number = locale.toDouble(numberText, &ok);
-    QVERIFY(ok);
-    QCOMPARE(locale.toString(number, numberFormat), numberText);
-}
-
-void tst_QLocale::integerRoundTrip_data()
-{
-    QTest::addColumn<QString>("localeName");
-    QTest::addColumn<QString>("numberText");
-
-    // Two-character signs:
-    // Arabic, Egypt
-    QTest::newRow("ar_EG -406") << u"ar_EG"_s << u"\u061c-\u0664\u0660\u0666"_s;
-    // Farsi, Iran
-    QTest::newRow("fa_IR -406") << u"fa_IR"_s << u"\u200e\u2212\u06f4\u06f0\u06f6"_s;
-}
-
-void tst_QLocale::integerRoundTrip()
-{
-    QFETCH(QString, localeName);
-    QFETCH(QString, numberText);
-
-    QLocale locale(localeName);
-    bool ok;
-
-    qlonglong number = locale.toLongLong(numberText, &ok);
-    QVERIFY(ok);
-    QCOMPARE(locale.toString(number), numberText);
-}
-
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 
 // Format number string according to system locale settings.
 // Expected in format is US "1,234.56".
@@ -2343,7 +2245,7 @@ void tst_QLocale::macDefaultLocale()
     QCOMPARE(locale.weekdays(), days);
 
 }
-#endif // Q_OS_DARWIN
+#endif // Q_OS_MAC
 
 #if defined(Q_OS_WIN)
 #include <qt_windows.h>
@@ -2588,6 +2490,7 @@ void tst_QLocale::negativeNumbers()
     // Several Arabic locales have an invisible script-marker before their signs:
     const QLocale egypt(QLocale::Arabic, QLocale::Egypt);
     QCOMPARE(egypt.toString(-403), u"\u061c-\u0664\u0660\u0663"_s);
+    QEXPECT_FAIL("", "Code wrongly assumes single character, QTBUG-107801", Abort);
     i = egypt.toInt(u"\u061c-\u0664\u0660\u0663"_s, &ok);
     QVERIFY(ok);
     QCOMPARE(i, -403);
@@ -2886,11 +2789,7 @@ void tst_QLocale::dateFormat()
     // And, indeed, one for a negative year:
     old = sys.toString(QDate(-1173, 5, 1), QLocale::LongFormat);
     QVERIFY(!old.isEmpty());
-    qsizetype yearDigitStart = old.indexOf(u"1173");
-    QVERIFY2(yearDigitStart != -1, qPrintable(old + QLatin1String(" for locale ") + sys.name()));
-    QStringView before = QStringView(old).first(yearDigitStart);
-    QVERIFY2(before.endsWith(QChar('-')) || before.endsWith(QChar(0x2212)),
-             qPrintable(old + QLatin1String(" has no minus sign for locale ") + sys.name()));
+    QVERIFY2(old.contains(u"-1173"), qPrintable(old + QLatin1String(" for locale ") + sys.name()));
 }
 
 void tst_QLocale::timeFormat()

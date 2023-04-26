@@ -18,7 +18,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#if defined(Q_OS_DARWIN)
+#if defined(Q_OS_MAC)
 # include <private/qcore_mac_p.h>
 #endif
 

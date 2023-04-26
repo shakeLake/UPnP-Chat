@@ -38,9 +38,6 @@ QString QFileInfoPrivate::getFileName(QAbstractFileEngine::FileName name) const
             case QAbstractFileEngine::AbsoluteLinkTarget:
                 ret = QFileSystemEngine::getLinkTarget(fileEntry, metaData).filePath();
                 break;
-            case QAbstractFileEngine::RawLinkPath:
-                ret = QFileSystemEngine::getRawLinkPath(fileEntry, metaData).filePath();
-                break;
             case QAbstractFileEngine::JunctionName:
                 ret = QFileSystemEngine::getJunctionTarget(fileEntry, metaData).filePath();
                 break;
@@ -226,25 +223,6 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     isSymLink(). The symLinkTarget() function provides the name of the file
     the symlink points to.
 
-    Elements of the file's name can be extracted with path() and
-    fileName(). The fileName()'s parts can be extracted with
-    baseName(), suffix() or completeSuffix(). QFileInfo objects to
-    directories created by Qt classes will not have a trailing file
-    separator. If you wish to use trailing separators in your own file
-    info objects, just append one to the file name given to the constructors
-    or setFile().
-
-    Date and time related information are returned by birthTime(), fileTime(),
-    lastModified(), lastRead(), and metadataChangeTime().
-    Information about
-    access permissions can be obtained with isReadable(), isWritable(), and
-    isExecutable(). Ownership information can be obtained with
-    owner(), ownerId(), group(), and groupId(). You can also examine
-    permissions and ownership in a single statement using the permission()
-    function.
-
-    \section1 Symbolic Links and Shortcuts
-
     On Unix (including \macos and iOS), the property getter functions in this
     class return the properties such as times and size of the target file, not
     the symlink, because Unix handles symlinks transparently. Opening a symlink
@@ -260,9 +238,23 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
 
     \snippet code/src_corelib_io_qfileinfo.cpp 1
 
-    \section1 NTFS permissions
+    Elements of the file's name can be extracted with path() and
+    fileName(). The fileName()'s parts can be extracted with
+    baseName(), suffix() or completeSuffix(). QFileInfo objects to
+    directories created by Qt classes will not have a trailing file
+    separator. If you wish to use trailing separators in your own file
+    info objects, just append one to the file name given to the constructors
+    or setFile().
 
-    On NTFS file systems, ownership and permissions checking is
+    The file's dates are returned by birthTime(), lastModified(), lastRead() and
+    fileTime(). Information about the file's access permissions is
+    obtained with isReadable(), isWritable() and isExecutable(). The
+    file's ownership is available from owner(), ownerId(), group() and
+    groupId(). You can examine a file's permissions and ownership in a
+    single statement using the permission() function.
+
+    \target NTFS permissions
+    \note On NTFS file systems, ownership and permissions checking is
     disabled by default for performance reasons. To enable it,
     include the following line:
 
@@ -278,20 +270,7 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     threads other than the main thread have started or after every thread
     other than the main thread has ended.
 
-    \note From Qt 6.6 the variable \c qt_ntfs_permission_lookup is
-    deprecated. Please use the following alternatives.
-
-    The safe and easy way to manage permission checks is to use the RAII class
-    \c QNtfsPermissionCheckGuard.
-
-    \snippet ntfsp.cpp raii
-
-    If you need more fine-grained control, it is possible to manage the permission
-    with the following functions instead:
-
-    \snippet ntfsp.cpp free-funcs
-
-    \section1 Performance Considerations
+    \section1 Performance Issues
 
     Some of QFileInfo's functions query the file system, but for
     performance reasons, some functions only operate on the
@@ -300,20 +279,16 @@ QDateTime &QFileInfoPrivate::getFileTime(QAbstractFileEngine::FileTime request) 
     The path() function, however, can work on the file name directly,
     and so it is faster.
 
-    To speed up performance, QFileInfo also caches information about
-    the file. Because files can be changed by other users or programs, or
+    \note To speed up performance, QFileInfo caches information about
+    the file.
+
+    Because files can be changed by other users or programs, or
     even by other parts of the same program, there is a function that
     refreshes the file information: refresh(). If you want to switch
     off a QFileInfo's caching and force it to access the file system
     every time you request information from it call setCaching(false).
     If you want to make sure that all information is read from the
     file system, use stat().
-
-    \l{birthTime()}, \l{fileTime()}, \l{lastModified()}, \l{lastRead()},
-    and \l{metadataChangeTime()} return times in \e{local time} by default.
-    Since native file system API typically uses UTC, this requires a conversion.
-    If you don't actually need the local time, you can avoid this by requesting
-    the time in QTimeZone::UTC directly.
 
     \section1 Platform Specific Issues
 
@@ -1026,8 +1001,7 @@ bool QFileInfo::isNativePath() const
 /*!
     Returns \c true if this object points to a file or to a symbolic
     link to a file. Returns \c false if the
-    object points to something that is not a file (such as a directory)
-    or that does not exist.
+    object points to something which isn't a file, such as a directory.
 
     If the file is a symlink, this function returns true if the target is a
     regular file (not the symlink).
@@ -1045,9 +1019,7 @@ bool QFileInfo::isFile() const
 
 /*!
     Returns \c true if this object points to a directory or to a symbolic
-    link to a directory. Returns \c false if the
-    object points to something that is not a directory (such as a file)
-    or that does not exist.
+    link to a directory; otherwise returns \c false.
 
     If the file is a symlink, this function returns true if the target is a
     directory (not the symlink).
@@ -1264,25 +1236,6 @@ QString QFileInfo::symLinkTarget() const
 }
 
 /*!
-    \since 6.6
-    Read the path the symlink references.
-
-    Returns the raw path referenced by the symbolic link, without resolving a relative
-    path relative to the directory containing the symbolic link. The returned string will
-    only be an absolute path if the symbolic link actually references it as such. Returns
-    an empty string if the object is not a symbolic link.
-
-    \sa symLinkTarget(), exists(), isSymLink(), isDir(), isFile()
-*/
-QString QFileInfo::readSymLink() const
-{
-    Q_D(const QFileInfo);
-    if (d->isDefaultConstructed)
-        return {};
-    return d->getFileName(QAbstractFileEngine::RawLinkPath);
-}
-
-/*!
     \since 6.2
 
     Resolves an NTFS junction to the path it references.
@@ -1468,26 +1421,8 @@ qint64 QFileInfo::size() const
 
 /*!
     \fn QDateTime QFileInfo::birthTime() const
-
-    Returns the date and time when the file was created (born), in local time.
-
-    If the file birth time is not available, this function returns an invalid QDateTime.
-
-    If the file is a symlink, the time of the target file is returned (not the symlink).
-
-    This function overloads QFileInfo::birthTime(const QTimeZone &tz), and
-    returns the same as \c{birthTime(QTimeZone::LocalTime)}.
-
     \since 5.10
-    \sa lastModified(), lastRead(), metadataChangeTime(), fileTime()
-*/
-
-/*!
-    \fn QDateTime QFileInfo::birthTime(const QTimeZone &tz) const
-
-    Returns the date and time when the file was created (born).
-
-    \include qfileinfo.cpp file-times-in-time-zone
+    Returns the date and time when the file was created / born.
 
     If the file birth time is not available, this function returns an invalid
     QDateTime.
@@ -1495,150 +1430,60 @@ qint64 QFileInfo::size() const
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \since 6.6
-    \sa lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
+    \sa lastModified(), lastRead(), metadataChangeTime()
 */
 
 /*!
     \fn QDateTime QFileInfo::metadataChangeTime() const
-
-    Returns the date and time when the file's metadata was last changed,
-    in local time.
-
-    A metadata change occurs when the file is first created, but it also
-    occurs whenever the user writes or sets inode information (for example,
-    changing the file permissions).
-
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
-
-    This function overloads QFileInfo::metadataChangeTime(const QTimeZone &tz),
-    and returns the same as \c{metadataChangeTime(QTimeZone::LocalTime)}.
-
     \since 5.10
-    \sa birthTime(), lastModified(), lastRead(), fileTime()
-*/
-
-/*!
-    \fn QDateTime QFileInfo::metadataChangeTime(const QTimeZone &tz) const
-
-    Returns the date and time when the file's metadata was last changed.
-    A metadata change occurs when the file is first created, but it also
-    occurs whenever the user writes or sets inode information (for example,
-    changing the file permissions).
-
-    \include qfileinfo.cpp file-times-in-time-zone
+    Returns the date and time when the file metadata was changed. A metadata
+    change occurs when the file is created, but it also occurs whenever the
+    user writes or sets inode information (for example, changing the file
+    permissions).
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime time, const QTimeZone &)
+    \sa lastModified(), lastRead()
 */
 
 /*!
     \fn QDateTime QFileInfo::lastModified() const
 
-    Returns the date and time when the file was last modified.
+    Returns the date and local time when the file was last modified.
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
-
-    This function overloads \l{QFileInfo::lastModified(const QTimeZone &)},
-    and returns the same as \c{lastModified(QTimeZone::LocalTime)}.
 
     \sa birthTime(), lastRead(), metadataChangeTime(), fileTime()
 */
 
 /*!
-    \fn QDateTime QFileInfo::lastModified(const QTimeZone &tz) const
-
-    Returns the date and time when the file was last modified.
-
-    \include qfileinfo.cpp file-times-in-time-zone
-
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
-
-    \since 6.6
-    \sa birthTime(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
-*/
-
-/*!
     \fn QDateTime QFileInfo::lastRead() const
 
-    Returns the date and time when the file was last read (accessed).
+    Returns the date and local time when the file was last read (accessed).
 
-    On platforms where this information is not available, returns the same
-    time as lastModified().
+    On platforms where this information is not available, returns the
+    same as lastModified().
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
-
-    This function overloads \l{QFileInfo::lastRead(const QTimeZone &)},
-    and returns the same as \c{lastRead(QTimeZone::LocalTime)}.
 
     \sa birthTime(), lastModified(), metadataChangeTime(), fileTime()
 */
 
 /*!
-    \fn QDateTime QFileInfo::lastRead(const QTimeZone &tz) const
-
-    Returns the date and time when the file was last read (accessed).
-
-    \include qfileinfo.cpp file-times-in-time-zone
-
-    On platforms where this information is not available, returns the same
-    time as lastModified().
-
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
-
-    \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), metadataChangeTime(const QTimeZone &), fileTime(QFile::FileTime, const QTimeZone &)
-*/
-
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0) && !defined(QT_BOOTSTRAPPED)
-/*!
-    Returns the file time specified by \a time.
-
-    If the time cannot be determined, an invalid date time is returned.
-
-    If the file is a symlink, the time of the target file is returned
-    (not the symlink).
-
-    This function overloads
-    \l{QFileInfo::fileTime(QFile::FileTime, const QTimeZone &)},
-    and returns the same as \c{fileTime(time, QTimeZone::LocalTime)}.
-
     \since 5.10
-    \sa birthTime(), lastModified(), lastRead(), metadataChangeTime()
-*/
-QDateTime QFileInfo::fileTime(QFile::FileTime time) const {
-    return fileTime(time, QTimeZone::LocalTime);
-}
-#endif
 
-/*!
-    Returns the file time specified by \a time.
-
-//! [file-times-in-time-zone]
-    The returned time is in the time zone specified by \a tz. For example,
-    you can use QTimeZone::LocalTime or QTimeZone::UTC to get the time in
-    the Local time zone or UTC, respectively. Since native file system API
-    typically uses UTC, using QTimeZone::UTC is often faster, as it does not
-    require any conversions.
-//! [file-times-in-time-zone]
-
-    If the time cannot be determined, an invalid date time is returned.
+    Returns the file time specified by \a time. If the time cannot be
+    determined, an invalid date time is returned.
 
     If the file is a symlink, the time of the target file is returned
     (not the symlink).
 
-    \since 6.6
-    \sa birthTime(const QTimeZone &), lastModified(const QTimeZone &), lastRead(const QTimeZone &), metadataChangeTime(const QTimeZone &), QDateTime::isValid()
+    \sa QFile::FileTime, QDateTime::isValid()
 */
-QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
+QDateTime QFileInfo::fileTime(QFile::FileTime time) const
 {
     static_assert(int(QFile::FileAccessTime) == int(QAbstractFileEngine::AccessTime));
     static_assert(int(QFile::FileBirthTime) == int(QAbstractFileEngine::BirthTime));
@@ -1663,10 +1508,10 @@ QDateTime QFileInfo::fileTime(QFile::FileTime time, const QTimeZone &tz) const
         break;
     }
 
-    auto fsLambda = [d, fetime]() { return d->metaData.fileTime(fetime); };
-    auto engineLambda = [d, fetime]() { return d->getFileTime(fetime); };
-    const QDateTime dt = d->checkAttribute<QDateTime>(flag, fsLambda, engineLambda);
-    return dt.toTimeZone(tz);
+    return d->checkAttribute<QDateTime>(
+                flag,
+                [=]() { return d->metaData.fileTime(fetime).toLocalTime(); },
+                [=]() { return d->getFileTime(fetime).toLocalTime(); });
 }
 
 /*!

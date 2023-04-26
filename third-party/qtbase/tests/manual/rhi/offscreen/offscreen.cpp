@@ -23,7 +23,6 @@
 
 #ifdef Q_OS_WIN
 #include <QtGui/private/qrhid3d11_p.h>
-#include <QtGui/private/qrhid3d12_p.h>
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
@@ -52,7 +51,6 @@ enum GraphicsApi
     OpenGL,
     Vulkan,
     D3D11,
-    D3D12,
     Metal,
     Null
 };
@@ -68,8 +66,6 @@ QString graphicsApiName()
         return QLatin1String("Vulkan");
     case D3D11:
         return QLatin1String("Direct3D 11");
-    case D3D12:
-        return QLatin1String("Direct3D 12");
     case Metal:
         return QLatin1String("Metal");
     case Null:
@@ -100,10 +96,8 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(glOption);
     QCommandLineOption vkOption({ "v", "vulkan" }, QLatin1String("Vulkan"));
     cmdLineParser.addOption(vkOption);
-    QCommandLineOption d3d11Option({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
-    cmdLineParser.addOption(d3d11Option);
-    QCommandLineOption d3d12Option({ "D", "d3d12" }, QLatin1String("Direct3D 12"));
-    cmdLineParser.addOption(d3d12Option);
+    QCommandLineOption d3dOption({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
+    cmdLineParser.addOption(d3dOption);
     QCommandLineOption mtlOption({ "m", "metal" }, QLatin1String("Metal"));
     cmdLineParser.addOption(mtlOption);
     QCommandLineOption nullOption({ "n", "null" }, QLatin1String("Null"));
@@ -113,10 +107,8 @@ int main(int argc, char **argv)
         graphicsApi = OpenGL;
     if (cmdLineParser.isSet(vkOption))
         graphicsApi = Vulkan;
-    if (cmdLineParser.isSet(d3d11Option))
+    if (cmdLineParser.isSet(d3dOption))
         graphicsApi = D3D11;
-    if (cmdLineParser.isSet(d3d12Option))
-        graphicsApi = D3D12;
     if (cmdLineParser.isSet(mtlOption))
         graphicsApi = Metal;
     if (cmdLineParser.isSet(nullOption))
@@ -126,11 +118,10 @@ int main(int argc, char **argv)
     qDebug("This is a multi-api example, use command line arguments to override:\n%s", qPrintable(cmdLineParser.helpText()));
 
     QRhi *r = nullptr;
-    QRhi::Flags rhiFlags = QRhi::EnableTimestamps;
 
     if (graphicsApi == Null) {
         QRhiNullInitParams params;
-        r = QRhi::create(QRhi::Null, &params, rhiFlags);
+        r = QRhi::create(QRhi::Null, &params);
     }
 
 #if QT_CONFIG(vulkan)
@@ -142,7 +133,7 @@ int main(int argc, char **argv)
         if (inst.create()) {
             QRhiVulkanInitParams params;
             params.inst = &inst;
-            r = QRhi::create(QRhi::Vulkan, &params, rhiFlags);
+            r = QRhi::create(QRhi::Vulkan, &params);
         } else {
             qWarning("Failed to create Vulkan instance, switching to OpenGL");
             graphicsApi = OpenGL;
@@ -156,7 +147,7 @@ int main(int argc, char **argv)
         offscreenSurface.reset(QRhiGles2InitParams::newFallbackSurface());
         QRhiGles2InitParams params;
         params.fallbackSurface = offscreenSurface.data();
-        r = QRhi::create(QRhi::OpenGLES2, &params, rhiFlags);
+        r = QRhi::create(QRhi::OpenGLES2, &params);
     }
 #endif
 
@@ -164,18 +155,14 @@ int main(int argc, char **argv)
     if (graphicsApi == D3D11) {
         QRhiD3D11InitParams params;
         params.enableDebugLayer = true;
-        r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
-    } else if (graphicsApi == D3D12) {
-        QRhiD3D12InitParams params;
-        params.enableDebugLayer = true;
-        r = QRhi::create(QRhi::D3D12, &params, rhiFlags);
+        r = QRhi::create(QRhi::D3D11, &params);
     }
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
     if (graphicsApi == Metal) {
         QRhiMetalInitParams params;
-        r = QRhi::create(QRhi::Metal, &params, rhiFlags);
+        r = QRhi::create(QRhi::Metal, &params);
     }
 #endif
 
@@ -302,8 +289,6 @@ int main(int argc, char **argv)
 #ifdef TEST_FINISH
         r->endOffscreenFrame();
 #endif
-        if (r->isFeatureSupported(QRhi::Timestamps))
-            qDebug() << "GPU time:" << cb->lastCompletedGpuTime() << "seconds (may refer to a previous frame)";
     }
 
     delete ps;

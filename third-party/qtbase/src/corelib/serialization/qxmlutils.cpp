@@ -48,7 +48,7 @@ bool QXmlUtils::rangeContains(RangeIter begin, RangeIter end, const QChar c)
         return cp >= begin->min;
 
     while (begin != end) {
-        qptrdiff delta = (end - begin) / 2;
+        int delta = (end - begin) / 2;
         RangeIter mid = begin + delta;
 
         if (mid->min > cp)

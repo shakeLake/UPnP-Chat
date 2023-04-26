@@ -24,8 +24,7 @@
 QT_BEGIN_NAMESPACE
 
 namespace LocalFileApi {
-class Q_AUTOTEST_EXPORT Type
-{
+class Q_CORE_EXPORT Type {
 public:
     class Accept {
     public:
@@ -37,12 +36,12 @@ public:
 
                 ~Extension();
 
-                const QStringView &value() const { return m_value; }
+                emscripten::val asVal() const;
 
             private:
                 explicit Extension(QStringView extension);
 
-                QStringView m_value;
+                emscripten::val m_storage;
             };
 
             MimeType();
@@ -50,43 +49,37 @@ public:
 
             void addExtension(Extension type);
 
-            const std::vector<Extension> &extensions() const { return m_extensions; }
+            emscripten::val asVal() const;
 
         private:
-            std::vector<Extension> m_extensions;
+            emscripten::val m_storage;
         };
 
         static std::optional<Accept> fromQt(QStringView type);
 
         ~Accept();
 
-        void setMimeType(MimeType mimeType);
+        void addMimeType(MimeType mimeType);
 
-        const MimeType &mimeType() const { return m_mimeType; }
+        emscripten::val asVal() const;
 
     private:
         Accept();
-        MimeType m_mimeType;
+        emscripten::val m_storage;
     };
 
     Type(QStringView description, std::optional<Accept> accept);
     ~Type();
 
     static std::optional<Type> fromQt(QStringView type);
-    const QStringView &description() const { return m_description; }
-    const std::optional<Accept> &accept() const { return m_accept; }
+    emscripten::val asVal() const;
 
 private:
-    QStringView m_description;
-    std::optional<Accept> m_accept;
+    emscripten::val m_storage;
 };
 
-Q_AUTOTEST_EXPORT emscripten::val makeOpenFileOptions(const QStringList &filterList,
-                                                      bool acceptMultiple);
-Q_AUTOTEST_EXPORT emscripten::val makeSaveFileOptions(const QStringList &filterList,
-                                                      const std::string &suggestedName);
-
-Q_AUTOTEST_EXPORT std::string makeFileInputAccept(const QStringList &filterList);
+Q_CORE_EXPORT emscripten::val makeOpenFileOptions(const QStringList &filterList, bool acceptMultiple);
+Q_CORE_EXPORT emscripten::val makeSaveFileOptions(const QStringList &filterList, const std::string& suggestedName);
 
 }  // namespace LocalFileApi
 QT_END_NAMESPACE

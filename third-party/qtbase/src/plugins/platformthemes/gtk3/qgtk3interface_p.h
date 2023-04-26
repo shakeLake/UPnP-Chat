@@ -16,6 +16,7 @@
 //
 
 #include <QtCore/QString>
+#include <QtCore/QLibrary>
 #include <QtCore/QCache>
 #include <private/qflatmap_p.h>
 #include <QtCore/QObject>

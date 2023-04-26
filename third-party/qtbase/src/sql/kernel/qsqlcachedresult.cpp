@@ -3,6 +3,7 @@
 
 #include "private/qsqlcachedresult_p.h"
 
+#include <qdatetime.h>
 #include <qvariant.h>
 #include <QtSql/private/qsqldriver_p.h>
 
@@ -20,7 +21,7 @@ QT_BEGIN_NAMESPACE
    to indicate that we are not interested in the actual values.
 */
 
-static constexpr qsizetype initial_cache_size = 128;
+static const uint initial_cache_size = 128;
 
 void QSqlCachedResultPrivate::cleanup()
 {

@@ -31,6 +31,7 @@
 #include <QtNetwork/qssl.h>
 
 #include <QtCore/qloggingcategory.h>
+#include <QtCore/qsharedpointer.h>
 #include <QtCore/qnamespace.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qglobal.h>

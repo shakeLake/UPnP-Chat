@@ -258,9 +258,6 @@ public:
     QByteArray enumName() const;
     void setEnumName(const QByteArray &alias);
 
-    QMetaType metaType() const;
-    void setMetaType(QMetaType metaType);
-
     bool isFlag() const;
     void setIsFlag(bool value);
 

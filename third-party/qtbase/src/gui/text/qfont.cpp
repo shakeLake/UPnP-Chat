@@ -2796,15 +2796,13 @@ bool QFontInfo::exactMatch() const
 // QFontCache
 // **********************************************************************
 
-using namespace std::chrono_literals;
-
 #ifdef QFONTCACHE_DEBUG
 // fast timeouts for debugging
-static constexpr auto fast_timeout =   1s;
-static constexpr auto slow_timeout =   5s;
+static const int fast_timeout =   1000;  // 1s
+static const int slow_timeout =   5000;  // 5s
 #else
-static constexpr auto fast_timeout =  10s;
-static constexpr auto slow_timeout = 5min;
+static const int fast_timeout =  10000; // 10s
+static const int slow_timeout = 300000; //  5m
 #endif // QFONTCACHE_DEBUG
 
 #ifndef QFONTCACHE_MIN_COST
@@ -3014,7 +3012,7 @@ void QFontCache::increaseCost(uint cost)
             return;
 
         if (timer_id == -1 || ! fast) {
-            FC_DEBUG("  TIMER: starting fast timer (%d s)", static_cast<int>(fast_timeout.count()));
+            FC_DEBUG("  TIMER: starting fast timer (%d ms)", fast_timeout);
 
             if (timer_id != -1)
                 killTimer(timer_id);

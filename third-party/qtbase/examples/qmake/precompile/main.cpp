@@ -15,8 +15,7 @@ int main(int argc, char **argv)
     MyObject obj;
     MyDialog dialog;
 
-    QObject::connect(dialog.aButton, &QPushButton::clicked,
-                     &dialog, &MyDialog::close);
+    dialog.connect(dialog.aButton, SIGNAL(clicked()), SLOT(close()));
     dialog.show();
 
     return app.exec();

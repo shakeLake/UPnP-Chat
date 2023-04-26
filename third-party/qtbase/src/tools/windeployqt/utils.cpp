@@ -720,43 +720,32 @@ static inline MsvcDebugRuntimeResult checkMsvcDebugRuntime(const QStringList &de
 }
 
 template <class ImageNtHeader>
-inline QStringList determineDependentLibs(const ImageNtHeader *nth, const void *fileMemory,
-                                           QString *errorMessage)
-{
-    return readImportSections(nth, fileMemory, errorMessage);
-}
-
-template <class ImageNtHeader>
-inline bool determineDebug(const ImageNtHeader *nth, const void *fileMemory,
-                           QStringList *dependentLibrariesIn, QString *errorMessage)
-{
-    if (nth->FileHeader.Characteristics & IMAGE_FILE_DEBUG_STRIPPED)
-        return false;
-
-    const QStringList dependentLibraries = dependentLibrariesIn != nullptr ?
-                *dependentLibrariesIn :
-                determineDependentLibs(nth, fileMemory, errorMessage);
-
-    const bool hasDebugEntry = nth->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG].Size;
-    // When an MSVC debug entry is present, check whether the debug runtime
-    // is actually used to detect -release / -force-debug-info builds.
-    const MsvcDebugRuntimeResult msvcrt = checkMsvcDebugRuntime(dependentLibraries);
-    if (msvcrt == NoMsvcRuntime)
-        return hasDebugEntry;
-    else
-        return hasDebugEntry && msvcrt == MsvcDebugRuntime;
-}
-
-template <class ImageNtHeader>
 inline void determineDebugAndDependentLibs(const ImageNtHeader *nth, const void *fileMemory,
+                                           bool isMinGW,
                                            QStringList *dependentLibrariesIn,
                                            bool *isDebugIn, QString *errorMessage)
 {
-    if (dependentLibrariesIn)
-        *dependentLibrariesIn = determineDependentLibs(nth, fileMemory, errorMessage);
+    const bool hasDebugEntry = nth->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_DEBUG].Size;
+    QStringList dependentLibraries;
+    if (dependentLibrariesIn || (isDebugIn != nullptr && hasDebugEntry && !isMinGW))
+        dependentLibraries = readImportSections(nth, fileMemory, errorMessage);
 
-    if (isDebugIn)
-        *isDebugIn = determineDebug(nth, fileMemory, dependentLibrariesIn, errorMessage);
+    if (dependentLibrariesIn)
+        *dependentLibrariesIn = dependentLibraries;
+    if (isDebugIn != nullptr) {
+        if (isMinGW) {
+            // Use logic that's used e.g. in objdump / pfd library
+            *isDebugIn = !(nth->FileHeader.Characteristics & IMAGE_FILE_DEBUG_STRIPPED);
+        } else {
+            // When an MSVC debug entry is present, check whether the debug runtime
+            // is actually used to detect -release / -force-debug-info builds.
+            const MsvcDebugRuntimeResult msvcrt = checkMsvcDebugRuntime(dependentLibraries);
+            if (msvcrt == NoMsvcRuntime)
+                *isDebugIn = hasDebugEntry;
+            else
+                *isDebugIn = hasDebugEntry && msvcrt == MsvcDebugRuntime;
+        }
+    }
 }
 
 // Read a PE executable and determine dependent libraries, word size
@@ -810,10 +799,10 @@ bool readPeExecutable(const QString &peExecutableFileName, QString *errorMessage
             *wordSizeIn = wordSize;
         if (wordSize == 32) {
             determineDebugAndDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS32 *>(ntHeaders),
-                                           fileMemory, dependentLibrariesIn, isDebugIn, errorMessage);
+                                           fileMemory, isMinGW, dependentLibrariesIn, isDebugIn, errorMessage);
         } else {
             determineDebugAndDependentLibs(reinterpret_cast<const IMAGE_NT_HEADERS64 *>(ntHeaders),
-                                           fileMemory, dependentLibrariesIn, isDebugIn, errorMessage);
+                                           fileMemory, isMinGW, dependentLibrariesIn, isDebugIn, errorMessage);
         }
 
         if (machineArchIn)

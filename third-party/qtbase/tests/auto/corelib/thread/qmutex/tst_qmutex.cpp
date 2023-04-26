@@ -14,8 +14,6 @@
 #include <qwaitcondition.h>
 #include <private/qvolatile_p.h>
 
-using namespace std::chrono_literals;
-
 class tst_QMutex : public QObject
 {
     Q_OBJECT
@@ -285,7 +283,7 @@ void tst_QMutex::tryLock_non_recursive()
     testsTurn.acquire();
     normalMutex.lock();
     threadsTurn.release();
-    QThread::sleep(100ms);
+    QThread::msleep(100);
     normalMutex.unlock();
 
     // wait for thread to finish
@@ -410,7 +408,7 @@ void tst_QMutex::try_lock_for_non_recursive()
     testsTurn.acquire();
     normalMutex.lock();
     threadsTurn.release();
-    QThread::sleep(100ms);
+    QThread::msleep(100);
     normalMutex.unlock();
 
     // wait for thread to finish
@@ -535,7 +533,7 @@ void tst_QMutex::try_lock_until_non_recursive()
     testsTurn.acquire();
     normalMutex.lock();
     threadsTurn.release();
-    QThread::sleep(100ms);
+    QThread::msleep(100);
     normalMutex.unlock();
 
     // wait for thread to finish

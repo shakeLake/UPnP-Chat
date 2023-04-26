@@ -19,10 +19,8 @@
 #include "private/qcore_mac_p.h"
 #endif
 #include "private/qgregoriancalendar_p.h"
-#include "private/qlocale_tools_p.h"
 #include "private/qlocaltime_p.h"
 #include "private/qnumeric_p.h"
-#include "private/qstringconverter_p.h"
 #include "private/qstringiterator_p.h"
 #if QT_CONFIG(timezone)
 #include "private/qtimezoneprivate_p.h"
@@ -33,13 +31,10 @@
 #  include <qt_windows.h>
 #endif
 
-#include <private/qtools_p.h>
-
 QT_BEGIN_NAMESPACE
 
 using namespace Qt::StringLiterals;
 using namespace QtPrivate::DateTimeConstants;
-using namespace QtMiscUtils;
 
 /*****************************************************************************
   Date/Time Constants
@@ -91,42 +86,6 @@ static int fromShortMonthName(QStringView monthName)
 #endif // textdate
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
-namespace {
-using ParsedInt = QSimpleParsedNumber<qulonglong>;
-
-/*
-    Reads a whole number that must be the whole text.
-*/
-ParsedInt readInt(QLatin1StringView text)
-{
-    // Various date formats' fields (e.g. all in ISO) should not accept spaces
-    // or signs, so check that the string starts with a digit and that qstrntoull()
-    // converted the whole string.
-
-    if (text.isEmpty() || !isAsciiDigit(text.front().toLatin1()))
-        return {};
-
-    QSimpleParsedNumber res = qstrntoull(text.data(), text.size(), 10);
-    return res.used == text.size() ? res : ParsedInt{};
-}
-
-ParsedInt readInt(QStringView text)
-{
-    if (text.isEmpty())
-        return {};
-
-    // Converting to Latin-1 because QStringView::toULongLong() works with
-    // US-ASCII only by design anyway.
-    // Also QStringView::toULongLong() can't be used here as it will happily ignore
-    // spaces and accept signs; but various date formats' fields (e.g. all in ISO)
-    // should not.
-    QVarLengthArray<char> latin1(text.size());
-    QLatin1::convertFromUnicode(latin1.data(), text);
-    return readInt(QLatin1StringView{latin1.data(), latin1.size()});
-}
-
-} // namespace
-
 struct ParsedRfcDateTime {
     QDate date;
     QTime time;
@@ -435,9 +394,6 @@ static int fromOffsetString(QStringView offsetString, bool *valid) noexcept
 
 QDate::QDate(int y, int m, int d)
 {
-    static_assert(QDate::maxJd() == JulianDayMax);
-    static_assert(QDate::minJd() == JulianDayMin);
-
     if (!QGregorianCalendar::julianFromParts(y, m, d, &jd))
         jd = nullJd();
 }
@@ -831,9 +787,7 @@ static QTimeZone asTimeZone(Qt::TimeSpec spec, int offset, const char *warner)
 }
 #endif // Helper for 6.9 deprecation
 
-enum class DaySide { Start, End };
-
-static bool inDateTimeRange(qint64 jd, DaySide side)
+static bool inDateTimeRange(qint64 jd, bool start)
 {
     using Bounds = std::numeric_limits<qint64>;
     if (jd < Bounds::min() + JULIAN_DAY_FOR_EPOCH)
@@ -841,16 +795,11 @@ static bool inDateTimeRange(qint64 jd, DaySide side)
     jd -= JULIAN_DAY_FOR_EPOCH;
     const qint64 maxDay = Bounds::max() / MSECS_PER_DAY;
     const qint64 minDay = Bounds::min() / MSECS_PER_DAY - 1;
-    // (Divisions rounded towards zero, as MSECS_PER_DAY is even - so doesn't
-    // divide max() - and has factors other than two, so doesn't divide min().)
+    // (Divisions rounded towards zero, as MSECS_PER_DAY has factors other than two.)
     // Range includes start of last day and end of first:
-    switch (side) {
-    case DaySide::Start:
+    if (start)
         return jd > minDay && jd <= maxDay;
-    case DaySide::End:
-        return jd >= minDay && jd < maxDay;
-    }
-    Q_UNREACHABLE_RETURN(false);
+    return jd >= minDay && jd < maxDay;
 }
 
 static QDateTime toEarliest(QDate day, const QTimeZone &zone)
@@ -873,31 +822,13 @@ static QDateTime toEarliest(QDate day, const QTimeZone &zone)
     int low = 0;
     // Binary chop to the right minute
     while (high > low + 1) {
-        const int mid = (high + low) / 2;
-        const QDateTime probe = moment(QTime(mid / 60, mid % 60));
+        int mid = (high + low) / 2;
+        QDateTime probe = moment(QTime(mid / 60, mid % 60));
         if (probe.isValid() && probe.date() == day) {
             high = mid;
             when = probe;
         } else {
             low = mid;
-        }
-    }
-    // Transitions out of local solar mean time, and the few international
-    // date-line crossings before that (Alaska, Philippines), may have happened
-    // between minute boundaries. Don't try to fix milliseconds.
-    if (QDateTime p = moment(when.time().addSecs(-1)); Q_UNLIKELY(p.isValid() && p.date() == day)) {
-        high *= 60;
-        low *= 60;
-        while (high > low + 1) {
-            const int mid = (high + low) / 2;
-            const int min = mid / 60;
-            const QDateTime probe = moment(QTime(min / 60, min % 60, mid % 60));
-            if (probe.isValid() && probe.date() == day) {
-                high = mid;
-                when = probe;
-            } else {
-                low = mid;
-            }
         }
     }
     return when.isValid() ? when : QDateTime();
@@ -933,11 +864,11 @@ static QDateTime toEarliest(QDate day, const QTimeZone &zone)
 */
 QDateTime QDate::startOfDay(const QTimeZone &zone) const
 {
-    if (!inDateTimeRange(jd, DaySide::Start) || !zone.isValid())
+    if (!inDateTimeRange(jd, true) || !zone.isValid())
         return QDateTime();
 
     QDateTime when(*this, QTime(0, 0), zone);
-    if (Q_LIKELY(when.isValid()))
+    if (when.isValid())
         return when;
 
 #if QT_CONFIG(timezone)
@@ -1022,31 +953,13 @@ static QDateTime toLatest(QDate day, const QTimeZone &zone)
     int low = when.time().msecsSinceStartOfDay() / 60000;
     // Binary chop to the right minute
     while (high > low + 1) {
-        const int mid = (high + low) / 2;
-        const QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
+        int mid = (high + low) / 2;
+        QDateTime probe = moment(QTime(mid / 60, mid % 60, 59, 999));
         if (probe.isValid() && probe.date() == day) {
             low = mid;
             when = probe;
         } else {
             high = mid;
-        }
-    }
-    // Transitions out of local solar mean time, and the few international
-    // date-line crossings before that (Alaska, Philippines), may have happened
-    // between minute boundaries. Don't try to fix milliseconds.
-    if (QDateTime p = moment(when.time().addSecs(1)); Q_UNLIKELY(p.isValid() && p.date() == day)) {
-        high *= 60;
-        low *= 60;
-        while (high > low + 1) {
-            const int mid = (high + low) / 2;
-            const int min = mid / 60;
-            const QDateTime probe = moment(QTime(min / 60, min % 60, mid % 60, 999));
-            if (probe.isValid() && probe.date() == day) {
-                low = mid;
-                when = probe;
-            } else {
-                high = mid;
-            }
         }
     }
     return when.isValid() ? when : QDateTime();
@@ -1083,11 +996,11 @@ static QDateTime toLatest(QDate day, const QTimeZone &zone)
 */
 QDateTime QDate::endOfDay(const QTimeZone &zone) const
 {
-    if (!inDateTimeRange(jd, DaySide::End) || !zone.isValid())
+    if (!inDateTimeRange(jd, false) || !zone.isValid())
         return QDateTime();
 
     QDateTime when(*this, QTime(23, 59, 59, 999), zone);
-    if (Q_LIKELY(when.isValid()))
+    if (when.isValid())
         return when;
 
 #if QT_CONFIG(timezone)
@@ -1598,6 +1511,29 @@ qint64 QDate::daysTo(QDate d) const
 */
 
 #if QT_CONFIG(datestring) // depends on, so implies, textdate
+namespace {
+
+struct ParsedInt { qulonglong value = 0; bool ok = false; };
+
+/*
+    /internal
+
+    Read a whole number that must be the whole text.  QStringView::toULongLong()
+    will happily ignore spaces and accept signs; but various date formats'
+    fields (e.g. all in ISO) should not.
+*/
+ParsedInt readInt(QStringView text)
+{
+    ParsedInt result;
+    for (QStringIterator it(text); it.hasNext();) {
+        if (!QChar::isDigit(it.next()))
+            return result;
+    }
+    result.value = text.toULongLong(&result.ok);
+    return result;
+}
+
+}
 
 /*!
     \fn QDate QDate::fromString(const QString &string, Qt::DateFormat format)
@@ -1655,8 +1591,8 @@ QDate QDate::fromString(QStringView string, Qt::DateFormat format)
             const ParsedInt year = readInt(string.first(4));
             const ParsedInt month = readInt(string.sliced(5, 2));
             const ParsedInt day = readInt(string.sliced(8, 2));
-            if (year.ok() && year.result > 0 && year.result <= 9999 && month.ok() && day.ok())
-                return QDate(year.result, month.result, day.result);
+            if (year.ok && year.value > 0 && year.value <= 9999 && month.ok && day.ok)
+                return QDate(year.value, month.value, day.value);
         }
         break;
     }
@@ -2203,7 +2139,7 @@ QTime QTime::addMSecs(int ms) const
 {
     QTime t;
     if (isValid())
-        t.mds = QRoundingDown::qMod<MSECS_PER_DAY>(ds() + ms);
+        t.mds = QRoundingDown::qMod(ds() + ms, MSECS_PER_DAY);
     return t;
 }
 
@@ -2328,63 +2264,63 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
 
     const ParsedInt frac = readInt(tail);
     // There must be *some* digits in a fractional part; and it must be all digits:
-    if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok())
+    if (tail.isEmpty() ? dot != -1 || comma != -1 : !frac.ok)
         return QTime();
-    Q_ASSERT(frac.ok() ^ tail.isEmpty());
-    double fraction = frac.ok() ? frac.result * std::pow(0.1, tail.size()) : 0.0;
+    Q_ASSERT(frac.ok ^ tail.isEmpty());
+    double fraction = frac.ok ? frac.value * std::pow(0.1, tail.size()) : 0.0;
 
     const int size = string.size();
     if (size < 2 || size > 8)
         return QTime();
 
     ParsedInt hour = readInt(string.first(2));
-    if (!hour.ok() || hour.result > (format == Qt::TextDate ? 23 : 24))
+    if (!hour.ok || hour.value > (format == Qt::TextDate ? 23 : 24))
         return QTime();
 
-    ParsedInt minute{};
+    ParsedInt minute;
     if (string.size() > 2) {
         if (string[2] == u':' && string.size() > 4)
             minute = readInt(string.sliced(3, 2));
-        if (!minute.ok() || minute.result >= MINS_PER_HOUR)
+        if (!minute.ok || minute.value >= MINS_PER_HOUR)
             return QTime();
     } else if (format == Qt::TextDate) { // Requires minutes
         return QTime();
-    } else if (frac.ok()) {
+    } else if (frac.ok) {
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
         fraction *= MINS_PER_HOUR;
-        minute.result = qulonglong(fraction);
-        fraction -= minute.result;
+        minute.value = qulonglong(fraction);
+        fraction -= minute.value;
     }
 
-    ParsedInt second{};
+    ParsedInt second;
     if (string.size() > 5) {
         if (string[5] == u':' && string.size() == 8)
             second = readInt(string.sliced(6, 2));
-        if (!second.ok() || second.result >= SECS_PER_MIN)
+        if (!second.ok || second.value >= SECS_PER_MIN)
             return QTime();
-    } else if (frac.ok()) {
+    } else if (frac.ok) {
         if (format == Qt::TextDate) // Doesn't allow fraction of minutes
             return QTime();
         Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
         fraction *= SECS_PER_MIN;
-        second.result = qulonglong(fraction);
-        fraction -= second.result;
+        second.value = qulonglong(fraction);
+        fraction -= second.value;
     }
 
     Q_ASSERT(!(fraction < 0.0) && fraction < 1.0);
     // Round millis to nearest (unlike minutes and seconds, rounded down):
-    int msec = frac.ok() ? qRound(MSECS_PER_SEC * fraction) : 0;
+    int msec = frac.ok ? qRound(MSECS_PER_SEC * fraction) : 0;
     // But handle overflow gracefully:
     if (msec == MSECS_PER_SEC) {
         // If we can (when data were otherwise valid) validly propagate overflow
         // into other fields, do so:
-        if (isMidnight24 || hour.result < 23 || minute.result < 59 || second.result < 59) {
+        if (isMidnight24 || hour.value < 23 || minute.value < 59 || second.value < 59) {
             msec = 0;
-            if (++second.result == SECS_PER_MIN) {
-                second.result = 0;
-                if (++minute.result == MINS_PER_HOUR) {
-                    minute.result = 0;
-                    ++hour.result;
+            if (++second.value == SECS_PER_MIN) {
+                second.value = 0;
+                if (++minute.value == MINS_PER_HOUR) {
+                    minute.value = 0;
+                    ++hour.value;
                     // May need to propagate further via isMidnight24, see below
                 }
             }
@@ -2396,14 +2332,14 @@ static QTime fromIsoTimeString(QStringView string, Qt::DateFormat format, bool *
     }
 
     // For ISO date format, 24:0:0 means 0:0:0 on the next day:
-    if (hour.result == 24 && minute.result == 0 && second.result == 0 && msec == 0) {
+    if (hour.value == 24 && minute.value == 0 && second.value == 0 && msec == 0) {
         Q_ASSERT(format != Qt::TextDate); // It clipped hour at 23, above.
         if (isMidnight24)
             *isMidnight24 = true;
-        hour.result = 0;
+        hour.value = 0;
     }
 
-    return QTime(hour.result, minute.result, second.result, msec);
+    return QTime(hour.value, minute.value, second.value, msec);
 }
 
 /*!
@@ -2571,7 +2507,7 @@ typedef QDateTimePrivate::QDateTimeData QDateTimeData;
 // Converts milliseconds since the start of 1970 into a date and/or time:
 static qint64 msecsToJulianDay(qint64 msecs)
 {
-    return JULIAN_DAY_FOR_EPOCH + QRoundingDown::qDiv<MSECS_PER_DAY>(msecs);
+    return JULIAN_DAY_FOR_EPOCH + QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
 }
 
 static QDate msecsToDate(qint64 msecs)
@@ -2581,7 +2517,7 @@ static QDate msecsToDate(qint64 msecs)
 
 static QTime msecsToTime(qint64 msecs)
 {
-    return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod<MSECS_PER_DAY>(msecs));
+    return QTime::fromMSecsSinceStartOfDay(QRoundingDown::qMod(msecs, MSECS_PER_DAY));
 }
 
 // True if combining days with millis overflows; otherwise, stores result in *sumMillis
@@ -2846,7 +2782,7 @@ static inline bool specCanBeSmall(Qt::TimeSpec spec)
 
 static inline bool msecsCanBeSmall(qint64 msecs)
 {
-    if constexpr (!QDateTimeData::CanBeSmall)
+    if (!QDateTimeData::CanBeSmall)
         return false;
 
     ShortData sd;
@@ -3117,12 +3053,12 @@ static QPair<QDate, QTime> getDateTime(const QDateTimeData &d)
 {
     auto status = getStatus(d);
     const qint64 msecs = getMSecs(d);
-    const auto dayMilli = QRoundingDown::qDivMod<MSECS_PER_DAY>(msecs);
+    const qint64 days = QRoundingDown::qDiv(msecs, MSECS_PER_DAY);
     return { status.testFlag(QDateTimePrivate::ValidDate)
-            ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + dayMilli.quotient)
+            ? QDate::fromJulianDay(JULIAN_DAY_FOR_EPOCH + days)
             : QDate(),
             status.testFlag(QDateTimePrivate::ValidTime)
-            ? QTime::fromMSecsSinceStartOfDay(dayMilli.remainder)
+            ? QTime::fromMSecsSinceStartOfDay(msecs - days * MSECS_PER_DAY)
             : QTime() };
 }
 
@@ -3225,7 +3161,7 @@ inline bool QDateTime::Data::isShort() const
 
     // even if CanBeSmall = false, we have short data for a default-constructed
     // QDateTime object. But it's unlikely.
-    if constexpr (CanBeSmall)
+    if (CanBeSmall)
         return Q_LIKELY(b);
     return Q_UNLIKELY(b);
 }
@@ -5631,11 +5567,7 @@ QDebug operator<<(QDebug dbg, QDate date)
     QDebugStateSaver saver(dbg);
     dbg.nospace() << "QDate(";
     if (date.isValid())
-        // QTBUG-91070, ISODate only supports years in the range 0-9999
-        if (int y = date.year(); y > 0 && y <= 9999)
-            dbg.nospace() << date.toString(Qt::ISODate);
-        else
-            dbg.nospace() << date.toString(Qt::TextDate);
+        dbg.nospace() << date.toString(Qt::ISODate);
     else
         dbg.nospace() << "Invalid";
     dbg.nospace() << ')';

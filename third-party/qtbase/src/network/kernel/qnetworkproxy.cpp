@@ -1466,7 +1466,7 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     Internet Explorer's settings and use them.
 
     On \macos, this function will obtain the proxy settings using the
-    CFNetwork framework from Apple. It will apply the FTP,
+    SystemConfiguration framework from Apple. It will apply the FTP,
     HTTP and HTTPS proxy configurations for queries that contain the
     protocol tag "ftp", "http" and "https", respectively. If the SOCKS
     proxy is enabled in that configuration, this function will use the
@@ -1489,6 +1489,9 @@ void QNetworkProxyFactory::setApplicationProxyFactory(QNetworkProxyFactory *fact
     listed here.
 
     \list
+    \li On \macos, this function will ignore the Proxy Auto Configuration
+    settings, since it cannot execute the associated ECMAScript code.
+
     \li On Windows platforms, this function may take several seconds to
     execute depending on the configuration of the user's system.
     \endlist

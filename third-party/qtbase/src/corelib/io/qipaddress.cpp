@@ -61,7 +61,7 @@ static bool parseIp4Internal(IPv4Address &address, const char *ptr, bool acceptL
             return false;
 
         auto [ll, used] = qstrntoull(ptr, stop - ptr, 0);
-        const quint32 x = quint32(ll);
+        quint32 x = ll;
         if (used <= 0 || ll != x)
             return false;
 

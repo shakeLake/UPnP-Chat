@@ -34,6 +34,8 @@
 #include <QElapsedTimer>
 #include <QCache>
 
+#include <QSharedPointer>
+
 #include <atomic>
 
 QT_BEGIN_NAMESPACE

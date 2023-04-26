@@ -7,8 +7,8 @@
 
 #include <QTimeZone>
 #include <private/qdatetime_p.h>
-#include <private/qtenvironmentvariables_p.h> // for qTzSet()
 
+#include <time.h>
 #ifdef Q_OS_WIN
 #   include <qt_windows.h>
 #endif
@@ -151,8 +151,7 @@ private Q_SLOTS:
 #endif
 
 private:
-    enum LocalTimeType { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1};
-    LocalTimeType solarMeanType, epochTimeType, futureTimeType;
+    enum { LocalTimeIsUtc = 0, LocalTimeAheadOfUtc = 1, LocalTimeBehindUtc = -1} localTimeType;
     static constexpr auto UTC = QTimeZone::UTC;
     int preZoneFix;
     bool zoneIsCET;
@@ -198,7 +197,7 @@ tst_QDateTime::tst_QDateTime()
       might not be properly handled by our work-arounds for the MS backend and
       32-bit time_t; so don't probe them here.
     */
-    constexpr uint day = 24 * 3600; // in seconds
+    const uint day = 24 * 3600; // in seconds
     zoneIsCET = (QDateTime(QDate(2038, 1, 19), QTime(4, 14, 7)).toSecsSinceEpoch() == 0x7fffffff
                  // Entries a year apart robustly differ by multiples of day.
                  && QDate(2015, 7, 1).startOfDay().toSecsSinceEpoch() == 1435701600
@@ -230,28 +229,29 @@ tst_QDateTime::tst_QDateTime()
     // we must add it to the QDateTime constructed from it.
 
     /*
-      Various zones close to UTC (notably Iceland, the WET zones and several in
-      West Africa) or nominally assigned to it historically (north Canada, the
-      Antarctic) and those that have crossed the international date-line (by
-      skipping or repeating a day) don't have a consistent answer to "which side
-      of UTC is it ?" So the three LocalTimeType members may be different.
+      Again, rule changes can cause a TZ to look like UTC at some sample dates
+      but deviate at some date relevant to a test using localTimeType.  These
+      tests mostly use years outside the 1970--2037 range, for which we trust
+      our TZ data, so we can't helpfully be exhaustive.  Instead, scan a sample
+      of years' starts and middles.
     */
-    const auto setType = [day](int year, qint64 jand, qint64 juld, LocalTimeType &set) {
-        QDateTime jan = QDateTime::fromSecsSinceEpoch(jand * day);
-        QDateTime jul = QDateTime::fromSecsSinceEpoch(juld * day);
-        if (jan.date().year() < year || jul.date().month() < 7) {
-            set = LocalTimeBehindUtc;
+    const int sampled = 3;
+    // UTC starts of months in 2004, 2038 and 1970:
+    qint64 jans[sampled] = { 12418 * day, 24837 * day, 0 };
+    qint64 juls[sampled] = { 12600 * day, 25018 * day, 181 * day };
+    localTimeType = LocalTimeIsUtc;
+    for (int i = sampled; i-- > 0; ) {
+        QDateTime jan = QDateTime::fromSecsSinceEpoch(jans[i]);
+        QDateTime jul = QDateTime::fromSecsSinceEpoch(juls[i]);
+        if (jan.date().year() < 1970 || jul.date().month() < 7) {
+            localTimeType = LocalTimeBehindUtc;
+            break;
         } else if (jan.time().hour() > 0 || jul.time().hour() > 0
                    || jan.date().day() > 1 || jul.date().day() > 1) {
-            set = LocalTimeAheadOfUtc;
-        } else {
-            set = LocalTimeIsUtc;
+            localTimeType = LocalTimeAheadOfUtc;
+            break;
         }
-    };
-    // UTC starts of January and July in the given years:
-    setType(1800, -62092, -61911, solarMeanType);
-    setType(1970, 0, 181, epochTimeType);
-    setType(2038, 24837, 25018, futureTimeType);
+    }
 }
 
 void tst_QDateTime::initTestCase()
@@ -259,7 +259,7 @@ void tst_QDateTime::initTestCase()
     // Never construct a message like this in an i18n context...
     const char *typemsg1 = "exactly";
     const char *typemsg2 = "and therefore not";
-    switch (futureTimeType) {
+    switch (localTimeType) {
     case LocalTimeIsUtc:
         break;
     case LocalTimeBehindUtc:
@@ -326,7 +326,7 @@ void tst_QDateTime::ctor()
 
 void tst_QDateTime::operator_eq()
 {
-    QVERIFY(QDateTime() != QDate(1970, 1, 1).startOfDay()); // QTBUG-79006
+    QVERIFY(QDateTime() != QDateTime(QDate(1970, 1, 1), QTime(0, 0))); // QTBUG-79006
     QDateTime dt1(QDate(2004, 3, 24), QTime(23, 45, 57), UTC);
     QDateTime dt2(QDate(2005, 3, 11), QTime(0, 0), UTC);
     dt2 = dt1;
@@ -756,7 +756,6 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QFETCH(qint64, msecs);
     QFETCH(QDateTime, utc);
     QFETCH(QDateTime, cet);
-    using Bound = std::numeric_limits<qint64>;
 
     QDateTime dt;
     dt.setTimeZone(UTC);
@@ -790,10 +789,10 @@ void tst_QDateTime::setMSecsSinceEpoch()
         QCOMPARE(dt1.timeSpec(), Qt::UTC);
     }
 
-    if (zoneIsCET && (msecs == Bound::max()
+    if (zoneIsCET && (msecs == std::numeric_limits<qint64>::max()
                       // LocalTime will also overflow for min in a CET zone west
                       // of Greenwich (Europe/Madrid):
-                      || (preZoneFix < -3600 && msecs == Bound::min()))) {
+                      || (preZoneFix < -3600 && msecs == std::numeric_limits<qint64>::min()))) {
         QVERIFY(!cet.isValid()); // overflows
     } else if (zoneIsCET) {
         QVERIFY(cet.isValid());
@@ -835,22 +834,18 @@ void tst_QDateTime::setMSecsSinceEpoch()
     QCOMPARE(dt, reference.addMSecs(msecs));
 
     // Tests that we correctly recognize when we fall off the extremities:
-    if (msecs == Bound::max()) {
+    if (msecs == std::numeric_limits<qint64>::max()) {
         QDateTime off(QDate(1970, 1, 1).startOfDay(QTimeZone::fromSecondsAheadOfUtc(1)));
         off.setMSecsSinceEpoch(msecs);
         QVERIFY(!off.isValid());
-    } else if (msecs == Bound::min()) {
+    } else if (msecs == std::numeric_limits<qint64>::min()) {
         QDateTime off(QDate(1970, 1, 1).startOfDay(QTimeZone::fromSecondsAheadOfUtc(-1)));
         off.setMSecsSinceEpoch(msecs);
         QVERIFY(!off.isValid());
     }
 
-    // Check overflow; only robust if local time is the same at epoch as relevant bound.
-    // See setting of LocalTimeType values for details.
-    if (epochTimeType == LocalTimeAheadOfUtc
-        ? futureTimeType == LocalTimeAheadOfUtc && msecs == Bound::max()
-        : (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min()
-           && epochTimeType == LocalTimeBehindUtc)) {
+    if ((localTimeType == LocalTimeAheadOfUtc && msecs == std::numeric_limits<qint64>::max())
+        || (localTimeType == LocalTimeBehindUtc && msecs == std::numeric_limits<qint64>::min())) {
         QDateTime curt = QDate(1970, 1, 1).startOfDay(); // initially in short-form
         curt.setMSecsSinceEpoch(msecs); // Overflows due to offset
         QVERIFY(!curt.isValid());
@@ -872,10 +867,10 @@ void tst_QDateTime::fromMSecsSinceEpoch()
     // you're East or West of Greenwich.  In UTC, we won't overflow. If we're
     // actually west of Greenwich but (e.g. Europe/Madrid) our zone claims east,
     // "min" can also overflow (case only caught if local time is CET).
-    const bool localOverflow =
-        (futureTimeType == LocalTimeAheadOfUtc && (msecs == Bound::max() || preZoneFix < -3600))
-        || (solarMeanType == LocalTimeBehindUtc && msecs == Bound::min());
-    if (!localOverflow) // Can fail if offset changes sign, e.g. Alaska, Philippines.
+    const bool localOverflow = (localTimeType == LocalTimeAheadOfUtc
+                                ? msecs == Bound::max() || preZoneFix < -3600
+                                : localTimeType == LocalTimeBehindUtc && msecs == Bound::min());
+    if (!localOverflow)
         QCOMPARE(dtLocal, utc);
 
     QCOMPARE(dtUtc, utc);
@@ -1268,17 +1263,13 @@ void tst_QDateTime::addDays()
     }
 #endif
 
-    // Baja Mexico has a transition at the epoch, see fromStringDateFormat_data().
-    if (QDateTime(QDate(1969, 12, 30), QTime(0, 0)).secsTo(
-            QDateTime(QDate(1970, 1, 2), QTime(0, 0))) == 3 * 24 * 60 * 60) {
-        // Test last UTC second of 1969 *is* valid (despite being time_t(-1))
-        dt1 = QDateTime(QDate(1969, 12, 30), QTime(23, 59, 59), UTC).toLocalTime().addDays(1);
-        QVERIFY(dt1.isValid());
-        QCOMPARE(dt1.toSecsSinceEpoch(), -1);
-        dt2 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59), UTC).toLocalTime().addDays(-1);
-        QVERIFY(dt2.isValid());
-        QCOMPARE(dt2.toSecsSinceEpoch(), -1);
-    }
+    // Test last UTC second of 1969 *is* valid (despite being time_t(-1))
+    dt1 = QDateTime(QDate(1969, 12, 30), QTime(23, 59, 59), UTC).toLocalTime().addDays(1);
+    QVERIFY(dt1.isValid());
+    QCOMPARE(dt1.toSecsSinceEpoch(), -1);
+    dt2 = QDateTime(QDate(1970, 1, 1), QTime(23, 59, 59), UTC).toLocalTime().addDays(-1);
+    QVERIFY(dt2.isValid());
+    QCOMPARE(dt2.toSecsSinceEpoch(), -1);
 }
 
 void tst_QDateTime::addInvalid()
@@ -1534,10 +1525,10 @@ void tst_QDateTime::addMSecs_data()
         << QDateTime(QDate(2013, 1, 1), QTime(2, 2, 3), QTimeZone::fromSecondsAheadOfUtc(60 * 60));
     // Check last second of 1969
     QTest::newRow("epoch-1s-utc")
-        << QDate(1970, 1, 1).startOfDay(UTC) << qint64(-1)
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0), UTC) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59), UTC);
     QTest::newRow("epoch-1s-local")
-        << QDate(1970, 1, 1).startOfDay() << qint64(-1)
+        << QDateTime(QDate(1970, 1, 1), QTime(0, 0)) << qint64(-1)
         << QDateTime(QDate(1969, 12, 31), QTime(23, 59, 59));
     QTest::newRow("epoch-1s-utc-as-local")
         << QDate(1970, 1, 1).startOfDay(UTC).toLocalTime() << qint64(-1)
@@ -2294,7 +2285,7 @@ void tst_QDateTime::operator_eqeq_data()
     QTest::newRow("data10") << dateTime3 << dateTime3c << true << false;
     QTest::newRow("data11") << dateTime3 << dateTime3d << true << false;
     QTest::newRow("data12") << dateTime3c << dateTime3d << true << false;
-    if (epochTimeType == LocalTimeIsUtc)
+    if (localTimeType == LocalTimeIsUtc)
         QTest::newRow("data13") << dateTime3 << dateTime3e << true << false;
     // ... but a zone (sometimes) ahead of or behind UTC (e.g. Europe/London)
     // might agree with UTC about the epoch, all the same.
@@ -2487,10 +2478,6 @@ void tst_QDateTime::fromStringDateFormat_data()
     QTest::addColumn<Qt::DateFormat>("dateFormat");
     QTest::addColumn<QDateTime>("expected");
 
-    // Fails 1970 start dates in western Mexico
-    // due to changing from PST to MST at the start of 1970.
-    const bool goodEpochStart = QDateTime(QDate(1970, 1, 1), QTime(0, 0)).isValid();
-
     // Test Qt::TextDate format.
     QTest::newRow("text date") << QString::fromLatin1("Tue Jun 17 08:00:10 2003")
         << Qt::TextDate << QDateTime(QDate(2003, 6, 17), QTime(8, 0, 10));
@@ -2502,25 +2489,22 @@ void tst_QDateTime::fromStringDateFormat_data()
         << Qt::TextDate << QDateTime(QDate(12345, 6, 17), QTime(8, 0, 10));
     QTest::newRow("text date Year -4712") << QString::fromLatin1("Tue Jan 1 00:01:02 -4712")
         << Qt::TextDate << QDateTime(QDate(-4712, 1, 1), QTime(0, 1, 2));
+    QTest::newRow("text epoch")
+        << QString::fromLatin1("Thu Jan 1 00:00:00 1970") << Qt::TextDate
+        << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data1") << QString::fromLatin1("Thu Jan 2 12:34 1970")
         << Qt::TextDate << QDateTime(QDate(1970, 1, 2), QTime(12, 34));
-    if (goodEpochStart) {
-        QTest::newRow("text epoch year after time")
-            << QString::fromLatin1("Thu Jan 1 00:00:00 1970") << Qt::TextDate
-            << QDate(1970, 1, 1).startOfDay();
-        QTest::newRow("text epoch spaced")
-            << QString::fromLatin1(" Thu   Jan   1    00:00:00    1970  ")
-            << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
-        QTest::newRow("text epoch time after year")
-            << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
-            << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
-    }
     QTest::newRow("text epoch terse")
         << QString::fromLatin1("Thu Jan 1 00 1970") << Qt::TextDate << QDateTime();
     QTest::newRow("text epoch stray :00")
         << QString::fromLatin1("Thu Jan 1 00:00:00:00 1970") << Qt::TextDate << QDateTime();
+    QTest::newRow("text epoch spaced")
+        << QString::fromLatin1(" Thu   Jan   1    00:00:00    1970  ")
+        << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text data6") << QString::fromLatin1("Thu Jan 1 00:00:00")
         << Qt::TextDate << QDateTime();
+    QTest::newRow("text data7") << QString::fromLatin1("Thu Jan 1 1970 00:00:00")
+                                << Qt::TextDate << QDate(1970, 1, 1).startOfDay();
     QTest::newRow("text bad offset") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC+foo")
         << Qt::TextDate << QDateTime();
     QTest::newRow("text UTC early") << QString::fromLatin1("Thu Jan 1 00:12:34 1970 UTC")
@@ -2901,35 +2885,34 @@ void tst_QDateTime::fromStringStringFormat_data()
     QTest::addColumn<QDateTime>("expected");
 
     const QDate defDate(1900, 1, 1);
-    // Indian/Cocos had a transition at the start of 1900, so its Jan 1st starts
-    // at 00:02:20 on that day; this leads to perverse results. QTBUG-77948.
-    if (defDate.startOfDay().time() == QTime(0, 0)) {
-        QTest::newRow("dMyy-only")
-            << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
-        QTest::newRow("secs-repeat-valid")
-            << QString("1010") << QString("sss") << QDateTime(defDate, QTime(0, 0, 10));
-        QTest::newRow("pm-only")
-            << QString("pm") << QString("ap") << QDateTime(defDate, QTime(12, 0));
-        QTest::newRow("date-only")
-            << QString("10 Oct 10") << QString("dd MMM yy") << QDate(1910, 10, 10).startOfDay();
-        QTest::newRow("dow-date-only")
-            << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy")
-            << QDate(2004, 12, 3).startOfDay();
-        QTest::newRow("dow-mon-yr-only")
-            << QString("Thu January 2004") << QString("ddd MMMM yyyy")
-            << QDate(2004, 1, 1).startOfDay();
-    }
+    QTest::newRow("data0")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
     QTest::newRow("data1") << QString("1020") << QString("sss") << QDateTime();
+    QTest::newRow("data2")
+        << QString("1010") << QString("sss") << QDateTime(defDate, QTime(0, 0, 10));
     QTest::newRow("data3") << QString("10hello20") << QString("ss'hello'ss") << QDateTime();
     QTest::newRow("data4") << QString("10") << QString("''") << QDateTime();
     QTest::newRow("data5") << QString("10") << QString("'") << QDateTime();
+    QTest::newRow("data6") << QString("pm") << QString("ap") << QDateTime(defDate, QTime(12, 0));
     QTest::newRow("data7") << QString("foo") << QString("ap") << QDateTime();
     // Day non-conflict should not hide earlier year conflict (1963-03-01 was a
     // Friday; asking for Thursday moves this, without conflict, to the 7th):
     QTest::newRow("data8")
         << QString("77 03 1963 Thu") << QString("yy MM yyyy ddd") << QDateTime();
+    QTest::newRow("data9")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data10")
+        << QString("101010") << QString("dMyy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data11")
+        << QString("10 Oct 10") << QString("dd MMM yy") << QDate(1910, 10, 10).startOfDay();
+    QTest::newRow("data12")
+        << QString("Fri December 3 2004") << QString("ddd MMMM d yyyy")
+        << QDate(2004, 12, 3).startOfDay();
     QTest::newRow("data13") << QString("30.02.2004") << QString("dd.MM.yyyy") << QDateTime();
     QTest::newRow("data14") << QString("32.01.2004") << QString("dd.MM.yyyy") << QDateTime();
+    QTest::newRow("data15")
+        << QString("Thu January 2004") << QString("ddd MMMM yyyy")
+        << QDate(2004, 1, 1).startOfDay();
     QTest::newRow("zulu-time-with-z-centisec")
         << QString("2005-06-28T07:57:30.01Z") << QString("yyyy-MM-ddThh:mm:ss.zt")
         << QDateTime(QDate(2005, 06, 28), QTime(07, 57, 30, 10), UTC);
@@ -3465,34 +3448,16 @@ void tst_QDateTime::timeZoneAbbreviation()
     if (zoneIsCET) {
         // Time definitely in Standard Time
         QDateTime dt4 = QDate(2013, 1, 1).startOfDay();
-        /* Note that MET is functionally an alias for CET (their zoneinfo files
-           differ only in the first letter of the abbreviations), unlike the
-           various zones that give CET as their abbreviation.
-        */
-        {
-            const auto abbrev = dt4.timeZoneAbbreviation();
-            auto reporter = qScopeGuard([abbrev]() {
-                qDebug() << "Unexpected abbreviation" << abbrev;
-            });
 #ifdef Q_OS_WIN
-            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-            QVERIFY(abbrev == u"CET"_s || abbrev == u"MET"_s);
-            reporter.dismiss();
-        }
+        QCOMPARE(dt4.timeZoneAbbreviation(), QStringLiteral("CET"));
         // Time definitely in Daylight Time
         QDateTime dt5 = QDate(2013, 6, 1).startOfDay();
-        {
-            const auto abbrev = dt5.timeZoneAbbreviation();
-            auto reporter = qScopeGuard([abbrev]() {
-                qDebug() << "Unexpected abbreviation" << abbrev;
-            });
 #ifdef Q_OS_WIN
-            QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
+        QEXPECT_FAIL("", "Windows only reports long name (QTBUG-32759)", Continue);
 #endif
-            QVERIFY(abbrev == u"CEST"_s || abbrev == u"MEST"_s);
-            reporter.dismiss();
-        }
+        QCOMPARE(dt5.timeZoneAbbreviation(), QStringLiteral("CEST"));
     } else {
         qDebug("(Skipped some CET-only tests)");
     }
@@ -4348,7 +4313,7 @@ void tst_QDateTime::range() const
 
 void tst_QDateTime::macTypes()
 {
-#ifndef Q_OS_DARWIN
+#ifndef Q_OS_MAC
     QSKIP("This is a Apple-only test");
 #else
     extern void tst_QDateTime_macTypes(); // in qdatetime_mac.mm

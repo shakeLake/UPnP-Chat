@@ -44,7 +44,6 @@ private slots:
 #if QT_CONFIG(library)
     void addRemoveLibPaths();
 #endif
-    void theMainThread();
 };
 
 #endif // TST_QCOREAPPLICATION_H

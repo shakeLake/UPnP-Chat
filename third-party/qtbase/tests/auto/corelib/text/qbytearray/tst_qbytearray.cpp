@@ -1099,15 +1099,7 @@ void tst_QByteArray::removeIf()
     QVERIFY(!a.isDetached());
 
     a = QByteArray("aBcAbC");
-    // Test when it's not shared
-    QVERIFY(a.isDetached());
     QCOMPARE(a.removeIf(removeA), QByteArray("BcbC"));
-
-    a = QByteArray("aBcAbC");
-    QByteArray b = a;
-    // Test when it's shared
-    QVERIFY(!b.isDetached());
-    QCOMPARE(b.removeIf(removeA), QByteArray("BcbC"));
 }
 
 void tst_QByteArray::erase()
@@ -2349,7 +2341,7 @@ void tst_QByteArray::isLower()
 
 void tst_QByteArray::macTypes()
 {
-#ifndef Q_OS_DARWIN
+#ifndef Q_OS_MAC
     QSKIP("This is a Apple-only test");
 #else
     extern void tst_QByteArray_macTypes(); // in qbytearray_mac.mm

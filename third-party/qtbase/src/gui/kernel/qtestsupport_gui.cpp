@@ -102,7 +102,7 @@ bool QTouchEventSequence::commit(bool processEvents)
 {
     if (points.isEmpty())
         return false;
-    QThread::sleep(std::chrono::milliseconds{1});
+    QThread::msleep(1);
     bool ret = false;
     if (targetWindow)
         ret = qt_handleTouchEventv2(targetWindow, device, points.values());

@@ -92,7 +92,6 @@ public:
     static void sleep(unsigned long);
     static void msleep(unsigned long);
     static void usleep(unsigned long);
-    static void sleep(std::chrono::nanoseconds nsec);
 
 Q_SIGNALS:
     void started(QPrivateSignal);

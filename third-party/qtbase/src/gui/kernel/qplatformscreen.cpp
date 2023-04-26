@@ -25,8 +25,10 @@ QPlatformScreen::QPlatformScreen()
 QPlatformScreen::~QPlatformScreen()
 {
     Q_D(QPlatformScreen);
-    Q_ASSERT_X(!d->screen, "QPlatformScreen",
-        "QPlatformScreens should be removed via QWindowSystemInterface::handleScreenRemoved()");
+    if (d->screen) {
+        qWarning("Manually deleting a QPlatformScreen. Call QWindowSystemInterface::handleScreenRemoved instead.");
+        delete d->screen;
+    }
 }
 
 /*!

@@ -48,7 +48,7 @@ QT_END_NAMESPACE
 # include <unistd.h>
 # include <private/qcore_unix_p.h>
 #endif
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 # include <sys/mount.h>
 #elif defined(Q_OS_LINUX)
 # include <sys/vfs.h>
@@ -171,9 +171,6 @@ private slots:
 #ifdef Q_OS_WIN
     void permissionsNtfs_data();
     void permissionsNtfs();
-#if QT_DEPRECATED_SINCE(6,6)
-    void deprecatedNtfsPermissionCheck();
-#endif
 #endif
     void setPermissions_data();
     void setPermissions();
@@ -1270,7 +1267,8 @@ void tst_QFile::createFilePermissions()
     QFETCH(QFile::Permissions, permissions);
 
 #ifdef Q_OS_WIN
-    QNtfsPermissionCheckGuard permissionGuard;
+    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
+    ++qt_ntfs_permission_lookup;
 #endif
 #ifdef Q_OS_UNIX
     auto restoreMask = qScopeGuard([oldMask = umask(0)] { umask(oldMask); });
@@ -1394,7 +1392,7 @@ void tst_QFile::permissions()
     }
 
 #if defined(Q_OS_WIN)
-    if (qAreNtfsPermissionChecksEnabled())
+    if (qt_ntfs_permission_lookup)
         QEXPECT_FAIL("readonly", "QTBUG-25630", Abort);
 #endif
 #ifdef Q_OS_UNIX
@@ -1416,26 +1414,10 @@ void tst_QFile::permissionsNtfs_data()
 
 void tst_QFile::permissionsNtfs()
 {
-    QNtfsPermissionCheckGuard permissionGuard;
+    QScopedValueRollback<int> ntfsMode(qt_ntfs_permission_lookup);
+    qt_ntfs_permission_lookup++;
     permissions();
 }
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-#if QT_DEPRECATED_SINCE(6,6)
-void tst_QFile::deprecatedNtfsPermissionCheck()
-{
-    QScopedValueRollback<int> guard(qt_ntfs_permission_lookup);
-
-    QCOMPARE(qAreNtfsPermissionChecksEnabled(), false);
-    qt_ntfs_permission_lookup++;
-    QCOMPARE(qAreNtfsPermissionChecksEnabled(), true);
-    qt_ntfs_permission_lookup--;
-    QCOMPARE(qAreNtfsPermissionChecksEnabled(), false);
-}
-#endif
-QT_WARNING_POP
-
 #endif
 
 void tst_QFile::setPermissions_data()
@@ -3605,7 +3587,7 @@ void tst_QFile::caseSensitivity()
 {
 #if defined(Q_OS_WIN)
     const bool caseSensitive = false;
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_MAC)
      const bool caseSensitive = pathconf(QDir::currentPath().toLatin1().constData(), _PC_CASE_SENSITIVE);
 #else
     const bool caseSensitive = true;

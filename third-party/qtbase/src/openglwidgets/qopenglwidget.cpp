@@ -1706,7 +1706,7 @@ bool QOpenGLWidget::event(QEvent *e)
             }
         }
         break;
-    case QEvent::DevicePixelRatioChange:
+    case QEvent::ScreenChangeInternal:
         if (d->initialized && d->paintDevice->devicePixelRatio() != devicePixelRatio())
             d->recreateFbos();
         break;

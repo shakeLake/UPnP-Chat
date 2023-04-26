@@ -213,10 +213,8 @@ void QWindowPrivate::init(QScreen *targetScreen)
     isWindow = true;
     parentWindow = static_cast<QWindow *>(q->QObject::parent());
 
-    QScreen *connectScreen = targetScreen ? targetScreen : QGuiApplication::primaryScreen();
-
     if (!parentWindow)
-        connectToScreen(connectScreen);
+        connectToScreen(targetScreen ? targetScreen : QGuiApplication::primaryScreen());
 
     // If your application aborts here, you are probably creating a QWindow
     // before the screen list is populated.
@@ -226,7 +224,6 @@ void QWindowPrivate::init(QScreen *targetScreen)
     QGuiApplicationPrivate::window_list.prepend(q);
 
     requestedFormat = QSurfaceFormat::defaultFormat();
-    devicePixelRatio = connectScreen->devicePixelRatio();
 }
 
 /*!
@@ -553,8 +550,6 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
     QPlatformSurfaceEvent e(QPlatformSurfaceEvent::SurfaceCreated);
     QGuiApplication::sendEvent(q, &e);
 
-    updateDevicePixelRatio();
-
     if (needsUpdate)
         q->requestUpdate();
 }
@@ -670,7 +665,7 @@ bool QWindow::isVisible() const
     into an actual native surface. However, the window remains hidden until setVisible() is called.
 
     Note that it is not usually necessary to call this function directly, as it will be implicitly
-    called by show(), setVisible(), winId(), and other functions that require access to the platform
+    called by show(), setVisible(), and other functions that require access to the platform
     resources.
 
     Call destroy() to free the platform resources if necessary.
@@ -685,8 +680,6 @@ void QWindow::create()
 
 /*!
     Returns the window's platform id.
-
-    \note This function will cause the platform window to be created if it is not already.
 
     For platforms where this id might be useful, the value returned
     will uniquely represent the window inside the corresponding screen.
@@ -1331,29 +1324,14 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
-    return d->devicePixelRatio;
-}
-
-/*
-    Updates the cached devicePixelRatio value by polling for a new value.
-    Sends QEvent::DevicePixelRatioChange to the window if the DPR has changed.
-*/
-void QWindowPrivate::updateDevicePixelRatio()
-{
-    Q_Q(QWindow);
 
     // If there is no platform window use the associated screen's devicePixelRatio,
     // which typically is the primary screen and will be correct for single-display
     // systems (a very common case).
-    const qreal newDevicePixelRatio = platformWindow ?
-        platformWindow->devicePixelRatio() * QHighDpiScaling::factor(q) : q->screen()->devicePixelRatio();
+    if (!d->platformWindow)
+        return screen()->devicePixelRatio();
 
-    if (newDevicePixelRatio == devicePixelRatio)
-        return;
-
-    devicePixelRatio = newDevicePixelRatio;
-    QEvent dprChangeEvent(QEvent::DevicePixelRatioChange);
-    QGuiApplication::sendEvent(q, &dprChangeEvent);
+    return d->platformWindow->devicePixelRatio() * QHighDpiScaling::factor(this);
 }
 
 Qt::WindowState QWindowPrivate::effectiveState(Qt::WindowStates state)
@@ -2597,13 +2575,11 @@ bool QWindow::event(QEvent *ev)
 /*!
     Schedules a QEvent::UpdateRequest event to be delivered to this window.
 
-    The event is delivered in sync with the display vsync on platforms where
-    this is possible. Otherwise, the event is delivered after a delay of at
-    most 5 ms. If the window's associated screen reports a
-    \l{QScreen::refreshRate()}{refresh rate} higher than 60 Hz, the interval is
-    scaled down to a value smaller than 5. The additional time is there to give
-    the event loop a bit of idle time to gather system events, and can be
-    overridden using the QT_QPA_UPDATE_IDLE_TIME environment variable.
+    The event is delivered in sync with the display vsync on platforms
+    where this is possible. Otherwise, the event is delivered after a
+    delay of 5 ms. The additional time is there to give the event loop
+    a bit of idle time to gather system events, and can be overridden
+    using the QT_QPA_UPDATE_IDLE_TIME environment variable.
 
     When driving animations, this function should be called once after drawing
     has completed. Calling this function multiple times will result in a single

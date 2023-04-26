@@ -18,11 +18,7 @@
 
 #define LITERAL "some literal"
 
-namespace {
-#define P +
-#include "../qstringbuilder1/stringbuilder.cpp"
-#undef P
-} // namespace
+void runScenario(); // Defined in stringbuilder.cpp #included below.
 
 class tst_QStringBuilder4 : public QObject
 {
@@ -31,6 +27,10 @@ class tst_QStringBuilder4 : public QObject
 private slots:
     void scenario() { runScenario(); }
 };
+
+#define P +
+#include "../qstringbuilder1/stringbuilder.cpp"
+#undef P
 
 #include "tst_qstringbuilder4.moc"
 

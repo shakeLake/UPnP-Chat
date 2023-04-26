@@ -56,7 +56,7 @@ class Q_CORE_EXPORT QTimeZone
     union Data
     {
         Data() noexcept;
-        Data(ShortData sd) : s(sd) {}
+        Data(ShortData &&sd) : s(std::move(sd)) {}
         Data(const Data &other) noexcept;
         Data(Data &&other) noexcept : d(std::exchange(other.d, nullptr)) {}
         Data &operator=(const Data &other) noexcept;
@@ -79,17 +79,15 @@ class Q_CORE_EXPORT QTimeZone
         QTimeZonePrivate *d = nullptr;
         ShortData s;
     };
-    QTimeZone(ShortData sd) : d(sd) {}
+    QTimeZone(ShortData &&sd) : d(std::move(sd)) {}
 
 public:
-    // Sane UTC offsets range from -16 to +16 hours:
+    // Sane UTC offsets range from -14 to +14 hours:
     enum {
-        // No known modern zone > 12 hrs West of Greenwich.
-        // Until 1844, Asia/Manila (in The Philippines) was at 15:56 West.
-        MinUtcOffsetSecs = -16 * 3600,
-        // No known modern zone > 14 hrs East of Greenwich.
-        // Until 1867, America/Metlakatla (in Alaska) was at 15:13:42 East.
-        MaxUtcOffsetSecs = +16 * 3600
+        // No known zone > 12 hrs West of Greenwich (Baker Island, USA)
+        MinUtcOffsetSecs = -14 * 3600,
+        // No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati)
+        MaxUtcOffsetSecs = +14 * 3600
     };
 
     enum Initialization { LocalTime, UTC };

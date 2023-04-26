@@ -24,7 +24,6 @@
 #  undef min
 #endif // Q_CC_MSVC
 
-using namespace std::chrono_literals;
 
 class tst_QSocketNotifier : public QObject
 {
@@ -375,7 +374,7 @@ void tst_QSocketNotifier::asyncMultipleDatagram()
             &tst_QSocketNotifier::async_readDatagramSlot);
 
     // activate socket notifiers
-    QTestEventLoop::instance().enterLoop(100ms);
+    QTestEventLoop::instance().enterLoopMSecs(100);
 
     m_asyncSender->writeDatagram("1", makeNonAny(m_asyncReceiver->localAddress()), port);
     m_asyncSender->writeDatagram("2", makeNonAny(m_asyncReceiver->localAddress()), port);

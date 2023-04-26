@@ -14,7 +14,7 @@
 #include "private/qcore_unix_p.h"
 #include "private/qlocking_p.h"
 
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
 #include <private/qcore_mac_p.h>
 #endif
 
@@ -95,8 +95,8 @@ struct AutoPipe
 
 struct ChildError
 {
-    int code;
-    char function[12];
+    qint64 code;
+    char function[8];
 };
 
 // Used for argv and envp arguments to execve()
@@ -358,7 +358,7 @@ bool QProcessPrivate::openChannel(Channel &channel)
     }
 }
 
-void QProcessPrivate::commitChannels() const
+void QProcessPrivate::commitChannels()
 {
     // copy the stdin socket if asked to (without closing on exec)
     if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
@@ -520,12 +520,7 @@ void QProcessPrivate::startProcess()
         ::fcntl(stderrChannel.pipe[0], F_SETFL, ::fcntl(stderrChannel.pipe[0], F_GETFL) | O_NONBLOCK);
 }
 
-// IMPORTANT:
-//
-// This function is called in a vfork() context on some OSes (notably, Linux
-// with forkfd), so it MUST NOT modify any non-local variable because it's
-// still sharing memory with the parent process.
-void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp) const
+void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp)
 {
     ::signal(SIGPIPE, SIG_DFL);         // reset the signal that we ignored
 
@@ -565,6 +560,7 @@ void QProcessPrivate::execChild(const char *workingDir, char **argv, char **envp
 report_errno:
     error.code = errno;
     qt_safe_write(childStartedPipe[1], &error, sizeof(error));
+    childStartedPipe[1] = -1;
 }
 
 bool QProcessPrivate::processStarted(QString *errorMessage)
@@ -572,7 +568,7 @@ bool QProcessPrivate::processStarted(QString *errorMessage)
     Q_Q(QProcess);
 
     ChildError buf;
-    ssize_t ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
+    int ret = qt_safe_read(childStartedPipe[0], &buf, sizeof(buf));
 
     if (stateNotifier) {
         stateNotifier->setEnabled(false);

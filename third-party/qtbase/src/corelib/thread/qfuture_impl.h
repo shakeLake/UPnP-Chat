@@ -274,12 +274,6 @@ using IsRandomAccessible =
                                     std::begin(std::declval<Sequence>()))>>::iterator_category,
                             std::random_access_iterator_tag>;
 
-template<class Sequence>
-using HasInputIterator =
-        std::is_convertible<typename std::iterator_traits<std::decay_t<decltype(
-                                    std::begin(std::declval<Sequence>()))>>::iterator_category,
-                            std::input_iterator_tag>;
-
 template<class Iterator>
 using IsForwardIterable =
         std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category,
@@ -892,16 +886,6 @@ struct UnwrapHandler
     }
 };
 
-template<typename ValueType>
-QFuture<ValueType> makeReadyRangeFutureImpl(const QList<ValueType> &values)
-{
-    QFutureInterface<ValueType> promise;
-    promise.reportStarted();
-    promise.reportResults(values);
-    promise.reportFinished();
-    return promise.future();
-}
-
 } // namespace QtPrivate
 
 namespace QtFuture {
@@ -967,37 +951,8 @@ static QFuture<ArgsType<Signal>> connect(Sender *sender, Signal signal)
     return promise.future();
 }
 
-template<typename Container>
-using if_container_with_input_iterators =
-        std::enable_if_t<QtPrivate::HasInputIterator<Container>::value, bool>;
-
-template<typename Container>
-using ContainedType =
-        typename std::iterator_traits<decltype(
-                    std::cbegin(std::declval<Container&>()))>::value_type;
-
-template<typename Container, if_container_with_input_iterators<Container> = true>
-static QFuture<ContainedType<Container>> makeReadyRangeFuture(Container &&container)
-{
-    // handle QList<T> separately, because reportResults() takes a QList
-    // as an input
-    using ValueType = ContainedType<Container>;
-    if constexpr (std::is_convertible_v<q20::remove_cvref_t<Container>, QList<ValueType>>) {
-        return QtPrivate::makeReadyRangeFutureImpl(container);
-    } else {
-        return QtPrivate::makeReadyRangeFutureImpl(QList<ValueType>{std::cbegin(container),
-                                                                    std::cend(container)});
-    }
-}
-
-template<typename ValueType>
-static QFuture<ValueType> makeReadyRangeFuture(std::initializer_list<ValueType> values)
-{
-    return QtPrivate::makeReadyRangeFutureImpl(QList<ValueType>{values});
-}
-
-template<typename T>
-static QFuture<std::decay_t<T>> makeReadyValueFuture(T &&value)
+template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
+static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
 {
     QFutureInterface<std::decay_t<T>> promise;
     promise.reportStarted();
@@ -1007,26 +962,30 @@ static QFuture<std::decay_t<T>> makeReadyValueFuture(T &&value)
     return promise.future();
 }
 
-Q_CORE_EXPORT QFuture<void> makeReadyVoidFuture(); // implemented in qfutureinterface.cpp
-
-#if QT_DEPRECATED_SINCE(6, 10)
-template<typename T, typename = QtPrivate::EnableForNonVoid<T>>
-QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyValueFuture() instead")
-static QFuture<std::decay_t<T>> makeReadyFuture(T &&value)
+#if defined(Q_QDOC)
+static QFuture<void> makeReadyFuture()
+#else
+template<typename T = void>
+static QFuture<T> makeReadyFuture()
+#endif
 {
-    return makeReadyValueFuture(std::forward<T>(value));
-}
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportFinished();
 
-// the void specialization is moved to the end of qfuture.h, because it now
-// uses makeReadyVoidFuture() and required QFuture<void> to be defined.
+    return promise.future();
+}
 
 template<typename T>
-QT_DEPRECATED_VERSION_X(6, 10, "Use makeReadyRangeFuture() instead")
 static QFuture<T> makeReadyFuture(const QList<T> &values)
 {
-    return makeReadyRangeFuture(values);
+    QFutureInterface<T> promise;
+    promise.reportStarted();
+    promise.reportResults(values);
+    promise.reportFinished();
+
+    return promise.future();
 }
-#endif // QT_DEPRECATED_SINCE(6, 10)
 
 #ifndef QT_NO_EXCEPTIONS
 
@@ -1128,7 +1087,7 @@ QFuture<OutputSequence> whenAllImpl(InputIt first, InputIt last)
 {
     const qsizetype size = std::distance(first, last);
     if (size == 0)
-        return QtFuture::makeReadyValueFuture(OutputSequence());
+        return QtFuture::makeReadyFuture(OutputSequence());
 
     const auto context = std::make_shared<QtPrivate::WhenAllContext<OutputSequence>>(size);
     context->futures.resize(size);
@@ -1167,7 +1126,7 @@ QFuture<QtFuture::WhenAnyResult<typename Future<ValueType>::type>> whenAnyImpl(I
 
     const qsizetype size = std::distance(first, last);
     if (size == 0) {
-        return QtFuture::makeReadyValueFuture(
+        return QtFuture::makeReadyFuture(
                 QtFuture::WhenAnyResult { qsizetype(-1), QFuture<PackagedType>() });
     }
 

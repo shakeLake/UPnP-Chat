@@ -1387,7 +1387,7 @@ void tst_QUrl::fromLocalFileNormalize()
 
 void tst_QUrl::macTypes()
 {
-#ifndef Q_OS_DARWIN
+#ifndef Q_OS_MAC
     QSKIP("This is a Mac-only test");
 #else
     extern void tst_QUrl_mactypes(); // in tst_qurl_mac.mm

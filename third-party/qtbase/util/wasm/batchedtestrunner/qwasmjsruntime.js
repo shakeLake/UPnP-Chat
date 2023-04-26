@@ -176,6 +176,12 @@ export class CompiledModule {
         instanceParams.monitorRunDependencies = (name) => { };
         instanceParams.print = (text) => true && console.log(text);
         instanceParams.printErr = (text) => true && console.warn(text);
+        instanceParams.preRun = [
+            (instance) => {
+                const env = {};
+                instance.ENV = env;
+            },
+        ];
 
         instanceParams.mainScriptUrlOrBlob = new Blob([this.#js], {
             type: 'text/javascript',

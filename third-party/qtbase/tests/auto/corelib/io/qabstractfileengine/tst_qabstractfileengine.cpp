@@ -215,8 +215,6 @@ public:
                 return QLatin1String("AbsolutePathName");
             case AbsoluteLinkTarget:
                 return QLatin1String("AbsoluteLinkTarget");
-            case RawLinkPath:
-                return QLatin1String("RawLinkPath");
             case CanonicalName:
                 return QLatin1String("CanonicalName");
             case CanonicalPathName:

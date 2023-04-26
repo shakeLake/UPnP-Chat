@@ -225,7 +225,7 @@ QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
     : m_isValid(false)
 {
     QFileInfo info(dirName + "/icon-theme.cache"_L1);
-    if (!info.exists() || info.lastModified(QTimeZone::UTC) < QFileInfo(dirName).lastModified(QTimeZone::UTC))
+    if (!info.exists() || info.lastModified() < QFileInfo(dirName).lastModified())
         return;
     m_file.setFileName(info.absoluteFilePath());
     if (!m_file.open(QFile::ReadOnly))
@@ -240,13 +240,13 @@ QIconCacheGtkReader::QIconCacheGtkReader(const QString &dirName)
     m_isValid = true;
 
     // Check that all the directories are older than the cache
-    const QDateTime lastModified = info.lastModified(QTimeZone::UTC);
+    auto lastModified = info.lastModified();
     quint32 dirListOffset = read32(8);
     quint32 dirListLen = read32(dirListOffset);
     for (uint i = 0; i < dirListLen; ++i) {
         quint32 offset = read32(dirListOffset + 4 + 4 * i);
         if (!m_isValid || offset >= m_size || lastModified < QFileInfo(dirName + u'/'
-                + QString::fromUtf8(reinterpret_cast<const char*>(m_data + offset))).lastModified(QTimeZone::UTC)) {
+                + QString::fromUtf8(reinterpret_cast<const char*>(m_data + offset))).lastModified()) {
             m_isValid = false;
             return;
         }

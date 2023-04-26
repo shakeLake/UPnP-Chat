@@ -248,7 +248,7 @@ private:
     virtual void initAccess();
     void syncConfFile(QConfFile *confFile);
     bool writeIniFile(QIODevice &device, const ParsedSettingsMap &map);
-#ifdef Q_OS_DARWIN
+#ifdef Q_OS_MAC
     bool readPlistFile(const QByteArray &data, ParsedSettingsMap *map) const;
     bool writePlistFile(QIODevice &file, const ParsedSettingsMap &map) const;
 #endif

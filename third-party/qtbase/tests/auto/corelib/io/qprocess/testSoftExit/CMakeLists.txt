@@ -7,7 +7,6 @@
 
 qt_internal_add_executable(testSoftExit
     OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
-    CORE_LIBRARY None
 )
 
 qt_internal_extend_target(testSoftExit CONDITION WIN32

@@ -3,14 +3,10 @@
 
 function(qt_internal_add_resource target resourceName)
     if(NOT TARGET "${target}")
-        message(FATAL_ERROR "${target} is not a target.")
-    endif()
-    qt_internal_is_skipped_test(skipped ${target})
-    if(skipped)
-        return()
-    endif()
-    qt_internal_is_in_test_batch(in_batch ${target})
-    if(in_batch)
+        qt_internal_is_in_test_batch(in_batch ${target})
+        if(NOT in_batch)
+            message(FATAL_ERROR "Trying to add resource to a non-existing target \"${target}\".")
+        endif()
         _qt_internal_test_batch_target_name(target)
     endif()
 

@@ -163,7 +163,7 @@ Q_TRACE_POINT(qtcore, qt_message_print, int type, const char *category, const ch
     \snippet code/src_corelib_global_qglobal.cpp 4
 */
 
-#if !defined(Q_CC_MSVC) || defined(Q_CC_CLANG)
+#if !defined(Q_CC_MSVC)
 Q_NORETURN
 #endif
 static void qt_message_fatal(QtMsgType, const QMessageLogContext &context, const QString &message);
@@ -1632,7 +1632,7 @@ QString qFormatLogMessage(QtMsgType type, const QMessageLogContext &context, con
             } else if (timeFormat == "boot"_L1) {
                 // just print the milliseconds since the elapsed timer reference
                 // like the Linux kernel does
-                qint64 ms = QDeadlineTimer::current().deadline();
+                uint ms = QDeadlineTimer::current().deadline();
                 message.append(QString::asprintf("%6d.%03d", uint(ms / 1000), uint(ms % 1000)));
 #if QT_CONFIG(datestring)
             } else if (timeFormat.isEmpty()) {

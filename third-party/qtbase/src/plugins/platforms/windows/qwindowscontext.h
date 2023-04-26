@@ -115,10 +115,9 @@ public:
     QSharedPointer<QWindowCreationContext> windowCreationContext() const;
 
     static void setTabletAbsoluteRange(int a);
-
-    static bool setProcessDpiAwareness(QtWindows::DpiAwareness dpiAwareness);
-    static QtWindows::DpiAwareness processDpiAwareness();
-    static QtWindows::DpiAwareness windowDpiAwareness(HWND hwnd);
+    void setProcessDpiAwareness(QtWindows::ProcessDpiAwareness dpiAwareness);
+    static int processDpiAwareness();
+    bool setProcessDpiV2Awareness();
 
     static bool isDarkMode();
 

@@ -14,7 +14,6 @@
 #include <QDebug>
 #include <QtSql/private/qsqldriver_p.h>
 #include <QtSql/private/qsqlresult_p.h>
-#include "private/qtools_p.h"
 
 #if defined(Q_CC_BOR)
 // DB2's sqlsystm.h (included through sqlcli1.h) defines the SQL_BIGINT_TYPE
@@ -44,13 +43,10 @@ class QDB2DriverPrivate : public QSqlDriverPrivate
     Q_DECLARE_PUBLIC(QDB2Driver)
 
 public:
-    QDB2DriverPrivate() : QSqlDriverPrivate(QSqlDriver::DB2) {}
-    SQLHANDLE hEnv = 0;
-    SQLHANDLE hDbc = 0;
+    QDB2DriverPrivate() : QSqlDriverPrivate(), hEnv(0), hDbc(0) { dbmsType = QSqlDriver::DB2; }
+    SQLHANDLE hEnv;
+    SQLHANDLE hDbc;
     QString user;
-
-    void qSplitTableQualifier(const QString &qualifier, QString &catalog,
-                              QString &schema, QString &table) const;
 };
 
 class QDB2ResultPrivate;
@@ -465,27 +461,34 @@ static QByteArray qGetBinaryData(SQLHANDLE hStmt, int column, SQLLEN& lengthIndi
     return fieldVal;
 }
 
-void QDB2DriverPrivate::qSplitTableQualifier(const QString &qualifier, QString &catalog,
-                                             QString &schema, QString &table) const
+static void qSplitTableQualifier(const QString & qualifier, QString * catalog,
+                                  QString * schema, QString * table)
 {
-    const QList<QStringView> l = QStringView(qualifier).split(u'.');
-    switch (l.count()) {
-        case 1:
-            table = qualifier;
-            break;
-        case 2:
-            schema = l.at(0).toString();
-            table = l.at(1).toString();
-            break;
-        case 3:
-            catalog = l.at(0).toString();
-            schema = l.at(1).toString();
-            table = l.at(2).toString();
-            break;
-        default:
-            qSqlWarning(QString::fromLatin1("QODBCDriver::splitTableQualifier: Unable to split table qualifier '%1'")
-                        .arg(qualifier), this);
-            break;
+    if (!catalog || !schema || !table)
+        return;
+    QStringList l = qualifier.split(u'.');
+    if (l.count() > 3)
+        return; // can't possibly be a valid table qualifier
+    int i = 0, n = l.count();
+    if (n == 1) {
+        *table = qualifier;
+    } else {
+        for (QStringList::Iterator it = l.begin(); it != l.end(); ++it) {
+            if (n == 3) {
+                if (i == 0)
+                    *catalog = *it;
+                else if (i == 1)
+                    *schema = *it;
+                else if (i == 2)
+                    *table = *it;
+            } else if (n == 2) {
+                if (i == 0)
+                    *schema = *it;
+                else if (i == 1)
+                    *table = *it;
+            }
+            i++;
+        }
     }
 }
 
@@ -872,7 +875,7 @@ bool QDB2Result::exec()
                 break; }
             case QMetaType::Int:
             case QMetaType::Double:
-            case QMetaType::QByteArray:
+            case QMetaType::ByteArray:
                 break;
             case QMetaType::QString:
                 if (bindValueType(i) & QSql::Out)
@@ -1350,7 +1353,7 @@ QSqlRecord QDB2Driver::record(const QString& tableName) const
 
     SQLHANDLE hStmt;
     QString catalog, schema, table;
-    d->qSplitTableQualifier(tableName, catalog, schema, table);
+    qSplitTableQualifier(tableName, &catalog, &schema, &table);
     if (schema.isEmpty())
         schema = d->user;
 
@@ -1506,7 +1509,7 @@ QSqlIndex QDB2Driver::primaryIndex(const QString& tablename) const
         return index;
     }
     QString catalog, schema, table;
-    d->qSplitTableQualifier(tablename, catalog, schema, table);
+    qSplitTableQualifier(tablename, &catalog, &schema, &table);
 
     if (isIdentifierEscaped(catalog, QSqlDriver::TableName))
         catalog = stripDelimiters(catalog, QSqlDriver::TableName);
@@ -1671,17 +1674,17 @@ QString QDB2Driver::formatValue(const QSqlField &field, bool trimStrings) const
                 }
         }
         case QMetaType::QByteArray: {
-            const QByteArray ba = field.value().toByteArray();
-            QString r;
-            r.reserve(ba.size() * 2 + 9);
-            r += "BLOB(X'"_L1;
-            for (const char c : ba) {
-                const uchar s = uchar(c);
-                r += QLatin1Char(QtMiscUtils::toHexLower(s >> 4));
-                r += QLatin1Char(QtMiscUtils::toHexLower(s & 0x0f));
+            QByteArray ba = field.value().toByteArray();
+            QString res;
+            res += "BLOB(X'"_L1;
+            static const char hexchars[] = "0123456789abcdef";
+            for (int i = 0; i < ba.size(); ++i) {
+                uchar s = (uchar) ba[i];
+                res += QLatin1Char(hexchars[s >> 4]);
+                res += QLatin1Char(hexchars[s & 0x0f]);
             }
-            r += "')"_L1;
-            return r;
+            res += "')"_L1;
+            return res;
         }
         default:
             return QSqlDriver::formatValue(field, trimStrings);
@@ -1699,8 +1702,8 @@ QString QDB2Driver::escapeIdentifier(const QString &identifier, IdentifierType) 
     QString res = identifier;
     if (!identifier.isEmpty() && !identifier.startsWith(u'"') && !identifier.endsWith(u'"') ) {
         res.replace(u'"', "\"\""_L1);
+        res.prepend(u'"').append(u'"');
         res.replace(u'.', "\".\""_L1);
-        res = u'"' + res + u'"';
     }
     return res;
 }

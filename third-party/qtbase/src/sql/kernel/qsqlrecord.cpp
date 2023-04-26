@@ -8,26 +8,42 @@
 #include "qlist.h"
 #include "qsqlfield.h"
 #include "qstring.h"
+#include "qstringlist.h"
 
 QT_BEGIN_NAMESPACE
 
 class QSqlRecordPrivate
 {
 public:
-    QSqlRecordPrivate() = default;
-    QSqlRecordPrivate(const QSqlRecordPrivate &other)
-        : fields(other.fields)
-    {
-    }
+    QSqlRecordPrivate();
+    QSqlRecordPrivate(const QSqlRecordPrivate &other);
 
-    inline bool contains(qsizetype index) const
-    {
-      return index >= 0 && index < fields.size();
-    }
+    inline bool contains(int index) { return index >= 0 && index < fields.size(); }
+    QString createField(int index, const QString &prefix) const;
 
     QList<QSqlField> fields;
-    QAtomicInt ref{1};
+    QAtomicInt ref;
 };
+
+QSqlRecordPrivate::QSqlRecordPrivate() : ref(1)
+{
+}
+
+QSqlRecordPrivate::QSqlRecordPrivate(const QSqlRecordPrivate &other): fields(other.fields), ref(1)
+{
+}
+
+/*! \internal
+    Just for compat
+*/
+QString QSqlRecordPrivate::createField(int index, const QString &prefix) const
+{
+    QString f;
+    if (!prefix.isEmpty())
+        f = prefix + u'.';
+    f += fields.at(index).name();
+    return f;
+}
 
 /*!
     \class QSqlRecord
@@ -70,8 +86,8 @@ public:
 */
 
 QSqlRecord::QSqlRecord()
-  : d(new QSqlRecordPrivate)
 {
+    d = new QSqlRecordPrivate();
 }
 
 /*!
@@ -82,41 +98,10 @@ QSqlRecord::QSqlRecord()
 */
 
 QSqlRecord::QSqlRecord(const QSqlRecord& other)
-  : d(other.d)
 {
+    d = other.d;
     d->ref.ref();
 }
-
-/*!
-    \fn QSqlRecord::QSqlRecord(QSqlRecord &&other)
-    \since 6.6
-
-    Move-constructs a new QSqlRecord from \a other.
-
-    \note The moved-from object \a other is placed in a partially-formed state,
-    in which the only valid operations are destruction and assignment of a new
-    value.
-*/
-
-/*!
-    \fn QSqlRecord &QSqlRecord::operator=(QSqlRecord &&other)
-    \since 6.6
-
-    Move-assigns \a other to this QSqlRecord instance.
-
-    \note The moved-from object \a other is placed in a partially-formed state,
-    in which the only valid operations are destruction and assignment of a new
-    value.
-*/
-
-/*!
-    \fn void QSqlRecord::swap(QSqlRecord &other)
-    \since 6.6
-
-    Swaps SQL record \a other with this SQL record. This operation is very fast
-    and never fails.
-*/
-
 
 /*!
     Sets the record equal to \a other.
@@ -127,7 +112,7 @@ QSqlRecord::QSqlRecord(const QSqlRecord& other)
 
 QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
 {
-    QSqlRecord(other).swap(*this);
+    qAtomicAssign(d, other.d);
     return *this;
 }
 
@@ -137,7 +122,7 @@ QSqlRecord& QSqlRecord::operator=(const QSqlRecord& other)
 
 QSqlRecord::~QSqlRecord()
 {
-    if (d && !d->ref.deref())
+    if (!d->ref.deref())
         delete d;
 }
 
@@ -352,8 +337,9 @@ bool QSqlRecord::contains(const QString& name) const
 void QSqlRecord::clearValues()
 {
     detach();
-    for (QSqlField &f : d->fields)
-        f.clear();
+    int count = d->fields.size();
+    for (int i = 0; i < count; ++i)
+        d->fields[i].clear();
 }
 
 /*!

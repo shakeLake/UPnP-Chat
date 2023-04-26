@@ -1324,7 +1324,7 @@ static void init_platform(const QString &pluginNamesWithArguments, const QString
     const auto platformIntegration = QGuiApplicationPrivate::platformIntegration();
     fontSmoothingGamma = platformIntegration->styleHint(QPlatformIntegration::FontSmoothingGamma).toReal();
     QCoreApplication::setAttribute(Qt::AA_DontShowShortcutsInContextMenus,
-        !QGuiApplication::styleHints()->showShortcutsInContextMenus());
+        !platformIntegration->styleHint(QPlatformIntegration::ShowShortcutsInContextMenus).toBool());
 }
 
 static void init_plugins(const QList<QByteArray> &pluginList)
@@ -2058,9 +2058,6 @@ void Q_TRACE_INSTRUMENT(qtgui) QGuiApplicationPrivate::processWindowSystemEvent(
     case QWindowSystemInterfacePrivate::WindowScreenChanged:
         QGuiApplicationPrivate::processWindowScreenChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowScreenChangedEvent *>(e));
         break;
-    case QWindowSystemInterfacePrivate::WindowDevicePixelRatioChanged:
-        QGuiApplicationPrivate::processWindowDevicePixelRatioChangedEvent(static_cast<QWindowSystemInterfacePrivate::WindowDevicePixelRatioChangedEvent *>(e));
-        break;
     case QWindowSystemInterfacePrivate::SafeAreaMarginsChanged:
         QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(static_cast<QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *>(e));
         break;
@@ -2564,7 +2561,6 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
     if (QWindow *window  = wse->window.data()) {
         if (window->screen() == wse->screen.data())
             return;
-
         if (QWindow *topLevelWindow = window->d_func()->topLevelWindow(QWindow::ExcludeTransients)) {
             if (QScreen *screen = wse->screen.data())
                 topLevelWindow->d_func()->setTopLevelScreen(screen, false /* recreate */);
@@ -2581,15 +2577,7 @@ void QGuiApplicationPrivate::processWindowScreenChangedEvent(QWindowSystemInterf
             processGeometryChangeEvent(&gce);
         }
 #endif
-        QWindowPrivate::get(window)->updateDevicePixelRatio();
     }
-}
-
-void QGuiApplicationPrivate::processWindowDevicePixelRatioChangedEvent(QWindowSystemInterfacePrivate::WindowDevicePixelRatioChangedEvent *wde)
-{
-    if (wde->window.isNull())
-        return;
-    QWindowPrivate::get(wde->window)->updateDevicePixelRatio();
 }
 
 void QGuiApplicationPrivate::processSafeAreaMarginsChangedEvent(QWindowSystemInterfacePrivate::SafeAreaMarginsChangedEvent *wse)
@@ -3174,10 +3162,6 @@ void QGuiApplicationPrivate::processScreenLogicalDotsPerInchChange(QWindowSystem
         s->d_func()->logicalDpi = QDpi(e->dpiX, e->dpiY);
         s->d_func()->updateGeometry();
     }
-
-    for (QWindow *window : QGuiApplication::allWindows())
-        if (window->screen() == e->screen)
-            QWindowPrivate::get(window)->updateDevicePixelRatio();
 
     resetCachedDevicePixelRatio();
 }

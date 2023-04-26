@@ -378,7 +378,7 @@ void Generator::generateCode()
 
     int enumsIndex = index;
     for (int i = 0; i < cdef->enumList.size(); ++i)
-        index += QMetaObjectPrivate::IntsPerEnum + (cdef->enumList.at(i).values.size() * 2);
+        index += 5 + (cdef->enumList.at(i).values.size() * 2);
     fprintf(out, "    %4d, %4d, // constructors\n", isConstructible ? int(cdef->constructorList.size()) : 0,
             isConstructible ? index : 0);
 
@@ -397,8 +397,8 @@ void Generator::generateCode()
 //
     generateClassInfos();
 
-    // all property metatypes + all enum metatypes + 1 for the type of the current class itself
-    int initialMetaTypeOffset = cdef->propertyList.size() + cdef->enumList.size() + 1;
+    // all property metatypes, + 1 for the type of the current class itself
+    int initialMetaTypeOffset = cdef->propertyList.size() + 1;
 
 //
 // Build signals array first, otherwise the signal indices would be wrong
@@ -573,15 +573,6 @@ void Generator::generateCode()
         const PropertyDef &p = cdef->propertyList.at(i);
         fprintf(out, "%s\n        // property '%s'\n        %s",
                 comma, p.name.constData(), stringForType(p.type, true).constData());
-        comma = ",";
-    }
-
-    // metatypes for enums
-    for (int i = 0; i < cdef->enumList.size(); ++i) {
-        const EnumDef &e = cdef->enumList.at(i);
-        fprintf(out, "%s\n        // enum '%s'\n        %s",
-                comma, e.name.constData(),
-                stringForType(cdef->classname % "::" % e.name, true).constData());
         comma = ",";
     }
 
@@ -952,7 +943,7 @@ void Generator::generateEnums(int index)
         return;
 
     fprintf(out, "\n // enums: name, alias, flags, count, data\n");
-    index += QMetaObjectPrivate::IntsPerEnum * cdef->enumList.size();
+    index += 5 * cdef->enumList.size();
     int i;
     for (i = 0; i < cdef->enumList.size(); ++i) {
         const EnumDef &e = cdef->enumList.at(i);
@@ -1082,42 +1073,30 @@ void Generator::generateStaticMetacall()
     bool needElse = false;
     bool isUsed_a = false;
 
-    const auto generateCtorArguments = [&](int ctorindex) {
-        const FunctionDef &f = cdef->constructorList.at(ctorindex);
-        Q_ASSERT(!f.isPrivateSignal); // That would be a strange ctor indeed
-        int offset = 1;
-
-        int argsCount = f.arguments.size();
-        for (int j = 0; j < argsCount; ++j) {
-            const ArgumentDef &a = f.arguments.at(j);
-            if (j)
-                fprintf(out, ",");
-            fprintf(out, "(*reinterpret_cast<%s>(_a[%d]))",
-                    a.typeNameForCast.constData(), offset++);
-        }
-    };
-
     if (!cdef->constructorList.isEmpty()) {
         fprintf(out, "    if (_c == QMetaObject::CreateInstance) {\n");
         fprintf(out, "        switch (_id) {\n");
-        const int ctorend = cdef->constructorList.size();
-        for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
+        for (int ctorindex = 0; ctorindex < cdef->constructorList.size(); ++ctorindex) {
             fprintf(out, "        case %d: { %s *_r = new %s(", ctorindex,
                     cdef->classname.constData(), cdef->classname.constData());
-            generateCtorArguments(ctorindex);
+            const FunctionDef &f = cdef->constructorList.at(ctorindex);
+            int offset = 1;
+
+            int argsCount = f.arguments.size();
+            for (int j = 0; j < argsCount; ++j) {
+                const ArgumentDef &a = f.arguments.at(j);
+                if (j)
+                    fprintf(out, ",");
+                fprintf(out, "(*reinterpret_cast< %s>(_a[%d]))", a.typeNameForCast.constData(), offset++);
+            }
+            if (f.isPrivateSignal) {
+                if (argsCount > 0)
+                    fprintf(out, ", ");
+                fprintf(out, "%s", QByteArray("QPrivateSignal()").constData());
+            }
             fprintf(out, ");\n");
             fprintf(out, "            if (_a[0]) *reinterpret_cast<%s**>(_a[0]) = _r; } break;\n",
                     (cdef->hasQGadget || cdef->hasQNamespace) ? "void" : "QObject");
-        }
-        fprintf(out, "        default: break;\n");
-        fprintf(out, "        }\n");
-        fprintf(out, "    } else if (_c == QMetaObject::ConstructInPlace) {\n");
-        fprintf(out, "        switch (_id) {\n");
-        for (int ctorindex = 0; ctorindex < ctorend; ++ctorindex) {
-            fprintf(out, "        case %d: { new (_a[0]) %s(",
-                    ctorindex, cdef->classname.constData());
-            generateCtorArguments(ctorindex);
-            fprintf(out, "); } break;\n");
         }
         fprintf(out, "        default: break;\n");
         fprintf(out, "        }\n");
@@ -1303,7 +1282,7 @@ void Generator::generateStaticMetacall()
             hasBindableProperties |= !p.bind.isEmpty();
         }
         if (needElse)
-            fprintf(out, " else ");
+            fprintf(out, "else ");
         fprintf(out, "if (_c == QMetaObject::ReadProperty) {\n");
 
         auto setupMemberAccess = [this]() {

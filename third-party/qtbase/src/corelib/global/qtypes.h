@@ -11,8 +11,6 @@
 #ifdef __cplusplus
 #  include <cstddef>
 #  include <cstdint>
-#else
-#  include <assert.h>
 #endif
 
 #if 0
@@ -20,6 +18,8 @@
 #pragma qt_class(QIntegerForSize)
 #pragma qt_sync_stop_processing
 #endif
+
+#ifndef __ASSEMBLER__
 
 /*
    Useful type definitions for Qt
@@ -60,7 +60,7 @@ typedef quint64 qulonglong;
 
 #ifndef __cplusplus
 // In C++ mode, we define below using QIntegerForSize template
-static_assert(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
+Q_STATIC_ASSERT_X(sizeof(ptrdiff_t) == sizeof(size_t), "Weird ptrdiff_t and size_t definitions");
 typedef ptrdiff_t qptrdiff;
 typedef ptrdiff_t qsizetype;
 typedef ptrdiff_t qintptr;
@@ -157,5 +157,7 @@ using qsizetype = QIntegerForSizeof<std::size_t>::Signed;
 #endif // __cplusplus
 
 QT_END_NAMESPACE
+
+#endif // __ASSEMBLER__
 
 #endif // QTYPES_H

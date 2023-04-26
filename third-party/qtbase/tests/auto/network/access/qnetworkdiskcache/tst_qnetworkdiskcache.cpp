@@ -750,7 +750,7 @@ public:
                 cache.remove(url);
             if (QRandomGenerator::global()->bounded(5) == 1)
                 cache.clear();
-            sleep(std::chrono::seconds{0});
+            sleep(0);
         }
     }
 

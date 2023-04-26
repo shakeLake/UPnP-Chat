@@ -25,9 +25,8 @@ public:
         : QObject(parent), _timeout(false)
     {}
 
-    void enterLoopMSecs(int ms) { enterLoop(std::chrono::milliseconds{ms}); };
-    void enterLoop(int secs) { enterLoop(std::chrono::seconds{secs}); }
-    inline void enterLoop(std::chrono::milliseconds msecs);
+    inline void enterLoopMSecs(int ms);
+    inline void enterLoop(int secs) { enterLoopMSecs(secs * 1000); }
 
     inline void changeInterval(int secs)
     { killTimer(timerId); timerId = startTimer(secs * 1000); }
@@ -56,7 +55,7 @@ private:
     Q_DECL_UNUSED_MEMBER uint reserved   :31;
 };
 
-inline void QTestEventLoop::enterLoop(std::chrono::milliseconds msecs)
+inline void QTestEventLoop::enterLoopMSecs(int ms)
 {
     Q_ASSERT(!loop);
     _timeout = false;
@@ -64,10 +63,9 @@ inline void QTestEventLoop::enterLoop(std::chrono::milliseconds msecs)
     if (QTest::runningTest() && QTest::currentTestResolved())
         return;
 
-    using namespace std::chrono_literals;
     QEventLoop l;
     // if tests want to measure sub-second precision, use a precise timer
-    timerId = startTimer(msecs, msecs < 1s ? Qt::PreciseTimer : Qt::CoarseTimer);
+    timerId = startTimer(ms, ms < 1000 ? Qt::PreciseTimer : Qt::CoarseTimer);
 
     loop = &l;
     l.exec();

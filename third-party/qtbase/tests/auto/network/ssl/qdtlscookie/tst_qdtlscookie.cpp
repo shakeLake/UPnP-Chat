@@ -22,8 +22,6 @@
 #include <utility>
 #include <vector>
 
-using namespace std::chrono_literals;
-
 QT_BEGIN_NAMESPACE
 
 #define STOP_ON_FAILURE \
@@ -78,7 +76,7 @@ private:
     quint16 serverPort = 0;
 
     QTestEventLoop testLoop;
-    static constexpr auto HandshakeTimeout = 500ms;
+    int handshakeTimeoutMS = 500;
 
     QDtlsClientVerifier listener;
     using HandshakePtr = QSharedPointer<QDtls>;
@@ -329,7 +327,7 @@ void tst_QDtlsCookie::verifyMultipleClients()
 
     clientsToAdd = clientsToWait = 100;
 
-    testLoop.enterLoop(HandshakeTimeout * clientsToWait);
+    testLoop.enterLoopMSecs(handshakeTimeoutMS * clientsToWait);
     QVERIFY(!testLoop.timeout());
     QVERIFY(clientsToWait == 0);
 }
@@ -353,7 +351,7 @@ void tst_QDtlsCookie::receiveMessage(QUdpSocket *socket, QByteArray *message,
     Q_ASSERT(socket && message);
 
     if (socket->pendingDatagramSize() <= 0)
-        testLoop.enterLoop(HandshakeTimeout);
+        testLoop.enterLoopMSecs(handshakeTimeoutMS);
 
     QVERIFY(!testLoop.timeout());
     QVERIFY(socket->pendingDatagramSize());

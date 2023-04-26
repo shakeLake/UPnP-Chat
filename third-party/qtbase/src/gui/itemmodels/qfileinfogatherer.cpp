@@ -83,7 +83,7 @@ void QFileInfoGatherer::driveRemoved()
     const QFileInfoList driveInfoList = QDir::drives();
     for (const QFileInfo &fi : driveInfoList)
         drives.append(translateDriveName(fi));
-    emit newListOfFiles(QString(), drives);
+    newListOfFiles(QString(), drives);
 }
 
 bool QFileInfoGatherer::resolveSymlinks() const

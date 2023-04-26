@@ -344,9 +344,7 @@ int QTextMarkdownWriter::writeBlock(const QTextBlock &block, bool wrap, bool ign
     if (block.textList()) { // it's a list-item
         auto fmt = block.textList()->format();
         const int listLevel = fmt.indent();
-        // Negative numbers don't start a list in Markdown, so ignore them.
-        const int start = fmt.start() >= 0 ? fmt.start() : 1;
-        const int number = block.textList()->itemNumber(block) + start;
+        const int number = block.textList()->itemNumber(block) + 1;
         QByteArray bullet = " ";
         bool numeric = false;
         switch (fmt.style()) {

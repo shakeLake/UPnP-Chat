@@ -327,24 +327,14 @@ function(qt_internal_add_module target)
                      EXPORT_PROPERTIES "${export_properties}")
     endif()
 
-    # FIXME: This workaround is needed because the deployment logic
-    # for iOS and WASM just copies/embeds the directly linked library,
-    # which will just be a versioned symlink to the actual library.
-    if((UIKIT OR WASM) AND BUILD_SHARED_LIBS)
-        set(version_args "")
-    else()
-        set(version_args
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR})
-    endif()
-
     if(NOT arg_HEADER_MODULE)
         set_target_properties(${target} PROPERTIES
             LIBRARY_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
             RUNTIME_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_BINDIR}"
             ARCHIVE_OUTPUT_DIRECTORY "${QT_BUILD_DIR}/${INSTALL_LIBDIR}"
-            ${version_args}
-        )
+            VERSION ${PROJECT_VERSION}
+            SOVERSION ${PROJECT_VERSION_MAJOR}
+            )
         qt_set_target_info_properties(${target} ${ARGN})
         qt_handle_multi_config_output_dirs("${target}")
 
@@ -802,11 +792,6 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
         EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
         CONFIG_INSTALL_DIR "${config_install_dir}")
 
-    qt_internal_export_genex_properties(TARGETS ${target}
-        EXPORT_NAME_PREFIX ${INSTALL_CMAKE_NAMESPACE}${target}
-        CONFIG_INSTALL_DIR "${config_install_dir}"
-    )
-
     ### fixme: cmake is missing a built-in variable for this. We want to apply it only to modules and plugins
     # that belong to Qt.
     if(NOT arg_HEADER_MODULE)
@@ -1089,10 +1074,6 @@ function(qt_describe_module target)
     endif()
 
     set(extra_build_information "")
-    if(NOT QT_NAMESPACE STREQUAL "")
-        string(APPEND extra_build_information "
-        \"namespace\": \"${QT_NAMESPACE}\",")
-    endif()
     if(ANDROID)
         string(APPEND extra_build_information "
         \"android\": {

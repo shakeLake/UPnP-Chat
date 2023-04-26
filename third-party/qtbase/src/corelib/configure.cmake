@@ -125,6 +125,7 @@ int pipes[2];
 }
 ")
 
+# special case begin
 # cxx11_future
 if (UNIX AND NOT ANDROID AND NOT QNX AND NOT INTEGRITY)
     set(cxx11_future_TEST_LIBRARIES pthread)
@@ -145,6 +146,7 @@ std::future<int> f = std::async([]() { return 42; });
     return 0;
 }
 ")
+# special case end
 
 # cxx11_random
 qt_config_compile_test(cxx11_random
@@ -295,71 +297,49 @@ inotify_rm_watch(0, 1);
 }
 ")
 
-qt_config_compile_test(sysv_shm
-    LABEL "System V/XSI shared memory"
+# ipc_sysv
+qt_config_compile_test(ipc_sysv
+    LABEL "SysV IPC"
     CODE
 "#include <sys/types.h>
 #include <sys/ipc.h>
+#include <sys/sem.h>
 #include <sys/shm.h>
 #include <fcntl.h>
 
 int main(void)
 {
-    key_t unix_key = ftok(\"test\", 'Q');
-    shmget(unix_key, 0, 0666 | IPC_CREAT | IPC_EXCL);
-    shmctl(0, 0, (struct shmid_ds *)(0));
+    /* BEGIN TEST: */
+key_t unix_key = ftok(\"test\", 'Q');
+semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);
+shmget(unix_key, 0, 0666 | IPC_CREAT | IPC_EXCL);
+shmctl(0, 0, (struct shmid_ds *)(0));
+    /* END TEST: */
     return 0;
 }
 ")
 
-qt_config_compile_test(sysv_sem
-    LABEL "System V/XSI semaphores"
-    CODE
-"#include <sys/types.h>
-#include <sys/ipc.h>
-#include <sys/sem.h>
-#include <fcntl.h>
-
-int main(void)
-{
-    key_t unix_key = ftok(\"test\", 'Q');
-    semctl(semget(unix_key, 1, 0666 | IPC_CREAT | IPC_EXCL), 0, IPC_RMID, 0);
-    return 0;
-}
-")
-
+# ipc_posix
 if (LINUX)
-    set(ipc_posix_TEST_LIBRARIES pthread WrapRt::WrapRt)
+    set(ipc_posix_TEST_LIBRARIES pthread rt)
 endif()
-qt_config_compile_test(posix_shm
-    LABEL "POSIX shared memory"
+qt_config_compile_test(ipc_posix
+    LABEL "POSIX IPC"
     LIBRARIES
      "${ipc_posix_TEST_LIBRARIES}"
     CODE
 "#include <sys/types.h>
 #include <sys/mman.h>
-#include <fcntl.h>
-
-int main(void)
-{
-    shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);
-    shm_unlink(\"test\");
-    return 0;
-}
-")
-
-qt_config_compile_test(posix_sem
-    LABEL "POSIX semaphores"
-    LIBRARIES
-     "${ipc_posix_TEST_LIBRARIES}"
-    CODE
-"#include <sys/types.h>
 #include <semaphore.h>
 #include <fcntl.h>
 
 int main(void)
 {
-    sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));
+    /* BEGIN TEST: */
+sem_close(sem_open(\"test\", O_CREAT | O_EXCL, 0666, 0));
+shm_open(\"test\", O_RDWR | O_CREAT | O_EXCL, 0666);
+shm_unlink(\"test\");
+    /* END TEST: */
     return 0;
 }
 ")
@@ -551,7 +531,7 @@ qt_feature("clock-monotonic" PUBLIC
     CONDITION QT_FEATURE_clock_gettime AND TEST_clock_monotonic
 )
 qt_feature_definition("clock-monotonic" "QT_NO_CLOCK_MONOTONIC" NEGATE VALUE "1")
-qt_feature("doubleconversion" PRIVATE
+qt_feature("doubleconversion" PUBLIC PRIVATE
     LABEL "DoubleConversion"
 )
 qt_feature_definition("doubleconversion" "QT_NO_DOUBLECONVERSION" NEGATE VALUE "1")
@@ -612,11 +592,9 @@ qt_feature("inotify" PUBLIC PRIVATE
 )
 qt_feature_definition("inotify" "QT_NO_INOTIFY" NEGATE VALUE "1")
 qt_feature("ipc_posix"
-    LABEL "Defaulting legacy IPC to POSIX"
-    CONDITION TEST_posix_shm AND TEST_posix_sem AND (
-        FEATURE_ipc_posix OR (APPLE AND QT_FEATURE_appstore_compliant)
-        OR NOT (TEST_sysv_shm AND TEST_sysv_sem)
-    )
+    LABEL "Using POSIX IPC"
+    AUTODETECT NOT WIN32 AND ( ( APPLE AND QT_FEATURE_appstore_compliant ) OR NOT TEST_ipc_sysv )
+    CONDITION TEST_ipc_posix
 )
 qt_feature_definition("ipc_posix" "QT_POSIX_IPC")
 qt_feature("journald" PRIVATE
@@ -684,14 +662,6 @@ qt_feature("poll_select" PRIVATE
     EMIT_IF NOT WIN32
 )
 qt_feature_definition("poll_select" "QT_NO_NATIVE_POLL")
-qt_feature("posix_sem" PRIVATE
-    LABEL "POSIX semaphores"
-    CONDITION TEST_posix_sem
-)
-qt_feature("posix_shm" PRIVATE
-    LABEL "POSIX shared memory"
-    CONDITION TEST_posix_shm AND UNIX
-)
 qt_feature("qqnx_pps" PRIVATE
     LABEL "PPS"
     CONDITION PPS_FOUND
@@ -714,14 +684,6 @@ qt_feature("syslog" PRIVATE
     AUTODETECT OFF
     CONDITION TEST_syslog
 )
-qt_feature("sysv_sem" PRIVATE
-    LABEL "System V / XSI semaphores"
-    CONDITION TEST_sysv_sem
-)
-qt_feature("sysv_shm" PRIVATE
-    LABEL "System V / XSI shared memory"
-    CONDITION TEST_sysv_shm
-)
 qt_feature("threadsafe-cloexec"
     LABEL "Threadsafe pipe creation"
     CONDITION TEST_cloexec
@@ -743,7 +705,7 @@ qt_feature("sharedmemory" PUBLIC
     SECTION "Kernel"
     LABEL "QSharedMemory"
     PURPOSE "Provides access to a shared memory segment."
-    CONDITION WIN32 OR TEST_sysv_shm OR TEST_posix_shm
+    CONDITION ( ANDROID OR WIN32 OR ( NOT VXWORKS AND ( TEST_ipc_sysv OR TEST_ipc_posix ) ) )
 )
 qt_feature_definition("sharedmemory" "QT_NO_SHAREDMEMORY" NEGATE VALUE "1")
 qt_feature("shortcut" PUBLIC
@@ -756,7 +718,7 @@ qt_feature("systemsemaphore" PUBLIC
     SECTION "Kernel"
     LABEL "QSystemSemaphore"
     PURPOSE "Provides a general counting system semaphore."
-    CONDITION WIN32 OR TEST_sysv_sem OR TEST_posix_sem
+    CONDITION ( NOT INTEGRITY AND NOT VXWORKS AND NOT rtems ) AND ( ANDROID OR WIN32 OR TEST_ipc_sysv OR TEST_ipc_posix )
 )
 qt_feature_definition("systemsemaphore" "QT_NO_SYSTEMSEMAPHORE" NEGATE VALUE "1")
 qt_feature("xmlstream" PUBLIC
@@ -767,7 +729,6 @@ qt_feature("xmlstream" PUBLIC
 qt_feature("cpp-winrt" PRIVATE PUBLIC
     LABEL "cpp/winrt base"
     PURPOSE "basic cpp/winrt language projection support"
-    AUTODETECT WIN32
     CONDITION WIN32 AND TEST_cpp_winrt
 )
 qt_feature_definition("xmlstream" "QT_NO_XMLSTREAM" NEGATE VALUE "1")
@@ -1004,18 +965,15 @@ qt_feature("permissions" PUBLIC
     PURPOSE "Provides support for requesting user permission to access restricted data or APIs"
     CONDITION APPLE OR ANDROID OR WASM
 )
-
 qt_configure_add_summary_section(NAME "Qt Core")
 qt_configure_add_summary_entry(ARGS "backtrace")
 qt_configure_add_summary_entry(ARGS "doubleconversion")
 qt_configure_add_summary_entry(ARGS "system-doubleconversion")
-qt_configure_add_summary_entry(ARGS "forkfd_pidfd" CONDITION LINUX)
 qt_configure_add_summary_entry(ARGS "glib")
 qt_configure_add_summary_entry(ARGS "icu")
 qt_configure_add_summary_entry(ARGS "system-libb2")
 qt_configure_add_summary_entry(ARGS "mimetype-database")
-qt_configure_add_summary_entry(ARGS "permissions")
-qt_configure_add_summary_entry(ARGS "ipc_posix" CONDITION UNIX)
+qt_configure_add_summary_entry(ARGS "cpp-winrt")
 qt_configure_add_summary_entry(
     TYPE "firstAvailableFeature"
     ARGS "etw lttng ctf"
@@ -1032,6 +990,11 @@ qt_configure_add_summary_entry(
 )
 qt_configure_add_summary_entry(ARGS "pcre2")
 qt_configure_add_summary_entry(ARGS "system-pcre2")
+qt_configure_add_summary_entry(
+    ARGS "forkfd_pidfd"
+    CONDITION LINUX
+)
+qt_configure_add_summary_entry(ARGS "permissions")
 qt_configure_end_summary_section() # end of "Qt Core" section
 qt_configure_add_report_entry(
     TYPE NOTE

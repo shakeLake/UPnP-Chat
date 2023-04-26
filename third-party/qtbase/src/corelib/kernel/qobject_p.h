@@ -21,22 +21,14 @@
 #include "QtCore/qlist.h"
 #include "QtCore/qobject.h"
 #include "QtCore/qpointer.h"
+#include "QtCore/qsharedpointer.h"
 #include "QtCore/qvariant.h"
 #include "QtCore/qproperty.h"
-#include <QtCore/qshareddata.h>
 #include "QtCore/private/qproperty_p.h"
 
 #include <string>
 
 QT_BEGIN_NAMESPACE
-
-#ifdef Q_MOC_RUN
-#define QT_ANONYMOUS_PROPERTY(text) QT_ANONYMOUS_PROPERTY(text)
-#define QT_ANONYMOUS_PRIVATE_PROPERTY(d, text) QT_ANONYMOUS_PRIVATE_PROPERTY(d, text)
-#elif !defined QT_NO_META_MACROS
-#define QT_ANONYMOUS_PROPERTY(...) QT_ANNOTATE_CLASS(qt_anonymous_property, __VA_ARGS__)
-#define QT_ANONYMOUS_PRIVATE_PROPERTY(d, text) QT_ANNOTATE_CLASS2(qt_anonymous_private_property, d, text)
-#endif
 
 class QVariant;
 class QThreadData;
@@ -111,7 +103,6 @@ public:
     struct ConnectionOrSignalVector;
     struct SignalVector;
     struct Sender;
-    struct TaggedSignalVector;
 
     /*
         This contains the all connections from and to an object.
@@ -401,26 +392,6 @@ public:
                    int nargs);
 
     ~QMetaCallEvent() override;
-
-    template<typename ...Args>
-    static QMetaCallEvent *create(QtPrivate::QSlotObjectBase *slotObj, const QObject *sender,
-                                  int signal_index, Args ...argv)
-    {
-        auto metaCallEvent = std::make_unique<QMetaCallEvent>(slotObj, sender,
-                                                              signal_index, int(1 + sizeof...(Args)));
-
-        void **args = metaCallEvent->args();
-        QMetaType *types = metaCallEvent->types();
-        const std::array<void *, sizeof...(Args) + 1> argp{ nullptr, std::addressof(argv)... };
-        const std::array metaTypes{ QMetaType::fromType<void>(), QMetaType::fromType<Args>()... };
-        for (size_t i = 0; i < sizeof...(Args) + 1; ++i) {
-            types[i] = metaTypes[i];
-            args[i] = types[i].create(argp[i]);
-            Q_CHECK_PTR(!i || args[i]);
-        }
-
-        return metaCallEvent.release();
-    }
 
     inline int id() const { return d.method_offset_ + d.method_relative_; }
     inline const void * const* args() const { return d.args_; }

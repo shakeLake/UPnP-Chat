@@ -10,7 +10,8 @@
 #include "qwasmaccessibility.h"
 #include "qwasmservices.h"
 #include "qwasmoffscreensurface.h"
-#include "qwasmplatform.h"
+#include "qwasmstring.h"
+
 #include "qwasmwindow.h"
 #include "qwasmbackingstore.h"
 #include "qwasmfontdatabase.h"
@@ -31,8 +32,6 @@
 #include <private/qsimpledrag_p.h>
 
 QT_BEGIN_NAMESPACE
-
-extern void qt_set_sequence_auto_mnemonic(bool);
 
 using namespace emscripten;
 
@@ -82,9 +81,6 @@ QWasmIntegration::QWasmIntegration()
       m_accessibility(new QWasmAccessibility)
 {
     s_instance = this;
-
-    if (platform() == Platform::MacOS)
-        qt_set_sequence_auto_mnemonic(false);
 
     touchPoints = emscripten::val::global("navigator")["maxTouchPoints"].as<int>();
 
@@ -231,14 +227,10 @@ QAbstractEventDispatcher *QWasmIntegration::createEventDispatcher() const
 
 QVariant QWasmIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-    switch (hint) {
-    case ShowIsFullScreen:
+    if (hint == ShowIsFullScreen)
         return true;
-    case UnderlineShortcut:
-        return platform() != Platform::MacOS;
-    default:
-        return QPlatformIntegration::styleHint(hint);
-    }
+
+    return QPlatformIntegration::styleHint(hint);
 }
 
 Qt::WindowState QWasmIntegration::defaultWindowState(Qt::WindowFlags flags) const
@@ -294,8 +286,7 @@ void QWasmIntegration::removeScreen(const emscripten::val &element)
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
         [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to remove non-existing screen for element"
-                   << QString::fromJsString(element["id"]);
+        qWarning() << "Attempting to remove non-existing screen for element" << QWasmString::toQString(element["id"]);;
         return;
     }
     it->second->deleteScreen();
@@ -307,8 +298,7 @@ void QWasmIntegration::resizeScreen(const emscripten::val &element)
     auto it = std::find_if(m_screens.begin(), m_screens.end(),
         [&] (const QPair<emscripten::val, QWasmScreen *> &candidate) { return candidate.first.equals(element); });
     if (it == m_screens.end()) {
-        qWarning() << "Attempting to resize non-existing screen for element"
-                   << QString::fromJsString(element["id"]);
+        qWarning() << "Attempting to resize non-existing screen for element" << QWasmString::toQString(element["id"]);;
         return;
     }
     it->second->updateQScreenAndCanvasRenderSize();

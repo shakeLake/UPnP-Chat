@@ -258,16 +258,18 @@ void tst_QSqlThread::generic_data(const QString& engine)
 
 void tst_QSqlThread::dropTestTables()
 {
-    for (const auto &dbName : dbs.dbNames) {
-        QSqlDatabase db = QSqlDatabase::database(dbName);
-        tst_Databases::safeDropTables(db, { qtest, qTableName("qtest2", __FILE__, db), qTableName("emptytable", __FILE__, db) });
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
+        QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
+        QSqlQuery q(db);
+
+        tst_Databases::safeDropTables(db, QStringList() << qtest << qTableName("qtest2", __FILE__, db) << qTableName("emptytable", __FILE__, db));
     }
 }
 
 void tst_QSqlThread::createTestTables()
 {
-    for (const auto &dbName : dbs.dbNames) {
-        QSqlDatabase db = QSqlDatabase::database(dbName);
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
+        QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
         QVERIFY_SQL(q, exec("create table " + qtest
@@ -283,8 +285,8 @@ void tst_QSqlThread::createTestTables()
 
 void tst_QSqlThread::repopulateTestTables()
 {
-    for (const auto &dbName : dbs.dbNames) {
-        QSqlDatabase db = QSqlDatabase::database(dbName);
+    for (int i = 0; i < dbs.dbNames.size(); ++i) {
+        QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
 
         QVERIFY_SQL(q, exec("delete from " + qtest));

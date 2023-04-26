@@ -301,7 +301,7 @@ Q_DECLARE_FLAGS( MyStrictNoOpFlags, MyStrictNoOpEnum )
 
 static_assert( !QTypeInfo<MyStrictFlags>::isComplex );
 static_assert( QTypeInfo<MyStrictFlags>::isRelocatable );
-static_assert( !std::is_pointer_v<MyStrictFlags> );
+static_assert( !QTypeInfo<MyStrictFlags>::isPointer );
 
 void tst_QFlags::classEnum()
 {
@@ -475,7 +475,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS( MyFlags )
 
 static_assert( !QTypeInfo<MyFlags>::isComplex );
 static_assert( QTypeInfo<MyFlags>::isRelocatable );
-static_assert( !std::is_pointer_v<MyFlags> );
+static_assert( !QTypeInfo<MyFlags>::isPointer );
 
 QTEST_MAIN(tst_QFlags)
 #include "tst_qflags.moc"

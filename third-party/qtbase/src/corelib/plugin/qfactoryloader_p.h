@@ -74,9 +74,9 @@ public:
     void update();
     static void refreshAll();
 
-#if defined(Q_OS_UNIX) && !defined (Q_OS_DARWIN)
+#if defined(Q_OS_UNIX) && !defined (Q_OS_MAC)
     QLibraryPrivate *library(const QString &key) const;
-#endif // Q_OS_UNIX && !Q_OS_DARWIN
+#endif // Q_OS_UNIX && !Q_OS_MAC
 #endif // QT_CONFIG(library)
 
     void setExtraSearchPath(const QString &path);

@@ -1501,7 +1501,7 @@ void tst_QProcess::failToStart()
 // to many processes here will cause test failures later on.
 #if defined Q_OS_HPUX
    const int attempts = 15;
-#elif defined Q_OS_DARWIN
+#elif defined Q_OS_MAC
    const int attempts = 15;
 #else
    const int attempts = 50;
@@ -2363,7 +2363,7 @@ public:
 public slots:
     void block()
     {
-        QThread::sleep(std::chrono::seconds{1});
+        QThread::sleep(1);
     }
 };
 

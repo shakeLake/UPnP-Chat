@@ -14,6 +14,7 @@
 #include <qpoint.h>
 #include <qpointer.h>
 #include <qrect.h>
+#include <qsharedpointer.h>
 #include <qxcbobject.h>
 
 #include <QtCore/QDebug>
@@ -127,7 +128,7 @@ private:
     QXcbVirtualDesktop *current_virtual_desktop;
 
     // 10 minute timer used to discard old XdndDrop transactions
-    static constexpr std::chrono::minutes XdndDropTransactionTimeout{10};
+    enum { XdndDropTransactionTimeout = 600000 };
     int cleanup_timer;
 
     QList<xcb_atom_t> drag_types;

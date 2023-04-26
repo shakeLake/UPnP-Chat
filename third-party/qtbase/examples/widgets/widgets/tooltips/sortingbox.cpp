@@ -26,15 +26,15 @@ SortingBox::SortingBox(QWidget *parent)
 //! [3]
     newCircleButton = createToolButton(tr("New Circle"),
                                        QIcon(":/images/circle.png"),
-                                       &SortingBox::createNewCircle);
+                                       SLOT(createNewCircle()));
 
     newSquareButton = createToolButton(tr("New Square"),
                                        QIcon(":/images/square.png"),
-                                       &SortingBox::createNewSquare);
+                                       SLOT(createNewSquare()));
 
     newTriangleButton = createToolButton(tr("New Triangle"),
                                          QIcon(":/images/triangle.png"),
-                                         &SortingBox::createNewTriangle);
+                                         SLOT(createNewTriangle()));
 
     circlePath.addEllipse(QRect(0, 0, 100, 100));
     squarePath.addRect(QRect(0, 0, 100, 100));
@@ -226,15 +226,14 @@ void SortingBox::createShapeItem(const QPainterPath &path,
 //! [21]
 
 //! [22]
-template<typename PointerToMemberFunction>
 QToolButton *SortingBox::createToolButton(const QString &toolTip,
-                                          const QIcon &icon, const PointerToMemberFunction &member)
+                                          const QIcon &icon, const char *member)
 {
     QToolButton *button = new QToolButton(this);
     button->setToolTip(toolTip);
     button->setIcon(icon);
     button->setIconSize(QSize(32, 32));
-    connect(button, &QToolButton::clicked, this, member);
+    connect(button, SIGNAL(clicked()), this, member);
 
     return button;
 }

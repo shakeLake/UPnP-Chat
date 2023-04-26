@@ -3,6 +3,7 @@
 build/
 app/build/
 chat/build/
+qt-dpndncy/
 
 # vim swap files
 

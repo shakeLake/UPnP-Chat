@@ -5,8 +5,6 @@
 #include <QTestEventLoop>
 #include <QtCore/QTimer>
 
-using namespace std::chrono_literals;
-
 // Tests for QTestEventLoop (and some QTRY_* details)
 class tst_EventLoop: public QObject
 {
@@ -53,7 +51,7 @@ void tst_EventLoop::cleanup()
     {
         DeferredFlag flag;
         auto &loop = QTestEventLoop::instance();
-        loop.enterLoop(100ms);
+        loop.enterLoopMSecs(100);
         QVERIFY2(loop.timeout(), "QTestEventLoop exited prematurely in cleanup()");
         QVERIFY(flag);
     }
@@ -83,7 +81,7 @@ void tst_EventLoop::pass()
     {
         DeferredFlag flag;
         auto &loop = QTestEventLoop::instance();
-        loop.enterLoop(100ms);
+        loop.enterLoopMSecs(100);
         QVERIFY(loop.timeout());
         QVERIFY(flag);
     }
@@ -94,10 +92,10 @@ void tst_EventLoop::pass()
     DeferredFlag flag;
     QTestEventLoop loop(this);
     QVERIFY(!flag);
-    loop.enterLoop(1ms);
+    loop.enterLoopMSecs(1);
     QVERIFY(loop.timeout());
     QVERIFY(!flag);
-    loop.enterLoop(100ms);
+    loop.enterLoopMSecs(100);
     QVERIFY(loop.timeout());
     QVERIFY(flag);
 }

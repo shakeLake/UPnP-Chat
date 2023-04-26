@@ -102,31 +102,7 @@ private slots:
 #endif // QT_CONFIG(ssl)
 private:
     QString testDataDir;
-
-    enum class TLSBackend {
-        OpenSSL,
-        Schannel,
-        SecureTransport,
-        CertOnly,
-        Unknown,
-    };
-    static TLSBackend currentBackend()
-    {
-        static TLSBackend activeBackend = []() {
-            using namespace Qt::StringLiterals;
-            const QString active = QSslSocket::activeBackend();
-            if (active == "openssl"_L1)
-                return TLSBackend::OpenSSL;
-            if (active == "schannel")
-                return TLSBackend::Schannel;
-            if (active == "securetransport")
-                return TLSBackend::SecureTransport;
-            if (active == "cert-only")
-                return TLSBackend::CertOnly;
-            return TLSBackend::Unknown;
-        }();
-        return activeBackend;
-    }
+    bool isNonOpenSslTls = false;
 };
 
 void tst_QSslCertificate::initTestCase()
@@ -136,6 +112,8 @@ void tst_QSslCertificate::initTestCase()
         testDataDir = QCoreApplication::applicationDirPath();
     if (!testDataDir.endsWith(QLatin1String("/")))
         testDataDir += QLatin1String("/");
+
+    isNonOpenSslTls = QSslSocket::activeBackend() != QStringLiteral("openssl");
 
     QDir dir(testDataDir + "certificates");
     QFileInfoList fileInfoList = dir.entryInfoList(QDir::Files | QDir::Readable);
@@ -473,7 +451,7 @@ void tst_QSslCertificate::subjectInfoToString()
     QVERIFY(testInfo(QSslCertificate::DistinguishedNameQualifier, QString()));
     QVERIFY(testInfo(QSslCertificate::SerialNumber, QString()));
     // TODO: check why generic code does not handle this!
-    if (currentBackend() == TLSBackend::OpenSSL)
+    if (!isNonOpenSslTls)
         QVERIFY(testInfo(QSslCertificate::EmailAddress, QStringLiteral("ababic@trolltech.com")));
 }
 
@@ -485,8 +463,9 @@ void tst_QSslCertificate::subjectIssuerDisplayName_data()
     QTest::addRow("CommonName") << QStringLiteral("more-certificates/cert-cn.pem") << QStringLiteral("YOUR name");
     QTest::addRow("OrganizationName") << QStringLiteral("more-certificates/cert-on.pem") << QStringLiteral("R&D");
     QTest::addRow("OrganizationUnitName") << QStringLiteral("more-certificates/cert-oun.pem") << QStringLiteral("Foundations");
-    if (currentBackend() == TLSBackend::OpenSSL)
-        QTest::addRow("NoSubjectName") << QStringLiteral("more-certificates/cert-noname.pem") << QString();
+#ifndef QT_NO_OPENSSL
+    QTest::addRow("NoSubjectName") << QStringLiteral("more-certificates/cert-noname.pem") << QString();
+#endif
 }
 
 void tst_QSslCertificate::subjectIssuerDisplayName()
@@ -896,7 +875,7 @@ void tst_QSslCertificate::task256066toPem()
 
 void tst_QSslCertificate::nulInCN()
 {
-    if (currentBackend() != TLSBackend::OpenSSL)
+    if (isNonOpenSslTls)
         QSKIP("Generic QSslCertificatePrivate fails this test");
 
     QList<QSslCertificate> certList =
@@ -916,7 +895,7 @@ void tst_QSslCertificate::nulInCN()
 void tst_QSslCertificate::nulInSan()
 {
 
-    if (currentBackend() != TLSBackend::OpenSSL)
+    if (isNonOpenSslTls)
         QSKIP("Generic QSslCertificatePrivate fails this test");
 
     QList<QSslCertificate> certList =
@@ -983,7 +962,7 @@ void tst_QSslCertificate::selfsignedCertificates()
 
 void tst_QSslCertificate::toText()
 {
-    if (currentBackend() != TLSBackend::OpenSSL)
+    if (isNonOpenSslTls)
         QSKIP("QSslCertificate::toText is not implemented on platforms which do not use openssl");
 
     QList<QSslCertificate> certList =
@@ -1033,7 +1012,7 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 
     QByteArray shortName("1.3.6.1.4.1.311.60.2.1.3");
 #if !defined(QT_NO_OPENSSL) && defined(SN_jurisdictionCountryName)
-    if (currentBackend() == TLSBackend::OpenSSL)
+    if (!isNonOpenSslTls)
         shortName = SN_jurisdictionCountryName;
 #endif
     attributes = certList[0].subjectInfoAttributes();
@@ -1042,8 +1021,8 @@ void tst_QSslCertificate::subjectAndIssuerAttributes()
 
 void tst_QSslCertificate::verify()
 {
-    if (currentBackend() != TLSBackend::OpenSSL)
-        QSKIP("Only implemented for OpenSSL");
+    if (isNonOpenSslTls)
+        QSKIP("Not implemented in SecureTransport or Schannel");
 
     QList<QSslError> errors;
     QList<QSslCertificate> toVerify;
@@ -1384,8 +1363,9 @@ void tst_QSslCertificate::pkcs12()
         return;
     }
 
-    if (currentBackend() == TLSBackend::OpenSSL && QSslSocket::sslLibraryVersionNumber() >= 0x30000000L)
-        QSKIP("leaf.p12 is using RC2, which is disabled by default in OpenSSL v >= 3");
+#if !defined(QT_NO_OPENSSL) && OPENSSL_VERSION_MAJOR >= 3
+    QSKIP("leaf.p12 is using RC2, which is disabled by default in OpenSSL v >= 3");
+#endif
 
     QFile f(testDataDir + QLatin1String("pkcs12/leaf.p12"));
     bool ok = f.open(QIODevice::ReadOnly);
@@ -1395,8 +1375,8 @@ void tst_QSslCertificate::pkcs12()
     QSslCertificate cert;
     QList<QSslCertificate> caCerts;
 
-    if (currentBackend() != TLSBackend::OpenSSL)
-        QEXPECT_FAIL("", "pkcs12 imports are not available with the current TLS backend", Abort); // TODO?
+    if (isNonOpenSslTls)
+        QEXPECT_FAIL("", "pkcs12 imports are only supported when openssl is used", Abort); // TODO?
 
     ok = QSslCertificate::importPkcs12(&f, &key, &cert, &caCerts);
     QVERIFY(ok);
@@ -1428,8 +1408,7 @@ void tst_QSslCertificate::pkcs12()
     QFile nocert(testDataDir + QLatin1String("pkcs12/leaf-nokey.p12"));
     ok = nocert.open(QIODevice::ReadOnly);
     QVERIFY(ok);
-    if (currentBackend() == TLSBackend::OpenSSL)
-        QTest::ignoreMessage(QtWarningMsg, "Unable to convert private key");
+    QTest::ignoreMessage(QtWarningMsg, "Unable to convert private key");
     ok = QSslCertificate::importPkcs12(&nocert, &key, &cert, &caCerts);
     QVERIFY(!ok);
     nocert.close();

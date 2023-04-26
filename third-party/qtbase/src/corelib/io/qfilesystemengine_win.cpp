@@ -381,54 +381,8 @@ constexpr QFileDevice::Permissions toSpecificPermissions(PermissionTag tag,
 } // anonymous namespace
 #endif // QT_CONFIG(fslibs)
 
-#if QT_DEPRECATED_SINCE(6,6)
-int qt_ntfs_permission_lookup = 0;
-#endif
 
-static QBasicAtomicInt qt_ntfs_permission_lookup_v2 = Q_BASIC_ATOMIC_INITIALIZER(0);
-
-QT_WARNING_PUSH
-QT_WARNING_DISABLE_DEPRECATED
-
-/*!
-    \internal
-
-    Returns true if the check was previously enabled.
-*/
-
-bool qEnableNtfsPermissionChecks() noexcept
-{
-    return qt_ntfs_permission_lookup_v2.fetchAndAddRelaxed(1)
-QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
-        != 0;
-}
-
-/*!
-    \internal
-
-    Returns true if the check is disabled, i.e. there are no more users.
-*/
-
-bool qDisableNtfsPermissionChecks() noexcept
-{
-    return qt_ntfs_permission_lookup_v2.fetchAndSubRelaxed(1)
-QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
-        == 1;
-}
-
-/*!
-    \internal
-
-    Returns true if the check is enabled.
-*/
-
-bool qAreNtfsPermissionChecksEnabled() noexcept
-{
-    return qt_ntfs_permission_lookup_v2.loadRelaxed()
-QT_IF_DEPRECATED_SINCE(6, 6, /*nothing*/, + qt_ntfs_permission_lookup)
-        ;
-}
-QT_WARNING_POP
+Q_CORE_EXPORT int qt_ntfs_permission_lookup = 0;
 
 /*!
     \class QNativeFilePermissions
@@ -902,18 +856,6 @@ void QFileSystemEngine::clearWinStatData(QFileSystemMetaData &data)
 QFileSystemEntry QFileSystemEngine::getLinkTarget(const QFileSystemEntry &link,
                                                   QFileSystemMetaData &data)
 {
-    QFileSystemEntry ret = getRawLinkPath(link, data);
-    if (!ret.isEmpty() && ret.isRelative()) {
-        QString target = absoluteName(link).path() + u'/' + ret.filePath();
-        ret = QFileSystemEntry(QDir::cleanPath(target));
-    }
-    return ret;
-}
-
-//static
-QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
-                                                   QFileSystemMetaData &data)
-{
     Q_CHECK_FILE_NAME(link, link);
 
     if (data.missingFlags(QFileSystemMetaData::LinkType))
@@ -924,7 +866,12 @@ QFileSystemEntry QFileSystemEngine::getRawLinkPath(const QFileSystemEntry &link,
         target = readLink(link);
     else if (data.isLink())
         target = readSymLink(link);
-    return QFileSystemEntry(target);
+    QFileSystemEntry ret(target);
+    if (!target.isEmpty() && ret.isRelative()) {
+        target.prepend(absoluteName(link).path() + u'/');
+        ret = QFileSystemEntry(QDir::cleanPath(target));
+    }
+    return ret;
 }
 
 //static
@@ -1124,7 +1071,8 @@ QString QFileSystemEngine::owner(const QFileSystemEntry &entry, QAbstractFileEng
 {
     QString name;
 #if QT_CONFIG(fslibs)
-    if (qAreNtfsPermissionChecksEnabled()) {
+    extern int qt_ntfs_permission_lookup;
+    if (qt_ntfs_permission_lookup > 0) {
         initGlobalSid();
         {
             PSID pOwner = 0;
@@ -1178,7 +1126,7 @@ bool QFileSystemEngine::fillPermissions(const QFileSystemEntry &entry, QFileSyst
                                         QFileSystemMetaData::MetaDataFlags what)
 {
 #if QT_CONFIG(fslibs)
-    if (qAreNtfsPermissionChecksEnabled()) {
+    if (qt_ntfs_permission_lookup > 0) {
         initGlobalSid();
 
         QString fname = entry.nativeFilePath();

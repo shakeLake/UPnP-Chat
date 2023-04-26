@@ -6,7 +6,6 @@
 #include <QSemaphore>
 
 #include <qelapsedtimer.h>
-#include <qrunnable.h>
 #include <qthreadpool.h>
 #include <qstring.h>
 #include <qmutex.h>
@@ -14,8 +13,6 @@
 #ifdef Q_OS_UNIX
 #include <unistd.h>
 #endif
-
-using namespace std::chrono_literals;
 
 typedef void (*FunctionPointer)();
 
@@ -46,7 +43,6 @@ public:
 private slots:
     void runFunction();
     void runFunction2();
-    void runFunction3();
     void createThreadRunFunction();
     void runMultiple();
     void waitcomplete();
@@ -173,23 +169,6 @@ void tst_QThreadPool::runFunction2()
         manager.start([&]() { ++localCount; });
     }
     QCOMPARE(localCount, 1);
-}
-
-struct DeleteCheck
-{
-    static bool s_deleted;
-    ~DeleteCheck() { s_deleted = true; }
-};
-bool DeleteCheck::s_deleted = false;
-
-void tst_QThreadPool::runFunction3()
-{
-    std::unique_ptr<DeleteCheck> ptr(new DeleteCheck);
-    {
-        TestThreadPool manager;
-        manager.start(QRunnable::create([my_ptr = std::move(ptr)]() { }));
-    }
-    QVERIFY(DeleteCheck::s_deleted);
 }
 
 void tst_QThreadPool::createThreadRunFunction()
@@ -428,7 +407,7 @@ void tst_QThreadPool::expiryTimeoutRace() // QTBUG-3786
     const int numTasks = 20;
     for (int i = 0; i < numTasks; ++i) {
         threadPool.start(&task);
-        QThread::sleep(50ms); // exactly the same as the expiry timeout
+        QThread::msleep(50); // exactly the same as the expiry timeout
     }
     QVERIFY(task.semaphore.tryAcquire(numTasks, 10000));
     QCOMPARE(task.runCount.loadRelaxed(), numTasks);
@@ -1123,7 +1102,7 @@ void tst_QThreadPool::clearWithAutoDelete()
     {
     public:
         MyRunnable() {}
-        void run() override { QThread::sleep(30us); }
+        void run() override { QThread::usleep(30); }
     };
 
     TestThreadPool threadPool;

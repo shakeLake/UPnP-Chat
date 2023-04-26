@@ -4568,7 +4568,7 @@ static QDateTime findSpring(int year, const QTimeZone &timeZone)
     const QTimeZone::OffsetData transition =
         midSummer.isDaylightTime() ? timeZone.previousTransition(midSummer)
                                    : timeZone.nextTransition(midSummer);
-    const QDateTime spring = transition.atUtc.toTimeZone(timeZone);
+    const QDateTime spring = transition.atUtc.toLocalTime();
     // there might have been DST at some point, but not in the year we care about
     if (spring.date().year() != year || !spring.isDaylightTime())
         return QDateTime();

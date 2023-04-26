@@ -131,8 +131,7 @@ public:
 
     enum WildcardConversionOption {
         DefaultWildcardConversion = 0x0,
-        UnanchoredWildcardConversion = 0x1,
-        NonPathWildcardConversion = 0x2,
+        UnanchoredWildcardConversion = 0x1
     };
     Q_DECLARE_FLAGS(WildcardConversionOptions, WildcardConversionOption)
 

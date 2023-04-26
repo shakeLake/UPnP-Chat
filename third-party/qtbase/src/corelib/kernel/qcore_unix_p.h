@@ -39,7 +39,6 @@
 #  include <selectLib.h>
 #endif
 
-#include <chrono>
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -69,41 +68,16 @@ QT_BEGIN_NAMESPACE
 
 Q_DECLARE_TYPEINFO(pollfd, Q_PRIMITIVE_TYPE);
 
-static constexpr auto OneSecAsNsecs = std::chrono::nanoseconds(std::chrono::seconds{ 1 }).count();
-
-inline timespec durationToTimespec(std::chrono::nanoseconds timeout) noexcept
-{
-    using namespace std::chrono;
-    const seconds secs = duration_cast<seconds>(timeout);
-    const nanoseconds frac = timeout - secs;
-    struct timespec ts;
-    ts.tv_sec = secs.count();
-    ts.tv_nsec = frac.count();
-    return ts;
-}
-
-template <typename Duration>
-inline Duration timespecToChrono(timespec ts) noexcept
-{
-    using namespace std::chrono;
-    return duration_cast<Duration>(seconds{ts.tv_sec} + nanoseconds{ts.tv_nsec});
-}
-
-inline std::chrono::milliseconds timespecToChronoMs(timespec ts) noexcept
-{
-    return timespecToChrono<std::chrono::milliseconds>(ts);
-}
-
 // Internal operator functions for timespecs
 constexpr inline timespec &normalizedTimespec(timespec &t)
 {
-    while (t.tv_nsec >= OneSecAsNsecs) {
+    while (t.tv_nsec >= 1000000000) {
         ++t.tv_sec;
-        t.tv_nsec -= OneSecAsNsecs;
+        t.tv_nsec -= 1000000000;
     }
     while (t.tv_nsec < 0) {
         --t.tv_sec;
-        t.tv_nsec += OneSecAsNsecs;
+        t.tv_nsec += 1000000000;
     }
     return t;
 }
@@ -130,7 +104,7 @@ constexpr inline timespec operator-(const timespec &t1, const timespec &t2)
 {
     timespec tmp = {};
     tmp.tv_sec = t1.tv_sec - (t2.tv_sec - 1);
-    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + OneSecAsNsecs);
+    tmp.tv_nsec = t1.tv_nsec - (t2.tv_nsec + 1000000000);
     return normalizedTimespec(tmp);
 }
 constexpr inline timespec operator*(const timespec &t1, int mul)
@@ -140,7 +114,7 @@ constexpr inline timespec operator*(const timespec &t1, int mul)
     tmp.tv_nsec = t1.tv_nsec * mul;
     return normalizedTimespec(tmp);
 }
-inline timeval timespecToTimeval(timespec ts)
+inline timeval timespecToTimeval(const timespec &ts)
 {
     timeval tv;
     tv.tv_sec = ts.tv_sec;
@@ -148,41 +122,6 @@ inline timeval timespecToTimeval(timespec ts)
     return tv;
 }
 
-inline timespec &operator+=(timespec &t1, std::chrono::milliseconds msecs)
-{
-    t1 += durationToTimespec(msecs);
-    return t1;
-}
-
-inline timespec &operator+=(timespec &t1, int ms)
-{
-    t1 += std::chrono::milliseconds{ms};
-    return t1;
-}
-
-inline timespec operator+(const timespec &t1, std::chrono::milliseconds msecs)
-{
-    timespec tmp = t1;
-    tmp += msecs;
-    return tmp;
-}
-
-inline timespec operator+(const timespec &t1, int ms)
-{
-    return t1 + std::chrono::milliseconds{ms};
-}
-
-inline timespec qAbsTimespec(timespec ts)
-{
-    if (ts.tv_sec < 0) {
-        ts.tv_sec = -ts.tv_sec - 1;
-        ts.tv_nsec -= OneSecAsNsecs;
-    }
-    if (ts.tv_sec == 0 && ts.tv_nsec < 0) {
-        ts.tv_nsec = -ts.tv_nsec;
-    }
-    return normalizedTimespec(ts);
-}
 
 inline void qt_ignore_sigpipe()
 {

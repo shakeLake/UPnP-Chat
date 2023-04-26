@@ -105,6 +105,7 @@ SSL_free(SSL_new(0));
 }
 ")
 
+# special case end
 qt_find_package(WrapZSTD 1.3 PROVIDED_TARGETS WrapZSTD::WrapZSTD MODULE_NAME global QMAKE_LIB zstd)
 qt_find_package(WrapDBus1 1.2 PROVIDED_TARGETS dbus-1 MODULE_NAME global QMAKE_LIB dbus)
 qt_find_package(Libudev PROVIDED_TARGETS PkgConfig::Libudev MODULE_NAME global QMAKE_LIB libudev)
@@ -202,6 +203,51 @@ endif()
 
 # machineTuple
 qt_config_compile_test_machine_tuple("machine tuple")
+
+# cxx14
+qt_config_compile_test(cxx14
+    LABEL "C++14 support"
+    CODE
+"#if __cplusplus > 201103L
+// Compiler claims to support C++14, trust it
+#else
+#  error __cplusplus must be > 201103L (the value of C++11)
+#endif
+
+int main(void)
+{
+    /* BEGIN TEST: */
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 14
+)
+
+# cxx17
+qt_config_compile_test(cxx17
+    LABEL "C++17 support"
+    CODE
+"#if __cplusplus > 201402L
+// Compiler claims to support C++17, trust it
+#else
+#  error __cplusplus must be > 201402L (the value for C++14)
+#endif
+#include <map>  // https://bugs.llvm.org//show_bug.cgi?id=33117
+#include <variant>
+
+int main(void)
+{
+    /* BEGIN TEST: */
+std::variant<int> v(42);
+int i = std::get<int>(v);
+std::visit([](const auto &) { return 1; }, v);
+    /* END TEST: */
+    return 0;
+}
+"
+    CXX_STANDARD 17
+)
 
 # cxx20
 qt_config_compile_test(cxx20
@@ -433,6 +479,7 @@ qt_feature("android-style-assets" PRIVATE
 )
 qt_feature("shared" PUBLIC
     LABEL "Building shared libraries"
+    AUTODETECT NOT UIKIT
     CONDITION BUILD_SHARED_LIBS
 )
 qt_feature_definition("shared" "QT_STATIC" NEGATE PREREQUISITE "!defined(QT_SHARED) && !defined(QT_STATIC)")
@@ -464,6 +511,7 @@ qt_feature("optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
 qt_feature_config("optimize_size" QMAKE_PRIVATE_CONFIG)
+# special case begin
 qt_feature("optimize_full"
     LABEL "Fully optimize release builds (-O3)"
     AUTODETECT OFF
@@ -475,6 +523,7 @@ qt_feature("msvc_obj_debug_info"
     AUTODETECT OFF
 )
 qt_feature_config("msvc_obj_debug_info" QMAKE_PRIVATE_CONFIG)
+# special case end
 qt_feature("pkg-config" PUBLIC
     LABEL "Using pkg-config"
     AUTODETECT NOT APPLE AND NOT WIN32 AND NOT ANDROID
@@ -612,10 +661,29 @@ qt_feature_config("plugin-manifests" QMAKE_PUBLIC_CONFIG
     NEGATE
     NAME "no_plugin_manifest"
 )
+qt_feature("c++11" PUBLIC
+    LABEL "C++11"
+)
+qt_feature_config("c++11" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++14" PUBLIC
+    LABEL "C++14"
+    CONDITION QT_FEATURE_cxx11 AND TEST_cxx14
+)
+qt_feature_config("c++14" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++17" PUBLIC
+    LABEL "C++17"
+    CONDITION QT_FEATURE_cxx14 AND TEST_cxx17
+)
+qt_feature_config("c++17" QMAKE_PUBLIC_QT_CONFIG)
+qt_feature("c++1z" PUBLIC
+    LABEL "C++17"
+    CONDITION QT_FEATURE_cxx17
+)
+qt_feature_config("c++1z" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++20" PUBLIC
     LABEL "C++20"
     AUTODETECT OFF
-    CONDITION TEST_cxx20
+    CONDITION QT_FEATURE_cxx17 AND TEST_cxx20
 )
 qt_feature_config("c++20" QMAKE_PUBLIC_QT_CONFIG)
 qt_feature("c++2a" PUBLIC
@@ -632,6 +700,17 @@ qt_feature("c++2b" PUBLIC
     LABEL "C++2b"
     AUTODETECT FALSE
     CONDITION QT_FEATURE_cxx20 AND (CMAKE_VERSION VERSION_GREATER_EQUAL "3.20") AND TEST_cxx2b
+)
+qt_feature("c89"
+    LABEL "C89"
+)
+qt_feature("c99" PUBLIC
+    LABEL "C99"
+    CONDITION c_std_99 IN_LIST CMAKE_C_COMPILE_FEATURES
+)
+qt_feature("c11" PUBLIC
+    LABEL "C11"
+    CONDITION QT_FEATURE_c99 AND c_std_11 IN_LIST CMAKE_C_COMPILE_FEATURES
 )
 qt_feature("precompile_header"
     LABEL "Using precompiled headers"
@@ -835,9 +914,7 @@ qt_feature_definition("mips_dspr2" "QT_COMPILER_SUPPORTS_MIPS_DSPR2" VALUE "1")
 qt_feature_config("mips_dspr2" QMAKE_PRIVATE_CONFIG)
 qt_feature("neon" PRIVATE
     LABEL "NEON"
-    CONDITION ( ( ( TEST_architecture_arch STREQUAL arm ) OR
-        ( TEST_architecture_arch STREQUAL arm64 ) ) AND
-        TEST_arch_${TEST_architecture_arch}_subarch_neon ) OR QT_FORCE_FEATURE_neon
+    CONDITION ( ( ( TEST_architecture_arch STREQUAL arm ) OR ( TEST_architecture_arch STREQUAL arm64 ) ) AND TEST_arch_${TEST_architecture_arch}_subarch_neon ) OR QT_FORCE_FEATURE_neon  # special case
 )
 qt_feature_definition("neon" "QT_COMPILER_SUPPORTS_NEON" VALUE "1")
 qt_feature_config("neon" QMAKE_PRIVATE_CONFIG)
@@ -903,6 +980,7 @@ qt_feature("stdlib-libcpp" PRIVATE
     AUTODETECT OFF
     CONDITION LINUX AND NOT ANDROID
 )
+# special case begin
 # Check whether CMake was built with zstd support.
 # See https://gitlab.kitware.com/cmake/cmake/-/issues/21552
 if(NOT DEFINED CACHE{QT_CMAKE_ZSTD_SUPPORT})
@@ -919,6 +997,7 @@ if(NOT DEFINED CACHE{QT_CMAKE_ZSTD_SUPPORT})
         unset(qt_check_zstd_exit_code)
     endif()
 endif()
+# special case end
 qt_feature("thread" PUBLIC
     SECTION "Kernel"
     LABEL "Thread support"
@@ -1058,10 +1137,22 @@ qt_configure_add_summary_entry(
     ARGS "optimize_size"
     CONDITION NOT QT_FEATURE_debug OR QT_FEATURE_debug_and_release
 )
+# special case begin
 qt_configure_add_summary_entry(
     ARGS "optimize_full"
 )
+# special case end
 qt_configure_add_summary_entry(ARGS "shared")
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "c11 c99 c89"
+    MESSAGE "Using C standard"
+)
+qt_configure_add_summary_entry(
+    TYPE "firstAvailableFeature"
+    ARGS "c++2b c++20 c++17 c++14 c++11"
+    MESSAGE "Using C++ standard"
+)
 qt_configure_add_summary_entry(
     ARGS "ccache"
     CONDITION UNIX
@@ -1156,6 +1247,13 @@ qt_configure_add_report_entry(
     MESSAGE "Using static linking will disable the use of dynamically loaded plugins. Make sure to import all needed static plugins, or compile needed modules into the library."
     CONDITION NOT QT_FEATURE_shared
 )
+# special case begin
+# qt_configure_add_report_entry(
+#     TYPE ERROR
+#     MESSAGE "Debug build without Release build is not currently supported on ios see QTBUG-71990. Use -debug-and-release."
+#     CONDITION IOS AND QT_FEATURE_debug AND NOT QT_FEATURE_debug_and_release
+# )
+# special case end
 qt_configure_add_report_entry(
     TYPE WARNING
     MESSAGE "-debug-and-release is only supported on Darwin and Windows platforms.  Qt can be built in release mode with separate debug information, so -debug-and-release is no longer necessary."
@@ -1187,16 +1285,6 @@ All x86 intrinsics and SIMD support were disabled. If this was in error, check
 the result of the build in config.tests/x86intrin and report at https://bugreports.qt.io.
 ]=]
         )
-    elseif (MSVC AND CLANG)
-        # Warn only
-        qt_configure_add_report_entry(
-            TYPE WARNING
-            CONDITION (NOT QT_FEATURE_x86intrin)
-            MESSAGE [=[
-x86 intrinsics support is disabled for clang-cl build. This might be necessary due to
-https://github.com/llvm/llvm-project/issues/53520
-]=]
-        )
     else()
         qt_configure_add_report_entry(
             TYPE ERROR
@@ -1211,6 +1299,7 @@ ${TEST_x86intrin_OUTPUT}
         )
     endif()
 endif()
+# special case begin
 qt_configure_add_report_entry(
     TYPE ERROR
     MESSAGE "Setting a library infix is not supported for framework builds."
@@ -1229,6 +1318,7 @@ qt_configure_add_report_entry(
 if(WASM)
     qt_extra_definition("QT_EMCC_VERSION" "\"${EMCC_VERSION}\"" PUBLIC)
 endif()
+# special case end
 qt_extra_definition("QT_VERSION_STR" "\"${PROJECT_VERSION}\"" PUBLIC)
 qt_extra_definition("QT_VERSION_MAJOR" ${PROJECT_VERSION_MAJOR} PUBLIC)
 qt_extra_definition("QT_VERSION_MINOR" ${PROJECT_VERSION_MINOR} PUBLIC)

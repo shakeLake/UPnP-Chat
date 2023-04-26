@@ -56,7 +56,8 @@ qt_internal_add_module(Gui
         Qt::Network
     QMAKE_MODULE_CONFIG "${qmake_module_config}"
     SOURCES
-        compat/removed_api.cpp
+        accessible/qaccessible.h
+        accessible/qplatformaccessibility.h
         image/qabstractfileiconengine.cpp image/qabstractfileiconengine_p.h
         image/qabstractfileiconprovider.cpp image/qabstractfileiconprovider.h image/qabstractfileiconprovider_p.h
         image/qbitmap.cpp image/qbitmap.h
@@ -268,7 +269,6 @@ qt_internal_add_module(Gui
         QT_QPA_DEFAULT_PLATFORM_NAME="${QT_QPA_DEFAULT_PLATFORM}"
     INCLUDE_DIRECTORIES
         ../3rdparty/VulkanMemoryAllocator
-        ../3rdparty/D3D12MemoryAllocator
     LIBRARIES
         Qt::CorePrivate
     PUBLIC_LIBRARIES
@@ -276,7 +276,6 @@ qt_internal_add_module(Gui
     PRIVATE_MODULE_INTERFACE
         Qt::CorePrivate
     NO_PCH_SOURCES
-        compat/removed_api.cpp
         painting/qdrawhelper.cpp
     PRECOMPILED_HEADER
         "kernel/qt_gui_pch.h"
@@ -403,14 +402,10 @@ qt_internal_extend_target(Gui CONDITION WIN32
         platform/windows/qwindowsguieventdispatcher.cpp platform/windows/qwindowsguieventdispatcher_p.h
         platform/windows/qwindowsmimeconverter.h platform/windows/qwindowsmimeconverter.cpp
         platform/windows/qwindowsnativeinterface.cpp
+        rhi/cs_tdr_p.h
         rhi/qrhid3d11.cpp rhi/qrhid3d11_p.h
         rhi/qrhid3d11_p_p.h
         rhi/vs_test_p.h
-        rhi/qrhid3d12.cpp rhi/qrhid3d12_p.h
-        rhi/qrhid3d12_p_p.h
-        rhi/cs_mipmap_p.h
-        ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.h
-        ../3rdparty/D3D12MemoryAllocator/D3D12MemAlloc.cpp
         text/windows/qwindowsfontdatabase.cpp text/windows/qwindowsfontdatabase_p.h
         text/windows/qwindowsfontdatabasebase.cpp text/windows/qwindowsfontdatabasebase_p.h
         text/windows/qwindowsfontengine.cpp text/windows/qwindowsfontengine_p.h
@@ -426,7 +421,6 @@ qt_internal_extend_target(Gui CONDITION WIN32
         dxgi
         dxguid
         dcomp
-        d3d12
 )
 
 if(QT_FEATURE_egl)
@@ -443,8 +437,6 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_egl
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_accessibility
-    CONDITION_INDEPENDENT_SOURCES
-        accessible/qaccessible.h accessible/qplatformaccessibility.h
     SOURCES
         accessible/qaccessible.cpp accessible/qaccessible_base.h
         accessible/qaccessiblebridge.cpp accessible/qaccessiblebridge.h
@@ -646,6 +638,9 @@ qt_internal_extend_target(Gui CONDITION QT_FEATURE_harfbuzz AND UIKIT
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textodfwriter
     SOURCES
         text/qtextodfwriter.cpp text/qtextodfwriter_p.h
+        text/qzip.cpp
+        text/qzipreader_p.h
+        text/qzipwriter_p.h
 )
 
 qt_internal_extend_target(Gui CONDITION QT_FEATURE_textmarkdownreader

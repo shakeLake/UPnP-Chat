@@ -16,6 +16,7 @@
 #include <qurl.h>
 #include <qcryptographichash.h>
 #include <qdebug.h>
+#include <QMultiMap>
 
 #include <memory>
 
@@ -481,45 +482,37 @@ qint64 QNetworkDiskCache::expire()
     // close file handle to prevent "in use" error when QFile::remove() is called
     d->lastItem.reset();
 
-    const QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
+    QDir::Filters filters = QDir::AllDirs | QDir:: Files | QDir::NoDotAndDotDot;
     QDirIterator it(cacheDirectory(), filters, QDirIterator::Subdirectories);
 
-    struct CacheItem
-    {
-        std::chrono::milliseconds msecs;
-        QString path;
-        qint64 size = 0;
-    };
-    std::vector<CacheItem> cacheItems;
+    QMultiMap<QDateTime, QString> cacheItems;
     qint64 totalSize = 0;
     while (it.hasNext()) {
         QFileInfo info = it.nextFileInfo();
-        if (!info.fileName().endsWith(CACHE_POSTFIX))
-            continue;
-
-        QDateTime fileTime = info.birthTime(QTimeZone::UTC);
-        if (!fileTime.isValid())
-            fileTime = info.metadataChangeTime(QTimeZone::UTC);
-        const std::chrono::milliseconds msecs{fileTime.toMSecsSinceEpoch()};
-        const qint64 size = info.size();
-        cacheItems.push_back(CacheItem{msecs, info.filePath(), size});
-        totalSize += size;
+        QString path = info.filePath();
+        QString fileName = info.fileName();
+        if (fileName.endsWith(CACHE_POSTFIX)) {
+            const QDateTime birthTime = info.fileTime(QFile::FileBirthTime);
+            cacheItems.insert(birthTime.isValid() ? birthTime
+                              : info.fileTime(QFile::FileMetadataChangeTime), path);
+            totalSize += info.size();
+        }
     }
 
-    const qint64 goal = (maximumCacheSize() * 9) / 10;
-    if (totalSize < goal)
-        return totalSize; // Nothing to do
-
-    auto byFileTime = [&](const auto &a, const auto &b) { return a.msecs < b.msecs; };
-    std::sort(cacheItems.begin(), cacheItems.end(), byFileTime);
-
     [[maybe_unused]] int removedFiles = 0; // used under QNETWORKDISKCACHE_DEBUG
-    for (const CacheItem &cached : cacheItems) {
-        QFile::remove(cached.path);
-        ++removedFiles;
-        totalSize -= cached.size;
+    qint64 goal = (maximumCacheSize() * 9) / 10;
+    QMultiMap<QDateTime, QString>::const_iterator i = cacheItems.constBegin();
+    while (i != cacheItems.constEnd()) {
         if (totalSize < goal)
             break;
+        QString name = i.value();
+        QFile file(name);
+
+        qint64 size = file.size();
+        file.remove();
+        totalSize -= size;
+        ++removedFiles;
+        ++i;
     }
 #if defined(QNETWORKDISKCACHE_DEBUG)
     if (removedFiles > 0) {

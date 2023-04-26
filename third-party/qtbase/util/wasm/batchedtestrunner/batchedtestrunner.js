@@ -68,9 +68,9 @@ export class BatchedTestRunner {
 
     get errorDetails() { return this.#errorDetails; }
 
-    async run(targetIsBatch, testName, functions, testOutputFormat) {
+    async run(targetIsBatch, testName, testOutputFormat) {
         try {
-            await this.#doRun(targetIsBatch, testName, functions, testOutputFormat);
+            await this.#doRun(targetIsBatch, testName, testOutputFormat);
         } catch (e) {
             this.#setTestRunnerError(e.message);
             return;
@@ -93,7 +93,7 @@ export class BatchedTestRunner {
         this.#setTestRunnerStatus(status.code, status.numberOfFailed);
     }
 
-    async #doRun(targetIsBatch, testName, functions, testOutputFormat) {
+    async #doRun(targetIsBatch, testName, testOutputFormat) {
         const module = await this.#loader.loadEmscriptenModule(
             targetIsBatch ? BatchedTestRunner.#TestBatchModuleName : testName,
             () => { }
@@ -111,7 +111,6 @@ export class BatchedTestRunner {
                 const LogToStdoutSpecialFilename = '-';
                 result = await module.exec({
                     args: [...(targetIsBatch ? [testClassName] : []),
-                           ...(functions ?? []),
                            '-o', `${LogToStdoutSpecialFilename},${testOutputFormat}`],
                     onStdout: (output) => {
                         this.#addTestOutput(testClassName, output);

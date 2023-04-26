@@ -1440,13 +1440,12 @@ Q_IMPL_EVENT_COMMON(QKeyEvent)
 
     Returns the Unicode text that this key generated.
 
-    The text is not limited to the printable range of Unicode
-    code points, and may include control characters or characters
-    from other Unicode categories, including QChar::Other_PrivateUse.
+    Return values when modifier keys such as
+    Shift, Control, Alt, and Meta are pressed
+    differ among platforms and could return an empty string.
 
-    The text may also be empty, for example when modifier keys such as
-    Shift, Control, Alt, and Meta are pressed (depending on the platform).
-    The key() function will always return a valid value.
+    \note \l key() will always return a valid value,
+    independent of modifier keys.
 
     \sa Qt::WA_KeyCompression
 */
@@ -3594,15 +3593,10 @@ Q_IMPL_EVENT_COMMON(QShowEvent)
 
     \snippet qfileopenevent/Info.plist Custom Info.plist
 
-    The following implementation of a QApplication subclass shows how to handle
-    QFileOpenEvent to open the file that was, for example, dropped on the Dock
-    icon of the application.
+    The following implementation of a QApplication subclass prints the path to
+    the file that was, for example, dropped on the Dock icon of the application.
 
     \snippet qfileopenevent/main.cpp QApplication subclass
-
-    Note how \c{QFileOpenEvent::file()} is not guaranteed to be the name of a
-    local file that can be opened using QFile. The contents of the string depend
-    on the source application.
 */
 
 /*!
@@ -3630,23 +3624,19 @@ Q_IMPL_EVENT_COMMON(QFileOpenEvent)
 /*!
     \fn QString QFileOpenEvent::file() const
 
-    Returns the name of the file that the application should open.
-
-    This is not guaranteed to be the path to a local file.
+    Returns the file that is being opened.
 */
 
 /*!
     \fn QUrl QFileOpenEvent::url() const
 
-    Returns the url that the application should open.
+    Returns the url that is being opened.
 
     \since 4.6
 */
 
-#if QT_DEPRECATED_SINCE(6, 6)
 /*!
     \fn bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
-    \deprecated [6.6] interpret the string returned by file()
 
     Opens a QFile on the \a file referenced by this event in the mode specified
     by \a flags. Returns \c true if successful; otherwise returns \c false.
@@ -3661,7 +3651,6 @@ bool QFileOpenEvent::openFile(QFile &file, QIODevice::OpenMode flags) const
     file.setFileName(m_file);
     return file.open(flags);
 }
-#endif
 
 #ifndef QT_NO_TOOLBAR
 /*!

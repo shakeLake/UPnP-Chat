@@ -4,6 +4,5 @@
 if(NOT QT_FEATURE_private_tests)
     return()
 endif()
-add_subdirectory(qdbusmarshall)
 add_subdirectory(qpong)
-add_dependencies(tst_qdbusmarshall qpong)
+add_subdirectory(qdbusmarshall)

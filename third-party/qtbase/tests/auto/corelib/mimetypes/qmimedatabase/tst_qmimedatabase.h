@@ -35,8 +35,8 @@ private slots:
     void mimeTypeForUrl();
     void mimeTypeForData_data();
     void mimeTypeForData();
-    void mimeTypeForFileNameAndData_data();
-    void mimeTypeForFileNameAndData();
+    void mimeTypeForFileAndContent_data();
+    void mimeTypeForFileAndContent();
 #ifdef Q_OS_UNIX
     void mimeTypeForUnixSpecials_data();
     void mimeTypeForUnixSpecials();

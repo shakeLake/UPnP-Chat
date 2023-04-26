@@ -1,17 +1,16 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
-	&& apt-get install -y git \
-						  g++ \
-						  cmake \
-						  make
+	&& apt-get install -y	git \
+							g++ \
+							cmake \
+							make
 
 ADD . /upnp_chat
 WORKDIR /upnp_chat
 
-# BAD IDEAD!
-# start Qt configure file ( no prefix )
-# build Qt libraries to qt-dpndcy ( 99999 days to build :\ :\ :\ :\ )
+# starts Qt configure file ( no prefix )
+# builds Qt libraries to qt-dpndcy ( 99999 years to build :\ :\ :\ :\ )
 RUN cd qt-dpndncy \
 	./../third-party/qtbase/configure -static -no-prefix
 

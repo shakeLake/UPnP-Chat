@@ -229,9 +229,7 @@ function(qt_auto_detect_ios)
         endif()
         set(CMAKE_OSX_ARCHITECTURES "${osx_architectures}" CACHE STRING "")
 
-        if(NOT DEFINED BUILD_SHARED_LIBS)
-            qt_internal_ensure_static_qt_config()
-        endif()
+        qt_internal_ensure_static_qt_config()
 
         # Disable qt rpaths for iOS, just like mkspecs/common/uikit.conf does, due to those
         # bundles not being able to use paths outside the app bundle. Not sure this is strictly

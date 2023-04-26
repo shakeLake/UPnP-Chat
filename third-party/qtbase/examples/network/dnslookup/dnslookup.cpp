@@ -14,7 +14,6 @@
 #include <cstdio>
 
 using namespace Qt::StringLiterals;
-
 static std::optional<QDnsLookup::Type> typeFromParameter(QStringView type)
 {
     if (type.compare(u"a", Qt::CaseInsensitive) == 0)
@@ -219,7 +218,7 @@ int main(int argc, char *argv[])
 
     DnsManager manager;
     manager.setQuery(query);
-    QTimer::singleShot(0, &manager, &DnsManager::execute);
+    QTimer::singleShot(0, &manager, SLOT(execute()));
 
     return app.exec();
 }

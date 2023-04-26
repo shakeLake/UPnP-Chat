@@ -699,8 +699,6 @@ QTextHtmlImporter::ProcessNodeResult QTextHtmlImporter::processSpecialNodes()
                 listFmt.setNumberPrefix(currentNode->textListNumberPrefix);
             if (!currentNode->textListNumberSuffix.isNull())
                 listFmt.setNumberSuffix(currentNode->textListNumberSuffix);
-            if (currentNode->listStart != 1)
-                listFmt.setStart(currentNode->listStart);
 
             ++indent;
             if (currentNode->hasCssListIndent)

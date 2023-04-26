@@ -3,6 +3,7 @@
 
 #include "qplatformdefs.h"
 #include "private/qdatetimeparser_p.h"
+#include "private/qstringiterator_p.h"
 
 #include "qdatastream.h"
 #include "qdatetime.h"
@@ -11,10 +12,6 @@
 #include "qset.h"
 #include "qtimezone.h"
 #include "qvarlengtharray.h"
-#include "private/qlocale_p.h"
-
-#include "private/qstringiterator_p.h"
-#include "private/qtenvironmentvariables_p.h"
 
 //#define QDATETIMEPARSER_DEBUG
 #if defined (QDATETIMEPARSER_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
@@ -372,9 +369,9 @@ static qsizetype digitCount(QStringView str)
   not escaped and removes the escaping on those that are escaped
 
 */
+
 static QString unquote(QStringView str)
 {
-    // ### Align unquoting format strings for both from/toString(), QTBUG-110669
     const QLatin1Char quote('\'');
     const QLatin1Char slash('\\');
     const QLatin1Char zero('0');
@@ -399,10 +396,14 @@ static QString unquote(QStringView str)
 static inline int countRepeat(QStringView str, int index, int maxCount)
 {
     str = str.sliced(index);
-    if (maxCount < str.size())
-        str = str.first(maxCount);
+    if (maxCount > str.size())
+        maxCount = str.size();
 
-    return qt_repeatCount(str);
+    const QChar ch(str[0]);
+    int count = 1;
+    while (count < maxCount && str[count] == ch)
+        ++count;
+    return count;
 }
 
 static inline void appendSeparator(QStringList *list, QStringView string,
@@ -862,7 +863,7 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
             const int absMax = absoluteMax(sectionIndex);
             const int absMin = absoluteMin(sectionIndex);
 
-            int lastVal = -1;
+            int last = -1;
 
             for (; digitsStr.size(); digitsStr.chop(1)) {
                 bool ok = false;
@@ -878,52 +879,52 @@ QDateTimeParser::parseSection(const QDateTime &currentValue, int sectionIndex, i
                 }
 
                 QDTPDEBUG << digitsStr << value << digitsStr.size();
-                lastVal = value;
+                last = value;
                 used += digitsStr.size();
                 break;
             }
 
-            if (lastVal == -1) {
+            if (last == -1) {
                 const auto &sep = separators.at(sectionIndex + 1);
                 if (sep.startsWith(sectionTextRef[0])
                     || (negate && sep.startsWith(m_text.at(offset))))
                     result = ParsedSection(Intermediate, 0, 0);
                 else
                     QDTPDEBUG << "invalid because" << sectionTextRef << "can't become a uint"
-                              << lastVal;
+                              << last;
             } else {
                 if (negate)
-                    lastVal = -lastVal;
+                    last = -last;
                 const FieldInfo fi = fieldInfo(sectionIndex);
                 const bool unfilled = used - negativeYearOffset < sectionmaxsize;
                 if (unfilled && fi & Fraction) { // typing 2 in a zzz field should be .200, not .002
                     for (int i = used; i < sectionmaxsize; ++i)
-                        lastVal *= 10;
+                        last *= 10;
                 }
                 // Even those *= 10s can't take last above absMax:
-                Q_ASSERT(negate ? lastVal >= absMin : lastVal <= absMax);
-                if (negate ? lastVal > absMax : lastVal < absMin) {
+                Q_ASSERT(negate ? last >= absMin : last <= absMax);
+                if (negate ? last > absMax : last < absMin) {
                     if (unfilled) {
-                        result = ParsedSection(Intermediate, lastVal, used);
+                        result = ParsedSection(Intermediate, last, used);
                     } else if (negate) {
-                        QDTPDEBUG << "invalid because" << lastVal << "is greater than absoluteMax"
+                        QDTPDEBUG << "invalid because" << last << "is greater than absoluteMax"
                                   << absMax;
                     } else {
-                        QDTPDEBUG << "invalid because" << lastVal << "is less than absoluteMin"
+                        QDTPDEBUG << "invalid because" << last << "is less than absoluteMin"
                                   << absMin;
                     }
 
                 } else if (unfilled && (fi & (FixedWidth | Numeric)) == (FixedWidth | Numeric)) {
                     if (skipToNextSection(sectionIndex, defaultValue, digitsStr)) {
                         const int missingZeroes = sectionmaxsize - digitsStr.size();
-                        result = ParsedSection(Acceptable, lastVal, sectionmaxsize, missingZeroes);
+                        result = ParsedSection(Acceptable, last, sectionmaxsize, missingZeroes);
                         m_text.insert(offset, QString(missingZeroes, u'0'));
                         ++(const_cast<QDateTimeParser*>(this)->sectionNodes[sectionIndex].zeroesAdded);
                     } else {
-                        result = ParsedSection(Intermediate, lastVal, used);;
+                        result = ParsedSection(Intermediate, last, used);;
                     }
                 } else {
-                    result = ParsedSection(Acceptable, lastVal, used);
+                    result = ParsedSection(Acceptable, last, used);
                 }
             }
         }
@@ -1137,19 +1138,6 @@ static QTime actualTime(QDateTimeParser::Sections known,
     }
     actual = QTime(hour, minute, second, msec);
     return actual;
-}
-
-/*
-  \internal
-*/
-static int startsWithLocalTimeZone(QStringView name)
-{
-    for (int i = 0; i < 2; ++i) {
-        const QString zone(qTzName(i));
-        if (name.startsWith(zone))
-            return zone.size();
-    }
-    return 0;
 }
 
 /*!
@@ -1888,21 +1876,20 @@ QDateTimeParser::AmPmFinder QDateTimeParser::findAmPm(QString &str, int sectionI
 
     bool broken[2] = {false, false};
     for (int i=0; i<size; ++i) {
-        const QChar ch = str.at(i);
-        if (ch != space) {
+        if (str.at(i) != space) {
             for (int j=0; j<2; ++j) {
                 if (!broken[j]) {
-                    int index = ampm[j].indexOf(ch);
-                    QDTPDEBUG << "looking for" << ch
+                    int index = ampm[j].indexOf(str.at(i));
+                    QDTPDEBUG << "looking for" << str.at(i)
                               << "in" << ampm[j] << "and got" << index;
                     if (index == -1) {
-                        if (ch.category() == QChar::Letter_Uppercase) {
-                            index = ampm[j].indexOf(ch.toLower());
-                            QDTPDEBUG << "trying with" << ch.toLower()
+                        if (str.at(i).category() == QChar::Letter_Uppercase) {
+                            index = ampm[j].indexOf(str.at(i).toLower());
+                            QDTPDEBUG << "trying with" << str.at(i).toLower()
                                       << "in" << ampm[j] << "and got" << index;
-                        } else if (ch.category() == QChar::Letter_Lowercase) {
-                            index = ampm[j].indexOf(ch.toUpper());
-                            QDTPDEBUG << "trying with" << ch.toUpper()
+                        } else if (str.at(i).category() == QChar::Letter_Lowercase) {
+                            index = ampm[j].indexOf(str.at(i).toUpper());
+                            QDTPDEBUG << "trying with" << str.at(i).toUpper()
                                       << "in" << ampm[j] << "and got" << index;
                         }
                         if (index == -1) {

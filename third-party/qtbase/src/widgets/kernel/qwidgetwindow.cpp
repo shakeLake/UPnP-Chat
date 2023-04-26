@@ -329,10 +329,6 @@ bool QWidgetWindow::event(QEvent *event)
         m_widget->repaint();
         return true;
 
-    case QEvent::DevicePixelRatioChange:
-        handleDevicePixelRatioChange();
-        break;
-
     default:
         break;
     }
@@ -699,32 +695,22 @@ void QWidgetWindow::updateMargins()
     m_widget->data->fstrut_dirty = false;
 }
 
-static void sendChangeRecursively(QWidget *widget, QEvent::Type type)
+static void sendScreenChangeRecursively(QWidget *widget)
 {
-    QEvent e(type);
+    QEvent e(QEvent::ScreenChangeInternal);
     QCoreApplication::sendEvent(widget, &e);
     QWidgetPrivate *d = QWidgetPrivate::get(widget);
     for (int i = 0; i < d->children.size(); ++i) {
         QWidget *w = qobject_cast<QWidget *>(d->children.at(i));
         if (w)
-            sendChangeRecursively(w, type);
+            sendScreenChangeRecursively(w);
     }
 }
 
 void QWidgetWindow::handleScreenChange()
 {
     // Send an event recursively to the widget and its children.
-    sendChangeRecursively(m_widget, QEvent::ScreenChangeInternal);
-
-    // Invalidate the backing store buffer and repaint immediately.
-    if (screen())
-        repaintWindow();
-}
-
-void QWidgetWindow::handleDevicePixelRatioChange()
-{
-    // Send an event recursively to the widget and its children.
-    sendChangeRecursively(m_widget, QEvent::DevicePixelRatioChange);
+    sendScreenChangeRecursively(m_widget);
 
     // Invalidate the backing store buffer and repaint immediately.
     if (screen())

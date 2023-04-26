@@ -40,7 +40,7 @@ protected:
     void retrieveDiskFreeSpace();
     bool queryStorageProperty();
     void queryFileFsSectorSizeInformation();
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_MAC)
     void retrievePosixInfo();
     void retrieveUrlProperties(bool initRootPath = false);
     void retrieveLabel();
@@ -58,7 +58,7 @@ public:
     qint64 bytesTotal;
     qint64 bytesFree;
     qint64 bytesAvailable;
-    ulong blockSize;
+    int blockSize;
 
     bool readOnly;
     bool ready;

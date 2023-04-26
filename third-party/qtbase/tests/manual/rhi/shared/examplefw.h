@@ -29,16 +29,10 @@
 
 #ifdef Q_OS_WIN
 #include <QtGui/private/qrhid3d11_p.h>
-#include <QtGui/private/qrhid3d12_p.h>
 #endif
 
 #if defined(Q_OS_MACOS) || defined(Q_OS_IOS)
 #include <QtGui/private/qrhimetal_p.h>
-#endif
-
-#ifdef EXAMPLEFW_IMGUI
-#include "qrhiimgui_p.h"
-#include "imgui.h"
 #endif
 
 QShader getShader(const QString &name)
@@ -50,22 +44,12 @@ QShader getShader(const QString &name)
     return QShader();
 }
 
-QByteArray getResource(const QString &name)
-{
-    QFile f(name);
-    if (f.open(QIODevice::ReadOnly))
-        return f.readAll();
-
-    return QByteArray();
-}
-
 enum GraphicsApi
 {
     Null,
     OpenGL,
     Vulkan,
     D3D11,
-    D3D12,
     Metal
 };
 
@@ -82,8 +66,6 @@ QString graphicsApiName()
         return QLatin1String("Vulkan");
     case D3D11:
         return QLatin1String("Direct3D 11");
-    case D3D12:
-        return QLatin1String("Direct3D 12");
     case Metal:
         return QLatin1String("Metal");
     default:
@@ -92,11 +74,12 @@ QString graphicsApiName()
     return QString();
 }
 
-QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers | QRhi::EnableTimestamps;
+QRhi::Flags rhiFlags = QRhi::EnableDebugMarkers;
 int sampleCount = 1;
 QRhiSwapChain::Flags scFlags;
 QRhi::BeginFrameFlags beginFrameFlags;
 QRhi::EndFrameFlags endFrameFlags;
+int framesUntilTdr = -1;
 bool transparentBackground = false;
 bool debugLayer = true;
 
@@ -116,9 +99,6 @@ protected:
     void customInit();
     void customRelease();
     void customRender();
-#ifdef EXAMPLEFW_IMGUI
-    void customGui();
-#endif
 
     void exposeEvent(QExposeEvent *) override;
     bool event(QEvent *) override;
@@ -147,11 +127,6 @@ protected:
 
     QColor m_clearColor;
 
-#ifdef EXAMPLEFW_IMGUI
-    QRhiImguiRenderer *m_imguiRenderer;
-    QRhiImgui m_imgui;
-#endif
-
     friend int main(int, char**);
 };
 
@@ -166,7 +141,6 @@ Window::Window()
         setSurfaceType(VulkanSurface);
         break;
     case D3D11:
-    case D3D12:
         setSurfaceType(Direct3DSurface);
         break;
     case Metal:
@@ -226,10 +200,6 @@ bool Window::event(QEvent *e)
         break;
 
     default:
-#ifdef EXAMPLEFW_IMGUI
-        if (m_imgui.processEvent(e))
-            return true;
-#endif
         break;
     }
 
@@ -268,13 +238,11 @@ void Window::init()
         if (debugLayer)
             qDebug("Enabling D3D11 debug layer");
         params.enableDebugLayer = debugLayer;
+        if (framesUntilTdr > 0) {
+            params.framesUntilKillingDeviceViaTdr = framesUntilTdr;
+            params.repeatDeviceKill = true;
+        }
         m_r = QRhi::create(QRhi::D3D11, &params, rhiFlags);
-    } else if (graphicsApi == D3D12) {
-        QRhiD3D12InitParams params;
-        if (debugLayer)
-            qDebug("Enabling D3D12 debug layer");
-        params.enableDebugLayer = debugLayer;
-        m_r = QRhi::create(QRhi::D3D12, &params, rhiFlags);
     }
 #endif
 
@@ -302,21 +270,6 @@ void Window::init()
     m_rp = m_sc->newCompatibleRenderPassDescriptor();
     m_sc->setRenderPassDescriptor(m_rp);
 
-#ifdef EXAMPLEFW_IMGUI
-    ImGuiIO &io(ImGui::GetIO());
-    io.FontAllowUserScaling = true; // enable ctrl+wheel on windows
-    io.IniFilename = nullptr; // no imgui.ini
-
-    QByteArray font = getResource(QLatin1String(":/fonts/RobotoMono-Medium.ttf"));
-    ImFontConfig fontCfg;
-    fontCfg.FontDataOwnedByAtlas = false;
-    io.Fonts->Clear();
-    io.Fonts->AddFontFromMemoryTTF(font.data(), font.size(), 20.0f, &fontCfg);
-    m_imgui.rebuildFontAtlas();
-
-    m_imguiRenderer = new QRhiImguiRenderer;
-#endif
-
     customInit();
 }
 
@@ -332,11 +285,6 @@ void Window::releaseResources()
 
     delete m_sc;
     m_sc = nullptr;
-
-#ifdef EXAMPLEFW_IMGUI
-    delete m_imguiRenderer;
-    m_imguiRenderer = nullptr;
-#endif
 
     delete m_r;
     m_r = nullptr;
@@ -406,20 +354,6 @@ void Window::render()
         m_frameCount = 0;
     }
 
-#ifdef EXAMPLEFW_IMGUI
-    m_imgui.nextFrame(size(), devicePixelRatio(), QPointF(0, 0), std::bind(&Window::customGui, this));
-    m_imgui.syncRenderer(m_imguiRenderer);
-
-    QRhiCommandBuffer *cb = m_sc->currentFrameCommandBuffer();
-    QRhiRenderTarget *rt = m_sc->currentFrameRenderTarget();
-    const QSize outputSizeInPixels = m_sc->currentPixelSize();
-    const float dpr = devicePixelRatio();
-
-    QMatrix4x4 guiMvp = m_r->clipSpaceCorrMatrix();
-    guiMvp.ortho(0, outputSizeInPixels.width() / dpr, outputSizeInPixels.height() / dpr, 0, 1, -1);
-    m_imguiRenderer->prepare(m_r, rt, cb, guiMvp, 1.0f);
-#endif
-
     customRender();
 
     m_r->endFrame(m_sc, endFrameFlags);
@@ -456,10 +390,8 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(glOption);
     QCommandLineOption vkOption({ "v", "vulkan" }, QLatin1String("Vulkan"));
     cmdLineParser.addOption(vkOption);
-    QCommandLineOption d3d11Option({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
-    cmdLineParser.addOption(d3d11Option);
-    QCommandLineOption d3d12Option({ "D", "d3d12" }, QLatin1String("Direct3D 12"));
-    cmdLineParser.addOption(d3d12Option);
+    QCommandLineOption d3dOption({ "d", "d3d11" }, QLatin1String("Direct3D 11"));
+    cmdLineParser.addOption(d3dOption);
     QCommandLineOption mtlOption({ "m", "metal" }, QLatin1String("Metal"));
     cmdLineParser.addOption(mtlOption);
     // Testing cleanup both with QWindow::close() (hitting X or Alt-F4) and
@@ -469,7 +401,12 @@ int main(int argc, char **argv)
     cmdLineParser.addOption(sdOption);
     QCommandLineOption coreProfOption({ "c", "core" }, QLatin1String("Request a core profile context for OpenGL"));
     cmdLineParser.addOption(coreProfOption);
-    // Allow testing preferring the software adapter (D3D, Vulkan).
+    // Attempt testing device lost situations on D3D at least.
+    QCommandLineOption tdrOption(QLatin1String("curse"), QLatin1String("Curse the graphics device. "
+                                                        "(generate a device reset every <count> frames when on D3D11)"),
+                                 QLatin1String("count"));
+    cmdLineParser.addOption(tdrOption);
+    // Allow testing preferring the software adapter (D3D).
     QCommandLineOption swOption(QLatin1String("software"), QLatin1String("Prefer a software renderer when choosing the adapter. "
                                                                          "Only applicable with some APIs and platforms."));
     cmdLineParser.addOption(swOption);
@@ -484,10 +421,8 @@ int main(int argc, char **argv)
         graphicsApi = OpenGL;
     if (cmdLineParser.isSet(vkOption))
         graphicsApi = Vulkan;
-    if (cmdLineParser.isSet(d3d11Option))
+    if (cmdLineParser.isSet(d3dOption))
         graphicsApi = D3D11;
-    if (cmdLineParser.isSet(d3d12Option))
-        graphicsApi = D3D12;
     if (cmdLineParser.isSet(mtlOption))
         graphicsApi = Metal;
 
@@ -536,14 +471,11 @@ int main(int argc, char **argv)
             inst.setLayers({ "VK_LAYER_KHRONOS_validation" });
         }
         const QVersionNumber supportedVersion = inst.supportedApiVersion();
-        if (supportedVersion >= QVersionNumber(1, 3))
-            inst.setApiVersion(QVersionNumber(1, 3));
-        else if (supportedVersion >= QVersionNumber(1, 2))
-            inst.setApiVersion(QVersionNumber(1, 2));
-        else if (supportedVersion >= QVersionNumber(1, 1))
+        qDebug() << "Supported Vulkan API version:" << supportedVersion;
+        if (supportedVersion >= QVersionNumber(1, 1)) {
+            qDebug("Requesting Vulkan API 1.1 on the VkInstance");
             inst.setApiVersion(QVersionNumber(1, 1));
-        qDebug() << "Requesting Vulkan API" << inst.apiVersion().toString();
-        qDebug() << "Instance-level version was reported as" << supportedVersion.toString();
+        }
         inst.setExtensions(QRhiVulkanInitParams::preferredInstanceExtensions());
         if (!inst.create()) {
             qWarning("Failed to create Vulkan instance, switching to OpenGL");
@@ -551,6 +483,9 @@ int main(int argc, char **argv)
         }
     }
 #endif
+
+    if (cmdLineParser.isSet(tdrOption))
+        framesUntilTdr = cmdLineParser.value(tdrOption).toInt();
 
     if (cmdLineParser.isSet(swOption))
         rhiFlags |= QRhi::PreferSoftwareRenderer;

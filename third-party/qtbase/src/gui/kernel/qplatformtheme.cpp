@@ -525,8 +525,6 @@ QVariant QPlatformTheme::themeHint(ThemeHint hint) const
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FlickMaximumVelocity);
     case QPlatformTheme::FlickDeceleration:
         return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::FlickDeceleration);
-    case QPlatformTheme::UnderlineShortcut:
-        return QGuiApplicationPrivate::platformIntegration()->styleHint(QPlatformIntegration::UnderlineShortcut);
     default:
         return QPlatformTheme::defaultThemeHint(hint);
     }
@@ -639,10 +637,7 @@ QVariant QPlatformTheme::defaultThemeHint(ThemeHint hint)
         return QVariant(QString());
     case MouseCursorSize:
         return QVariant(QSize(16, 16));
-    case UnderlineShortcut:
-        return true;
     }
-
     return QVariant();
 }
 
@@ -825,23 +820,28 @@ QString QPlatformTheme::removeMnemonics(const QString &original)
     };
     QString returnText(original.size(), u'\0');
     int finalDest = 0;
-    QStringView text(original);
-    while (!text.isEmpty()) {
-        if (text.startsWith(u'&')) {
-            text = text.sliced(1);
-            if (text.isEmpty())
+    int currPos = 0;
+    int l = original.size();
+    while (l) {
+        if (original.at(currPos) == u'&') {
+            ++currPos;
+            --l;
+            if (l == 0)
                 break;
-        } else if (text.size() >= 4 && mnemonicInParentheses(text.first(4))) {
-            // Advance over the matched mnemonic:
-            text = text.sliced(4);
-            // Also strip any leading space before it:
-            while (finalDest > 0 && returnText.at(finalDest - 1).isSpace())
-                --finalDest;
+        } else if (l >= 4 && mnemonicInParentheses(QStringView{original}.sliced(currPos, 4))) {
+            // Also strip any leading space before the mnemonic:
+            int n = 0;
+            while (finalDest > n && returnText.at(finalDest - n - 1).isSpace())
+                ++n;
+            finalDest -= n;
+            currPos += 4;
+            l -= 4;
             continue;
         }
-        returnText[finalDest] = text.front();
-        text = text.sliced(1);
+        returnText[finalDest] = original.at(currPos);
+        ++currPos;
         ++finalDest;
+        --l;
     }
     returnText.truncate(finalDest);
     return returnText;

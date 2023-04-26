@@ -24,8 +24,6 @@
 #include <optional>
 #include <tuple>
 
-#include <emscripten/proxying.h>
-
 QT_BEGIN_NAMESPACE
 
 Q_DECLARE_LOGGING_CATEGORY(lcEventDispatcher);
@@ -108,8 +106,6 @@ private:
 
     static QVector<QEventDispatcherWasm *> g_secondaryThreadEventDispatchers;
     static std::mutex g_staticDataMutex;
-    static emscripten::ProxyingQueue g_proxyingQueue;
-    static pthread_t g_mainThread;
 
     // Note on mutex usage: the global g_staticDataMutex protects the global (g_ prefixed) data,
     // while the per eventdispatcher m_mutex protects the state accociated with blocking and waking

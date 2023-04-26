@@ -284,8 +284,6 @@ public:
         // GraphicsSceneLeave = 220,
         WindowAboutToChangeInternal = 221,      // internal for QQuickWidget and texture-based widgets
 
-        DevicePixelRatioChange = 222,
-
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 

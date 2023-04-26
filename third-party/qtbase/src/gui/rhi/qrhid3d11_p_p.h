@@ -26,8 +26,6 @@
 
 QT_BEGIN_NAMESPACE
 
-class QRhiD3D11;
-
 struct QD3D11Buffer : public QRhiBuffer
 {
     QD3D11Buffer(QRhiImplementation *rhi, Type type, UsageFlags usage, quint32 size);
@@ -498,7 +496,6 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
 
     QRhiBackendCommandList<Command> commands;
     PassType recordingPass;
-    double lastGpuTime = 0;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
@@ -537,7 +534,6 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
     }
     void resetState() {
         recordingPass = NoPass;
-        // do not zero lastGpuTime
         currentTarget = nullptr;
         resetCommands();
         resetCachedState();
@@ -555,21 +551,6 @@ struct QD3D11CommandBuffer : public QRhiCommandBuffer
         memset(currentVertexBuffers, 0, sizeof(currentVertexBuffers));
         memset(currentVertexOffsets, 0, sizeof(currentVertexOffsets));
     }
-};
-
-static const int QD3D11_SWAPCHAIN_BUFFER_COUNT = 2;
-
-struct QD3D11Timestamps
-{
-    static const int MAX_TIMESTAMP_PAIRS = QD3D11_SWAPCHAIN_BUFFER_COUNT;
-    bool active[MAX_TIMESTAMP_PAIRS] = {};
-    ID3D11Query *disjointQuery[MAX_TIMESTAMP_PAIRS] = {};
-    ID3D11Query *query[MAX_TIMESTAMP_PAIRS * 2] = {};
-    int pairCount = 0;
-
-    bool prepare(int pairCount, QRhiD3D11 *rhiD);
-    void destroy();
-    bool tryQueryTimestamps(int idx, ID3D11DeviceContext *context, double *elapsedSec);
 };
 
 struct QD3D11SwapChain : public QRhiSwapChain
@@ -600,19 +581,21 @@ struct QD3D11SwapChain : public QRhiSwapChain
     DXGI_FORMAT srgbAdjustedColorFormat;
     IDXGISwapChain *swapChain = nullptr;
     UINT swapChainFlags = 0;
+    static const int BUFFER_COUNT = 2;
     ID3D11Texture2D *backBufferTex;
     ID3D11RenderTargetView *backBufferRtv;
-    static const int BUFFER_COUNT = QD3D11_SWAPCHAIN_BUFFER_COUNT;
     ID3D11Texture2D *msaaTex[BUFFER_COUNT];
     ID3D11RenderTargetView *msaaRtv[BUFFER_COUNT];
     DXGI_SAMPLE_DESC sampleDesc;
     int currentFrameSlot = 0;
     int frameCount = 0;
     QD3D11RenderBuffer *ds = nullptr;
+    bool timestampActive[BUFFER_COUNT];
+    ID3D11Query *timestampDisjointQuery[BUFFER_COUNT];
+    ID3D11Query *timestampQuery[BUFFER_COUNT * 2];
     UINT swapInterval = 1;
     IDCompositionTarget *dcompTarget = nullptr;
     IDCompositionVisual *dcompVisual = nullptr;
-    QD3D11Timestamps timestamps;
 };
 
 class QRhiD3D11 : public QRhiImplementation
@@ -706,7 +689,6 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
-    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;
@@ -779,8 +761,6 @@ public:
         OffscreenFrame(QRhiImplementation *rhi) : cbWrapper(rhi) { }
         bool active = false;
         QD3D11CommandBuffer cbWrapper;
-        QD3D11Timestamps timestamps;
-        int timestampIdx = 0;
     } ofr;
 
     struct TextureReadback {
@@ -794,7 +774,7 @@ public:
     };
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
-        QRhiReadbackResult *result;
+        QRhiBufferReadbackResult *result;
         quint32 byteSize;
         ID3D11Buffer *stagingBuf;
     };
@@ -809,6 +789,19 @@ public:
         QShader::NativeResourceBindingMap nativeResourceBindingMap;
     };
     QHash<QRhiShaderStage, Shader> m_shaderCache;
+
+    struct DeviceCurse {
+        DeviceCurse(QRhiD3D11 *impl) : q(impl) { }
+        QRhiD3D11 *q;
+        int framesToActivate = -1;
+        bool permanent = false;
+        int framesLeft = 0;
+        ID3D11ComputeShader *cs = nullptr;
+
+        void initResources();
+        void releaseResources();
+        void activate();
+    } deviceCurse;
 
     // This is what gets exposed as the "pipeline cache", not that that concept
     // applies anyway. Here we are just storing the DX bytecode for a shader so

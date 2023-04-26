@@ -14,20 +14,14 @@
 #     module, these files will raise a warning at configure time if the condition is not met.
 #   COMPILE_FLAGS
 #     Custom compilation flags.
-#   EXTRA_LINKER_SCRIPT_CONTENT
-#     Extra content that should be appended to a target linker script. Applicable for ld only.
 #   NO_PCH_SOURCES
 #     Skip the specified source files by PRECOMPILE_HEADERS feature.
 function(qt_internal_extend_target target)
     if(NOT TARGET "${target}")
-        message(FATAL_ERROR "${target} is not a target.")
-    endif()
-    qt_internal_is_skipped_test(skipped ${target})
-    if(skipped)
-        return()
-    endif()
-    qt_internal_is_in_test_batch(in_batch ${target})
-    if(in_batch)
+        qt_internal_is_in_test_batch(in_batch ${target})
+        if(NOT in_batch)
+            message(FATAL_ERROR "Trying to extend a non-existing target \"${target}\".")
+        endif()
         _qt_internal_test_batch_target_name(target)
     endif()
 
@@ -42,7 +36,6 @@ function(qt_internal_extend_target target)
     )
     set(single_args
         PRECOMPILED_HEADER
-        EXTRA_LINKER_SCRIPT_CONTENT
     )
     set(multi_args
         ${__default_public_args}
@@ -244,10 +237,6 @@ function(qt_internal_extend_target target)
             ${sources_property} "${arg_CONDITION_INDEPENDENT_SOURCES}")
     endif()
 
-    if(arg_EXTRA_LINKER_SCRIPT_CONTENT)
-        set_target_properties(${target} PROPERTIES
-            _qt_extra_linker_script_content "${arg_EXTRA_LINKER_SCRIPT_CONTENT}")
-    endif()
 endfunction()
 
 function(qt_is_imported_target target out_var)
@@ -1014,24 +1003,6 @@ function(qt_internal_mark_as_internal_library target)
     set_target_properties(${target} PROPERTIES _qt_is_internal_library TRUE)
 endfunction()
 
-# Marks a target with a property to skip it adding it as a dependency when building examples as
-# ExternalProjects.
-# Needed to create a ${repo}_src global target that examples can depend on in multi-config builds
-# due to a bug in AUTOUIC.
-#
-# See QTBUG-110369.
-function(qt_internal_skip_dependency_for_examples target)
-    set_target_properties(${target} PROPERTIES _qt_skip_dependency_for_examples TRUE)
-endfunction()
-
-function(qt_internal_is_target_skipped_for_examples target out_var)
-    get_property(is_skipped TARGET ${target} PROPERTY _qt_skip_dependency_for_examples)
-    if(NOT is_skipped)
-        set(is_skipped FALSE)
-    endif()
-    set(${out_var} "${is_skipped}" PARENT_SCOPE)
-endfunction()
-
 function(qt_internal_link_internal_platform_for_object_library target)
     # We need to apply iOS bitcode flags to object libraries that are associated with internal
     # modules or plugins (e.g. object libraries added by qt_internal_add_resource,
@@ -1094,15 +1065,11 @@ endfunction()
 # The function disables one or multiple internal global definitions that are defined by the
 # qt_internal_add_global_definition function for a specific 'target'.
 function(qt_internal_undefine_global_definition target)
-    if(NOT TARGET "${target}")
-        message(FATAL_ERROR "${target} is not a target.")
-    endif()
-    qt_internal_is_skipped_test(skipped ${target})
-    if(skipped)
-        return()
-    endif()
-    qt_internal_is_in_test_batch(in_batch ${target})
-    if(in_batch)
+    if(NOT TARGET ${target})
+        qt_internal_is_in_test_batch(in_batch ${target})
+        if(NOT ${in_batch})
+            message(FATAL_ERROR "${target} is not a target.")
+        endif()
         _qt_internal_test_batch_target_name(target)
     endif()
 
@@ -1152,158 +1119,4 @@ function(qt_internal_get_target_sources_property out_var)
         set(${out_var} "_qt_internal_target_sources")
     endif()
     set(${out_var} "${${out_var}}" PARENT_SCOPE)
-endfunction()
-
-# This function collects target properties that contain generator expressions and needs to be
-# exported. This function is needed since the CMake EXPORT_PROPERTIES property doesn't support
-# properties that contain generator expressions.
-# Usage: qt_internal_add_genex_properties_export(target properties...)
-function(qt_internal_add_genex_properties_export target)
-    get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-
-    set(config_check_begin "")
-    set(config_check_end "")
-    if(is_multi_config)
-        list(GET CMAKE_CONFIGURATION_TYPES 0 first_config_type)
-
-        # The genex snippet is evaluated to '$<NOT:$<BOOL:$<CONFIG>>>' in the generated cmake file.
-        # The check is only applicable to the 'main' configuration. If user project doesn't use
-        # multi-config generator, then the check supposed to return true and the value from the
-        # 'main' configuration supposed to be used.
-        string(JOIN "" check_if_config_empty
-            "$<1:$><NOT:"
-                "$<1:$><BOOL:"
-                    "$<1:$><CONFIG$<ANGLE-R>"
-                "$<ANGLE-R>"
-            "$<ANGLE-R>"
-        )
-
-        # The genex snippet is evaluated to '$<CONFIG:'Qt config type'>' in the generated cmake
-        # file and checks if the config that user uses matches the generated cmake file config.
-        string(JOIN "" check_user_config
-            "$<1:$><CONFIG:$<CONFIG>$<ANGLE-R>"
-        )
-
-        # The genex snippet is evaluated to '$<$<OR:$<CONFIG:'Qt config type'>>:'Property content'>
-        # for non-main Qt configs and to
-        # $<$<OR:$<CONFIG:'Qt config type'>,$<NOT:$<BOOL:$<CONFIG>>>>:'Property content'> for the
-        # main Qt config. This guard is required to choose the correct value of the property for the
-        # user project according to the user config type.
-        # All genexes need to be escaped properly to protect them from evaluation by the
-        # file(GENERATE call in the qt_internal_export_genex_properties function.
-        string(JOIN "" config_check_begin
-            "$<1:$><"
-                "$<1:$><OR:"
-                    "${check_user_config}"
-                    "$<$<CONFIG:${first_config_type}>:$<COMMA>${check_if_config_empty}>"
-                "$<ANGLE-R>:"
-        )
-        set(config_check_end "$<ANGLE-R>")
-    endif()
-    set(target_name "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
-    foreach(property IN LISTS ARGN)
-        set(target_property_genex "$<TARGET_PROPERTY:${target_name},${property}>")
-        # All properties that contain lists need to be protected of processing by JOIN genex calls.
-        # So this escapes the semicolons for these list.
-        set(target_property_list_escape
-            "$<JOIN:$<GENEX_EVAL:${target_property_genex}>,\;>")
-        set(property_value
-            "\"${config_check_begin}${target_property_list_escape}${config_check_end}\"")
-        set_property(TARGET ${target} APPEND PROPERTY _qt_export_genex_properties_content
-            "${property} ${property_value}")
-    endforeach()
-endfunction()
-
-# This function executes generator expressions for the properties that are added by the
-# qt_internal_add_genex_properties_export function and sets the calculated values to the
-# corresponding properties in the generated ExtraProperties.cmake file. The file then needs to be
-# included after the target creation routines in Config.cmake files. It also supports Multi-Config
-# builds.
-# Arguments:
-# EXPORT_NAME_PREFIX:
-#    The portion of the file name before ExtraProperties.cmake
-# CONFIG_INSTALL_DIR:
-#    Installation location for the file.
-# TARGETS:
-#    The internal target names.
-function(qt_internal_export_genex_properties)
-    set(option_args "")
-    set(single_args
-        EXPORT_NAME_PREFIX
-        CONFIG_INSTALL_DIR
-    )
-    set(multi_args TARGETS)
-    cmake_parse_arguments(arg "${option_args}" "${single_args}" "${multi_args}" ${ARGN})
-
-    if(NOT arg_EXPORT_NAME_PREFIX)
-        message(FATAL_ERROR "qt_internal_export_genex_properties: "
-            "Missing EXPORT_NAME_PREFIX argument.")
-    endif()
-
-    if(NOT arg_TARGETS)
-        message(FATAL_ERROR "qt_internal_export_genex_properties: "
-            "TARGETS argument must contain at least one target")
-    endif()
-
-    foreach(target IN LISTS arg_TARGETS)
-        get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
-
-        set(output_file_base_name "${arg_EXPORT_NAME_PREFIX}ExtraProperties")
-        set(should_append "")
-        set(config_suffix "")
-        if(is_multi_config)
-            list(GET CMAKE_CONFIGURATION_TYPES 0 first_config_type)
-            set(config_suffix "$<$<NOT:$<CONFIG:${first_config_type}>>:-$<CONFIG>>")
-            # If the generated file belongs to the 'main' config type, we should set property
-            # but not append it.
-            string(JOIN "" should_append
-                "$<$<NOT:$<CONFIG:${first_config_type}>>: APPEND>")
-        endif()
-        set(file_name "${output_file_base_name}${config_suffix}.cmake")
-
-        qt_path_join(output_file "${arg_CONFIG_INSTALL_DIR}"
-            "${file_name}")
-
-        if(NOT IS_ABSOLUTE "${output_file}")
-            qt_path_join(output_file "${QT_BUILD_DIR}" "${output_file}")
-        endif()
-
-        set(target_name "${QT_CMAKE_EXPORT_NAMESPACE}::${target}")
-
-        string(JOIN "" set_property_begin "set_property(TARGET "
-            "${target_name}${should_append} PROPERTY "
-        )
-        set(set_property_end ")")
-        set(set_property_glue "${set_property_end}\n${set_property_begin}")
-        set(property_list
-            "$<GENEX_EVAL:$<TARGET_PROPERTY:${target},_qt_export_genex_properties_content>>")
-        string(JOIN "" set_property_content "${set_property_begin}"
-            "$<JOIN:${property_list},${set_property_glue}>"
-            "${set_property_end}")
-
-        if(is_multi_config)
-            set(config_includes "")
-            foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-                if(NOT first_config_type STREQUAL config)
-                    set(include_file_name
-                        "${output_file_base_name}-${config}.cmake")
-                    list(APPEND config_includes
-                        "include(\"\${CMAKE_CURRENT_LIST_DIR}/${include_file_name}\")")
-                endif()
-            endforeach()
-            list(JOIN config_includes "\n" config_includes_string)
-            set(config_includes_string
-                "\n$<$<CONFIG:${first_config_type}>:${config_includes_string}>")
-        endif()
-
-        file(GENERATE OUTPUT "${output_file}"
-            CONTENT "$<$<BOOL:${property_list}>:${set_property_content}${config_includes_string}>"
-            CONDITION "$<BOOL:${property_list}>"
-        )
-    endforeach()
-
-    qt_install(FILES "$<$<BOOL:${property_list}>:${output_file}>"
-        DESTINATION "${arg_CONFIG_INSTALL_DIR}"
-        COMPONENT Devel
-    )
 endfunction()

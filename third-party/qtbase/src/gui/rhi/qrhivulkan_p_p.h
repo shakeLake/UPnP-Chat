@@ -320,7 +320,6 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
     void resetState() {
         recordingPass = NoPass;
         passUsesSecondaryCb = false;
-        lastGpuTime = 0;
         currentTarget = nullptr;
         activeSecondaryCbStack.clear();
         resetCommands();
@@ -345,7 +344,6 @@ struct QVkCommandBuffer : public QRhiCommandBuffer
 
     PassType recordingPass;
     bool passUsesSecondaryCb;
-    double lastGpuTime = 0;
     QRhiRenderTarget *currentTarget;
     QRhiGraphicsPipeline *currentGraphicsPipeline;
     QRhiComputePipeline *currentComputePipeline;
@@ -724,7 +722,6 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
-    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;
@@ -816,7 +813,6 @@ public:
                             int startLevel, int levelCount);
     void updateShaderResourceBindings(QRhiShaderResourceBindings *srb, int descSetIdx = -1);
     void ensureCommandPoolForNewFrame();
-    double elapsedSecondsFromTimestamp(quint64 timestamp[2], bool *ok);
 
     QVulkanInstance *inst = nullptr;
     QWindow *maybeWindow = nullptr;
@@ -907,7 +903,6 @@ public:
         bool active = false;
         QVkCommandBuffer *cbWrapper[QVK_FRAMES_IN_FLIGHT];
         VkFence cmdFence = VK_NULL_HANDLE;
-        int timestampQueryIndex = -1;
     } ofr;
 
     struct TextureReadback {
@@ -923,7 +918,7 @@ public:
     QVarLengthArray<TextureReadback, 2> activeTextureReadbacks;
     struct BufferReadback {
         int activeFrameSlot = -1;
-        QRhiReadbackResult *result;
+        QRhiBufferReadbackResult *result;
         quint32 byteSize;
         VkBuffer stagingBuf;
         QVkAlloc stagingAlloc;

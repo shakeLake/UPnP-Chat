@@ -45,7 +45,6 @@ struct Q_GUI_EXPORT QPlatformBackingStoreRhiConfig
         Metal,
         Vulkan,
         D3D11,
-        D3D12,
         Null
     };
 

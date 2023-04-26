@@ -48,11 +48,6 @@ setTabOrder(c, d); // a to b to c to d
 //! [9]
 
 
-//! [9.list]
-setTabOrder({a, b, c, d}); // a to b to c to d
-//! [9.list]
-
-
 //! [10]
 // WRONG
 setTabOrder(c, d); // c to d

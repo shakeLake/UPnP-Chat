@@ -97,17 +97,12 @@ using namespace Qt::StringLiterals;
 
     \internal
 
-    \value InvokeMetaMethod
+    \value InvokeSlot
+    \value EmitSignal
     \value ReadProperty
     \value WriteProperty
     \value ResetProperty
     \value CreateInstance
-    \value IndexOfMethod
-    \value RegisterPropertyMetaType
-    \value RegisterMethodArgumentMetaType
-    \value BindableProperty
-    \value CustomCall
-    \value ConstructInPlace
 */
 
 /*!
@@ -419,30 +414,10 @@ QMetaType QMetaObject::metaType() const
         return QMetaType::fromName(className());
     } else {
         /* in the metatype array, we store
-
-         | index                               | data                           |
-         |----------------------------------------------------------------------|
-         | 0                                   | QMetaType(property0)           |
-         | ...                                 | ...                            |
-         | propertyCount - 1                   | QMetaType(propertyCount - 1)   |
-         | propertyCount                       | QMetaType(enumerator0)         |
-         | ...                                 | ...                            |
-         | propertyCount + enumeratorCount - 1 | QMetaType(enumeratorCount - 1) |
-         | propertyCount + enumeratorCount     | QMetaType(class)               |
-
-        */
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-        // Before revision 12 we only stored metatypes for enums if they showed
-        // up as types of properties or method arguments or return values.
-        // From revision 12 on, we always store them in a predictable place.
-        const qsizetype offset = d->revision < 12
-                ? d->propertyCount
-                : d->propertyCount + d->enumeratorCount;
-#else
-        const qsizetype offset = d->propertyCount + d->enumeratorCount;
-#endif
-
-        auto iface = this->d.metaTypes[offset];
+         idx: 0                      propertyCount - 1           propertyCount
+         data:QMetaType(prop0), ..., QMetaType(propPropCount-1), QMetaType(class),...
+         */
+        auto iface = this->d.metaTypes[d->propertyCount];
         if (iface && QtMetaTypePrivate::isInterfaceFor<void>(iface))
             return QMetaType(); // return invalid meta-type for namespaces
         if (iface)
@@ -1067,7 +1042,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const char *prop = rawStringData(m, e.data.name());
-            if (strcmp(name, prop) == 0) {
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
             }
@@ -1081,7 +1056,7 @@ int QMetaObject::indexOfEnumerator(const char *name) const
         for (int i = 0; i < d->enumeratorCount; ++i) {
             const QMetaEnum e(m, i);
             const char *prop = rawStringData(m, e.data.alias());
-            if (strcmp(name, prop) == 0) {
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->enumeratorOffset();
                 return i;
             }
@@ -1105,7 +1080,7 @@ int QMetaObject::indexOfProperty(const char *name) const
         for (int i = 0; i < d->propertyCount; ++i) {
             const QMetaProperty::Data data = QMetaProperty::getMetaPropertyData(m, i);
             const char *prop = rawStringData(m, data.name());
-            if (strcmp(name, prop) == 0) {
+            if (name[0] == prop[0] && strcmp(name + 1, prop + 1) == 0) {
                 i += m->propertyOffset();
                 return i;
             }
@@ -3041,7 +3016,7 @@ const char *QMetaEnum::name() const
     Returns the enum name of the flag (without the scope).
 
     For example, the Qt::AlignmentFlag flag has \c
-    AlignmentFlag as the enum name, but \c Alignment as the type name.
+    AlignmentFlag as the enum name, but \c Alignment as as the type name.
     Non flag enums has the same type and enum names.
 
     Enum names have the same scope as the type name.
@@ -3054,33 +3029,6 @@ const char *QMetaEnum::enumName() const
     if (!mobj)
         return nullptr;
     return rawStringData(mobj, data.alias());
-}
-
-/*!
-    Returns the meta type of the enum.
-
-    If the QMetaObject this enum is part of was generated with Qt 6.5 or
-    earlier this will be the invalid metatype.
-
-    \note This is the meta type of the enum itself, not of its underlying
-    numeric type. You can retrieve the meta type of the underlying type of the
-    enum using \l{QMetaType::underlyingType()}.
-
-    \since 6.6
-    \sa QMetaType::underlyingType()
-*/
-QMetaType QMetaEnum::metaType() const
-{
-    if (!mobj)
-        return {};
-
-    const QMetaObjectPrivate *p = priv(mobj->d.data);
-#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
-    if (p->revision < 12)
-        QMetaType();
-#endif
-
-    return QMetaType(mobj->d.metaTypes[data.index(mobj) + p->propertyCount]);
 }
 
 /*!
@@ -3330,11 +3278,6 @@ QMetaEnum::QMetaEnum(const QMetaObject *mobj, int index)
     : mobj(mobj), data({ mobj->d.data + priv(mobj->d.data)->enumeratorData + index * Data::Size })
 {
     Q_ASSERT(index >= 0 && index < priv(mobj->d.data)->enumeratorCount);
-}
-
-int QMetaEnum::Data::index(const QMetaObject *mobj) const
-{
-    return (d - mobj->d.data - priv(mobj->d.data)->enumeratorData) / Size;
 }
 
 /*!
@@ -3676,7 +3619,7 @@ QVariant QMetaProperty::read(const QObject *object) const
     Writes \a value as the property's value to the given \a object. Returns
     true if the write succeeded; otherwise returns \c false.
 
-    If \a value is not of the same type as the property, a conversion
+    If \a value is not of the same type type as the property, a conversion
     is attempted. An empty QVariant() is equivalent to a call to reset()
     if this property is resettable, or setting a default-constructed object
     otherwise.

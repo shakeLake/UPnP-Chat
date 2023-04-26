@@ -815,7 +815,7 @@ public:
     void run() override {
         int iter = 60;
         while (--iter && !cancel.loadRelaxed())
-            QThread::currentThread()->sleep(std::chrono::milliseconds{25});
+            QThread::currentThread()->msleep(25);
     }
 };
 

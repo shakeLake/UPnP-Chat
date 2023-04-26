@@ -3,17 +3,15 @@ mkdir qt-dpndncy
 cd qt-dpndncy
 
 if [[ "$OSTYPE" == "linux" ]]; then
-	./../third-party/qtbase/configure -static
+	./../third-party/qtbase/configure -static -no-prefix
 	cmake --build . --parallel
 elif [[ "$OSTYPE" == "msys" ]]; then
-	./../third-party/qtbase/configure.bat -static
+	./../third-party/qtbase/configure -static -platform "win32-g++" -no-prefix
 	cmake --build .
 fi
 
-#cd ..
+echo -e "Chat Build"
+cmake -G "MinGW Makefiles" -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="../qt-dpndncy/lib/cmake"
 
-#echo -e "Chat Build"
-#cmake -G "MinGW Makefiles" -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="/qt-dpndncy/lib/cmake"
-
-#cd build
-#mingw32-make
+cd build
+cmake --build .

@@ -227,8 +227,7 @@ int QTextMarkdownImporter::cbEnterBlock(int blockType, void *det)
         m_listFormat.setIndent(m_listStack.size() + 1);
         m_listFormat.setNumberSuffix(QChar::fromLatin1(detail->mark_delimiter));
         m_listFormat.setStyle(QTextListFormat::ListDecimal);
-        m_listFormat.setStart(detail->start);
-        qCDebug(lcMD, "OL xx%d level %d start %d", detail->mark_delimiter, int(m_listStack.size()) + 1, detail->start);
+        qCDebug(lcMD, "OL xx%d level %d", detail->mark_delimiter, int(m_listStack.size()) + 1);
     } break;
     case MD_BLOCK_TD: {
         MD_BLOCK_TD_DETAIL *detail = static_cast<MD_BLOCK_TD_DETAIL *>(det);

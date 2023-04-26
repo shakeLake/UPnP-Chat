@@ -126,7 +126,11 @@ public:
     void moveToThread(QThread *thread);
 
     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
-    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer);
+    Q_ALWAYS_INLINE
+    int startTimer(std::chrono::milliseconds time, Qt::TimerType timerType = Qt::CoarseTimer)
+    {
+        return startTimer(int(time.count()), timerType);
+    }
     void killTimer(int id);
 
     template<typename T>

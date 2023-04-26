@@ -215,18 +215,24 @@ void QXcbAtom::initialize(xcb_connection_t *connection)
 }
 
 void QXcbAtom::initializeAllAtoms(xcb_connection_t *connection) {
-    const char *name = xcb_atomnames;
-    size_t name_len;
-    int i = 0;
-    xcb_intern_atom_cookie_t cookies[QXcbAtom::NAtoms];
+    const char *names[QXcbAtom::NAtoms];
+    const char *ptr = xcb_atomnames;
 
-    while ((name_len = strlen(name)) != 0) {
-        cookies[i] = xcb_intern_atom(connection, false, name_len, name);
-        ++i;
-        name += name_len + 1; // jump over the \0
+    int i = 0;
+    while (*ptr) {
+        names[i++] = ptr;
+        while (*ptr)
+            ++ptr;
+        ++ptr;
     }
 
     Q_ASSERT(i == QXcbAtom::NAtoms);
+
+    xcb_intern_atom_cookie_t cookies[QXcbAtom::NAtoms];
+
+    Q_ASSERT(i == QXcbAtom::NAtoms);
+    for (i = 0; i < QXcbAtom::NAtoms; ++i)
+        cookies[i] = xcb_intern_atom(connection, false, strlen(names[i]), names[i]);
 
     for (i = 0; i < QXcbAtom::NAtoms; ++i) {
         xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(connection, cookies[i], nullptr);

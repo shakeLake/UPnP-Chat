@@ -56,28 +56,13 @@ public:
 private:
     float m_d = 1.0f;
     quint32 m_s = 0;
-
-    friend bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-    {
-        return a.m_d == b.m_d && a.m_s == b.m_s;
-    }
-
-    friend bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_d);
-        seed = hash(seed, v.m_s);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiDepthStencilClearValue, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiDepthStencilClearValue &a, const QRhiDepthStencilClearValue &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiDepthStencilClearValue &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDepthStencilClearValue &);
 #endif
@@ -103,34 +88,13 @@ private:
     std::array<float, 4> m_rect { { 0.0f, 0.0f, 0.0f, 0.0f } };
     float m_minDepth = 0.0f;
     float m_maxDepth = 1.0f;
-
-    friend bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept
-    {
-        return a.m_rect == b.m_rect
-                && a.m_minDepth == b.m_minDepth
-                && a.m_maxDepth == b.m_maxDepth;
-    }
-
-    friend bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiViewport &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_rect[0]);
-        seed = hash(seed, v.m_rect[1]);
-        seed = hash(seed, v.m_rect[2]);
-        seed = hash(seed, v.m_rect[3]);
-        seed = hash(seed, v.m_minDepth);
-        seed = hash(seed, v.m_maxDepth);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiViewport, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiViewport &a, const QRhiViewport &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiViewport &a, const QRhiViewport &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiViewport &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiViewport &);
 #endif
@@ -148,30 +112,13 @@ public:
 
 private:
     std::array<int, 4> m_rect { { 0, 0, 0, 0 } };
-
-    friend bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept
-    {
-        return a.m_rect == b.m_rect;
-    }
-
-    friend bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiScissor &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_rect[0]);
-        seed = hash(seed, v.m_rect[1]);
-        seed = hash(seed, v.m_rect[2]);
-        seed = hash(seed, v.m_rect[3]);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiScissor, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiScissor &a, const QRhiScissor &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiScissor &a, const QRhiScissor &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiScissor &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiScissor &);
 #endif
@@ -200,31 +147,13 @@ private:
     quint32 m_stride = 0;
     Classification m_classification = PerVertex;
     quint32 m_instanceStepRate = 1;
-
-    friend bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-    {
-        return a.m_stride == b.m_stride
-                && a.m_classification == b.m_classification
-                && a.m_instanceStepRate == b.m_instanceStepRate;
-    }
-
-    friend bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_stride);
-        seed = hash(seed, v.m_classification);
-        seed = hash(seed, v.m_instanceStepRate);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputBinding, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiVertexInputBinding &a, const QRhiVertexInputBinding &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiVertexInputBinding &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputBinding &);
 #endif
@@ -247,11 +176,7 @@ public:
         SInt4,
         SInt3,
         SInt2,
-        SInt,
-        Half4,
-        Half3,
-        Half2,
-        Half
+        SInt
     };
 
     QRhiVertexInputAttribute() = default;
@@ -278,34 +203,13 @@ private:
     Format m_format = Float4;
     quint32 m_offset = 0;
     int m_matrixSlice = -1;
-
-    friend bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-    {
-        return a.m_binding == b.m_binding
-                && a.m_location == b.m_location
-                && a.m_format == b.m_format
-                && a.m_offset == b.m_offset;
-        // matrixSlice excluded intentionally
-    }
-
-    friend bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_binding);
-        seed = hash(seed, v.m_location);
-        seed = hash(seed, v.m_format);
-        seed = hash(seed, v.m_offset);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiVertexInputAttribute, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiVertexInputAttribute &a, const QRhiVertexInputAttribute &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiVertexInputAttribute &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputAttribute &);
 #endif
@@ -324,8 +228,7 @@ public:
     }
     const QRhiVertexInputBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiVertexInputBinding *cendBindings() const { return m_bindings.cend(); }
-    const QRhiVertexInputBinding *bindingAt(qsizetype index) const { return &m_bindings.at(index); }
-    qsizetype bindingCount() const { return m_bindings.count(); }
+    const QRhiVertexInputBinding *bindingAt(int index) const { return &m_bindings.at(index); }
 
     void setAttributes(std::initializer_list<QRhiVertexInputAttribute> list) { m_attributes = list; }
     template<typename InputIterator>
@@ -336,34 +239,19 @@ public:
     }
     const QRhiVertexInputAttribute *cbeginAttributes() const { return m_attributes.cbegin(); }
     const QRhiVertexInputAttribute *cendAttributes() const { return m_attributes.cend(); }
-    const QRhiVertexInputAttribute *attributeAt(qsizetype index) const { return &m_attributes.at(index); }
-    qsizetype attributeCount() const { return m_attributes.count(); }
 
 private:
     QVarLengthArray<QRhiVertexInputBinding, 8> m_bindings;
     QVarLengthArray<QRhiVertexInputAttribute, 8> m_attributes;
 
-    friend bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-    {
-        return a.m_bindings == b.m_bindings && a.m_attributes == b.m_attributes;
-    }
-
-    friend bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_bindings);
-        seed = hash(seed, v.m_attributes);
-        return seed;
-    }
-
+    friend Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
+    friend Q_GUI_EXPORT size_t qHash(const QRhiVertexInputLayout &v, size_t seed) noexcept;
     friend Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 };
 
+Q_GUI_EXPORT bool operator==(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiVertexInputLayout &a, const QRhiVertexInputLayout &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiVertexInputLayout &v, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiVertexInputLayout &);
 #endif
@@ -397,31 +285,13 @@ private:
     Type m_type = Vertex;
     QShader m_shader;
     QShader::Variant m_shaderVariant = QShader::StandardShader;
-
-    friend bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-    {
-        return a.m_type == b.m_type
-                && a.m_shader == b.m_shader
-                && a.m_shaderVariant == b.m_shaderVariant;
-    }
-
-    friend bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept
-    {
-        return !(a == b);
-    }
-
-    friend size_t qHash(const QRhiShaderStage &v, size_t seed = 0) noexcept
-    {
-        QtPrivate::QHashCombine hash;
-        seed = hash(seed, v.m_type);
-        seed = hash(seed, v.m_shader);
-        seed = hash(seed, v.m_shaderVariant);
-        return seed;
-    }
 };
 
 Q_DECLARE_TYPEINFO(QRhiShaderStage, Q_RELOCATABLE_TYPE);
 
+Q_GUI_EXPORT bool operator==(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
+Q_GUI_EXPORT bool operator!=(const QRhiShaderStage &a, const QRhiShaderStage &b) noexcept;
+Q_GUI_EXPORT size_t qHash(const QRhiShaderStage &s, size_t seed = 0) noexcept;
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiShaderStage &);
 #endif
@@ -536,6 +406,9 @@ public:
         }
     };
 
+    Data *data() { return &d; }
+    const Data *data() const { return &d; }
+
     static const int LAYOUT_DESC_ENTRIES_PER_BINDING = 4;
 
     template<typename Output>
@@ -544,14 +417,13 @@ public:
                                            Output dst)
     {
         while (first != last) {
-            dst = first->d.serialize(dst);
+            dst = first->data()->serialize(dst);
             ++first;
         }
     }
 
 private:
     Data d;
-    friend class QRhiImplementation;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QRhiShaderResourceBinding::StageFlags)
@@ -622,8 +494,7 @@ public:
     }
     const QRhiColorAttachment *cbeginColorAttachments() const { return m_colorAttachments.cbegin(); }
     const QRhiColorAttachment *cendColorAttachments() const { return m_colorAttachments.cend(); }
-    const QRhiColorAttachment *colorAttachmentAt(qsizetype index) const { return &m_colorAttachments.at(index); }
-    qsizetype colorAttachmentCount() const { return m_colorAttachments.count(); }
+    const QRhiColorAttachment *colorAttachmentAt(int index) const { return &m_colorAttachments.at(index); }
 
     QRhiRenderBuffer *depthStencilBuffer() const { return m_depthStencilBuffer; }
     void setDepthStencilBuffer(QRhiRenderBuffer *renderBuffer) { m_depthStencilBuffer = renderBuffer; }
@@ -713,8 +584,6 @@ public:
     }
     const QRhiTextureUploadEntry *cbeginEntries() const { return m_entries.cbegin(); }
     const QRhiTextureUploadEntry *cendEntries() const { return m_entries.cend(); }
-    const QRhiTextureUploadEntry *entryAt(qsizetype index) const { return &m_entries.at(index); }
-    qsizetype entryCount() const { return m_entries.count(); }
 
 private:
     QVarLengthArray<QRhiTextureUploadEntry, 16> m_entries;
@@ -949,7 +818,7 @@ public:
 
     struct NativeTexture {
         quint64 object;
-        int layout; // or state
+        int layout;
     };
 
     QRhiResource::Type resourceType() const override;
@@ -1189,16 +1058,16 @@ public:
     QRhiResource::Type resourceType() const override;
 
     void setBindings(std::initializer_list<QRhiShaderResourceBinding> list) { m_bindings = list; }
+
     template<typename InputIterator>
     void setBindings(InputIterator first, InputIterator last)
     {
         m_bindings.clear();
         std::copy(first, last, std::back_inserter(m_bindings));
     }
+
     const QRhiShaderResourceBinding *cbeginBindings() const { return m_bindings.cbegin(); }
     const QRhiShaderResourceBinding *cendBindings() const { return m_bindings.cend(); }
-    const QRhiShaderResourceBinding *bindingAt(qsizetype index) const { return &m_bindings.at(index); }
-    qsizetype bindingCount() const { return m_bindings.count(); }
 
     bool isLayoutCompatible(const QRhiShaderResourceBindings *other) const;
 
@@ -1372,8 +1241,6 @@ public:
     }
     const TargetBlend *cbeginTargetBlends() const { return m_targetBlends.cbegin(); }
     const TargetBlend *cendTargetBlends() const { return m_targetBlends.cend(); }
-    const TargetBlend *targetBlendAt(qsizetype index) const { return &m_targetBlends.at(index); }
-    qsizetype targetBlendCount() const { return m_targetBlends.count(); }
 
     bool hasDepthTest() const { return m_depthTest; }
     void setDepthTest(bool enable) { m_depthTest = enable; }
@@ -1420,8 +1287,6 @@ public:
     }
     const QRhiShaderStage *cbeginShaderStages() const { return m_shaderStages.cbegin(); }
     const QRhiShaderStage *cendShaderStages() const { return m_shaderStages.cend(); }
-    const QRhiShaderStage *shaderStageAt(qsizetype index) const { return &m_shaderStages.at(index); }
-    qsizetype shaderStageCount() const { return m_shaderStages.count(); }
 
     QRhiVertexInputLayout vertexInputLayout() const { return m_vertexInputLayout; }
     void setVertexInputLayout(const QRhiVertexInputLayout &layout) { m_vertexInputLayout = layout; }
@@ -1666,8 +1531,6 @@ public:
     void beginExternal();
     void endExternal();
 
-    double lastCompletedGpuTime();
-
 protected:
     QRhiCommandBuffer(QRhiImplementation *rhi);
 };
@@ -1679,6 +1542,12 @@ struct Q_GUI_EXPORT QRhiReadbackResult
     std::function<void()> completed = nullptr;
     QRhiTexture::Format format;
     QSize pixelSize;
+    QByteArray data;
+};
+
+struct Q_GUI_EXPORT QRhiBufferReadbackResult
+{
+    std::function<void()> completed = nullptr;
     QByteArray data;
 };
 
@@ -1695,7 +1564,7 @@ public:
     void updateDynamicBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, const void *data);
     void uploadStaticBuffer(QRhiBuffer *buf, const void *data);
-    void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiReadbackResult *result);
+    void readBackBuffer(QRhiBuffer *buf, quint32 offset, quint32 size, QRhiBufferReadbackResult *result);
     void uploadTexture(QRhiTexture *tex, const QRhiTextureUploadDescription &desc);
     void uploadTexture(QRhiTexture *tex, const QImage &image);
     void copyTexture(QRhiTexture *dst, QRhiTexture *src, const QRhiTextureCopyDescription &desc = QRhiTextureCopyDescription());
@@ -1736,13 +1605,10 @@ Q_GUI_EXPORT QDebug operator<<(QDebug, const QRhiDriverInfo &);
 struct Q_GUI_EXPORT QRhiStats
 {
     qint64 totalPipelineCreationTime = 0;
-    // Vulkan or D3D12 memory allocator statistics
     quint32 blockCount = 0;
     quint32 allocCount = 0;
     quint64 usedBytes = 0;
     quint64 unusedBytes = 0;
-    // D3D12 only, from IDXGIAdapter3::QueryVideoMemoryInfo(), incl. all resources
-    quint64 totalUsageBytes = 0;
 };
 
 Q_DECLARE_TYPEINFO(QRhiStats, Q_RELOCATABLE_TYPE);
@@ -1763,15 +1629,14 @@ public:
         Vulkan,
         OpenGLES2,
         D3D11,
-        Metal,
-        D3D12
+        Metal
     };
 
     enum Flag {
-        EnableDebugMarkers = 1 << 0,
-        PreferSoftwareRenderer = 1 << 1,
-        EnablePipelineCacheDataSave = 1 << 2,
-        EnableTimestamps = 1 << 3
+        EnableProfiling = 1 << 0,
+        EnableDebugMarkers = 1 << 1,
+        PreferSoftwareRenderer = 1 << 2,
+        EnablePipelineCacheDataSave = 1 << 3
     };
     Q_DECLARE_FLAGS(Flags, Flag)
 
@@ -1819,10 +1684,7 @@ public:
         TextureArrayRange,
         NonFillPolygonMode,
         OneDimensionalTextures,
-        OneDimensionalTextureMipmaps,
-        HalfAttributes,
-        RenderToOneDimensionalTexture,
-        ThreeDimensionalTextureMipmaps
+        OneDimensionalTextureMipmaps
     };
 
     enum BeginFrameFlag {
@@ -1868,6 +1730,9 @@ public:
     using CleanupCallback = std::function<void(QRhi *)>;
     void addCleanupCallback(const CleanupCallback &callback);
     void runCleanup();
+
+    using GpuFrameTimeCallback = std::function<void(float t)>;
+    void addGpuFrameTimeCallback(const GpuFrameTimeCallback &callback);
 
     QRhiGraphicsPipeline *newGraphicsPipeline();
     QRhiComputePipeline *newComputePipeline();
@@ -1927,8 +1792,8 @@ public:
     int ubufAlignment() const;
     int ubufAligned(int v) const;
 
-    static int mipLevelsForSize(const QSize &size);
-    static QSize sizeForMipLevel(int mipLevel, const QSize &baseLevelSize);
+    int mipLevelsForSize(const QSize &size) const;
+    QSize sizeForMipLevel(int mipLevel, const QSize &baseLevelSize) const;
 
     bool isYUpInFramebuffer() const;
     bool isYUpInNDC() const;

@@ -73,7 +73,7 @@ int main(int argc, char** argv)
 {
     std::vector<const char*> args(argv, argv + argc);
     args.push_back("-eventcounter");
-    argc = int(args.size());
+    argc = args.size();
     argv = const_cast<char**>(&args[0]);
 
     TestEventDispatcher dispatcher;

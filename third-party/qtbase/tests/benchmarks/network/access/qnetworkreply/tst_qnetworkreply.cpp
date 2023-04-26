@@ -21,8 +21,6 @@
 #include <QtNetwork/private/qhostinfo_p.h>
 #endif
 
-using namespace std::chrono_literals;
-
 Q_DECLARE_METATYPE(QSharedPointer<char>)
 
 class TimedSender: public QThread
@@ -458,7 +456,7 @@ void tst_qnetworkreply::httpLatency()
         QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/"));
         QNetworkReply* reply = manager.get(request);
         connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-        QTestEventLoop::instance().enterLoop(5s);
+        QTestEventLoop::instance().enterLoop(5);
         QVERIFY(!QTestEventLoop::instance().timeout());
         delete reply;
     }
@@ -472,7 +470,7 @@ QPair<QNetworkReply *, qint64> tst_qnetworkreply::runGetRequest(
     QNetworkReply *reply = manager->get(request);
     connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-    QTestEventLoop::instance().enterLoop(20s);
+    QTestEventLoop::instance().enterLoop(20);
     qint64 elapsed = timer.elapsed();
     return qMakePair(reply, elapsed);
 }
@@ -503,7 +501,7 @@ void tst_qnetworkreply::echoPerformance()
         QNetworkReply* reply = manager.post(request, data);
         connect(reply, SIGNAL(sslErrors(QList<QSslError>)), reply, SLOT(ignoreSslErrors()));
         connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-        QTestEventLoop::instance().enterLoop(5s);
+        QTestEventLoop::instance().enterLoop(5);
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(reply->error() == QNetworkReply::NoError);
         delete reply;
@@ -512,7 +510,7 @@ void tst_qnetworkreply::echoPerformance()
 
 void tst_qnetworkreply::preConnectEncrypted()
 {
-    QFETCH(std::chrono::milliseconds, sleepTime);
+    QFETCH(int, sleepTime);
     QString hostName = QLatin1String("www.google.com");
 
     QNetworkAccessManager manager;
@@ -543,7 +541,7 @@ void tst_qnetworkreply::preConnectEncrypted()
 
     // now try to make the connection beforehand
     manager.connectToHostEncrypted(hostName);
-    QTestEventLoop::instance().enterLoop(sleepTime);
+    QTestEventLoop::instance().enterLoopMSecs(sleepTime);
 
     // now make another request and hopefully use the existing connection
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);
@@ -561,12 +559,12 @@ void tst_qnetworkreply::preConnectEncrypted()
 void tst_qnetworkreply::preConnectEncrypted_data()
 {
 #ifndef QT_NO_OPENSSL
-    QTest::addColumn<std::chrono::milliseconds>("sleepTime");
+    QTest::addColumn<int>("sleepTime");
     // start a new normal request after preconnecting is done
-    QTest::newRow("HTTPS-2secs") << 2000ms;
+    QTest::newRow("HTTPS-2secs") << 2000;
 
     // start a new normal request while preconnecting is in-flight
-    QTest::newRow("HTTPS-100ms") << 100ms;
+    QTest::newRow("HTTPS-100ms") << 100;
 #endif // QT_NO_OPENSSL
 }
 
@@ -917,9 +915,9 @@ void tst_qnetworkreply::preConnect()
     manager.clearAccessCache();
 
     // now try to make the connection beforehand
-    QFETCH(std::chrono::milliseconds, sleepTime);
+    QFETCH(int, sleepTime);
     manager.connectToHost(hostName);
-    QTestEventLoop::instance().enterLoop(sleepTime);
+    QTestEventLoop::instance().enterLoopMSecs(sleepTime);
 
     // now make another request and hopefully use the existing connection
     QPair<QNetworkReply *, qint64> preConnectResult = runGetRequest(&manager, request);

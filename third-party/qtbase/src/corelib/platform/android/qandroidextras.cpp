@@ -1083,29 +1083,29 @@ static void sendRequestPermissionsResult(JNIEnv *env, jobject *obj, jint request
 QFuture<QtAndroidPrivate::PermissionResult>
 requestPermissionsInternal(const QStringList &permissions)
 {
-    // No mechanism to request permission for SDK version below 23, because
-    // permissions defined in the manifest are granted at install time.
-    if (QtAndroidPrivate::androidSdkVersion() < 23) {
-        QList<QtAndroidPrivate::PermissionResult> result;
-        result.reserve(permissions.size());
-        // ### can we kick off all checkPermission()s, and whenAll() collect results?
-        for (const QString &permission : permissions)
-            result.push_back(QtAndroidPrivate::checkPermission(permission).result());
-        return QtFuture::makeReadyRangeFuture(result);
-    }
-
-    if (!QtAndroidPrivate::acquireAndroidDeadlockProtector())
-        return QtFuture::makeReadyValueFuture(QtAndroidPrivate::Denied);
-
     QSharedPointer<QPromise<QtAndroidPrivate::PermissionResult>> promise;
     promise.reset(new QPromise<QtAndroidPrivate::PermissionResult>());
     QFuture<QtAndroidPrivate::PermissionResult> future = promise->future();
     promise->start();
 
+    // No mechanism to request permission for SDK version below 23, because
+    // permissions defined in the manifest are granted at install time.
+    if (QtAndroidPrivate::androidSdkVersion() < 23) {
+        for (int i = 0; i < permissions.size(); ++i)
+            promise->addResult(QtAndroidPrivate::checkPermission(permissions.at(i)).result(), i);
+        promise->finish();
+        return future;
+    }
+
+    if (!QtAndroidPrivate::acquireAndroidDeadlockProtector()) {
+        promise->addResult(QtAndroidPrivate::Denied);
+        promise->finish();
+        return future;
+    }
+
     const int requestCode = nextRequestCode();
     QMutexLocker locker(&g_pendingPermissionRequestsMutex);
     g_pendingPermissionRequests->insert(requestCode, promise);
-    locker.unlock();
 
     QNativeInterface::QAndroidApplication::runOnAndroidMainThread([permissions, requestCode] {
         QJniEnvironment env;
@@ -1144,9 +1144,15 @@ QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::requestPermissions(const QStringList &permissions)
 {
     // avoid the uneccessary call and response to an empty permission string
-    if (permissions.isEmpty())
-        return QtFuture::makeReadyValueFuture(QtAndroidPrivate::Denied);
-    return requestPermissionsInternal(permissions);
+    if (permissions.size() > 0)
+        return requestPermissionsInternal(permissions);
+
+    QPromise<QtAndroidPrivate::PermissionResult> promise;
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
+    promise.start();
+    promise.addResult(QtAndroidPrivate::Denied);
+    promise.finish();
+    return future;
 }
 
 /*!
@@ -1160,15 +1166,22 @@ QtAndroidPrivate::requestPermissions(const QStringList &permissions)
 QFuture<QtAndroidPrivate::PermissionResult>
 QtAndroidPrivate::checkPermission(const QString &permission)
 {
-    QtAndroidPrivate::PermissionResult result = Denied;
-    if (!permission.isEmpty()) {
+    QPromise<QtAndroidPrivate::PermissionResult> promise;
+    QFuture<QtAndroidPrivate::PermissionResult> future = promise.future();
+    promise.start();
+
+    if (permission.size() > 0) {
         auto res = QJniObject::callStaticMethod<jint>(qtNativeClassName,
                                                       "checkSelfPermission",
                                                       "(Ljava/lang/String;)I",
                                                       QJniObject::fromString(permission).object());
-        result = resultFromAndroid(res);
+        promise.addResult(resultFromAndroid(res));
+    } else {
+        promise.addResult(QtAndroidPrivate::Denied);
     }
-    return QtFuture::makeReadyValueFuture(result);
+
+    promise.finish();
+    return future;
 }
 
 bool QtAndroidPrivate::registerPermissionNatives()

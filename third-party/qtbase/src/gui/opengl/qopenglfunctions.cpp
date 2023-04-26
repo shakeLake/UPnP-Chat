@@ -346,8 +346,6 @@ static int qt_gl_resolve_extensions()
         extensions |= QOpenGLExtensions::TextureSwizzle;
     if (extensionMatcher.match("GL_OES_standard_derivatives"))
         extensions |= QOpenGLExtensions::StandardDerivatives;
-    if (extensionMatcher.match("GL_ARB_half_float_vertex"))
-        extensions |= QOpenGLExtensions::HalfFloatVertex;
 
     if (ctx->isOpenGLES()) {
         if (format.majorVersion() >= 2)
@@ -362,8 +360,7 @@ static int qt_gl_resolve_extensions()
                 | QOpenGLExtensions::FramebufferMultisample
                 | QOpenGLExtensions::Sized8Formats
                 | QOpenGLExtensions::StandardDerivatives
-                | QOpenGLExtensions::ETC2TextureCompression
-                | QOpenGLExtensions::HalfFloatVertex;
+                | QOpenGLExtensions::ETC2TextureCompression;
 #ifndef Q_OS_WASM
             // WebGL 2.0 specification explicitly does not support texture swizzles
             // https://www.khronos.org/registry/webgl/specs/latest/2.0/#5.19

@@ -24,8 +24,7 @@ QT_BEGIN_NAMESPACE
 
 struct Q_GUI_EXPORT QShaderPrivate
 {
-    static const int QSB_VERSION = 9;
-    static const int QSB_VERSION_WITHOUT_INPUT_OUTPUT_INTERFACE_BLOCKS = 8;
+    static const int QSB_VERSION = 8;
     static const int QSB_VERSION_WITHOUT_EXTENDED_STORAGE_BUFFER_INFO = 7;
     static const int QSB_VERSION_WITHOUT_NATIVE_SHADER_INFO = 6;
     static const int QSB_VERSION_WITHOUT_SEPARATE_IMAGES_AND_SAMPLERS = 5;
@@ -40,8 +39,7 @@ struct Q_GUI_EXPORT QShaderPrivate
         MslTessTescTessLevelBufferBinding,
         MslTessTescPatchOutputBufferBinding,
         MslTessTescParamsBufferBinding,
-        MslTessTescInputBufferBinding,
-        MslBufferSizeBufferBinding
+        MslTessTescInputBufferBinding
     };
 
     QShaderPrivate()

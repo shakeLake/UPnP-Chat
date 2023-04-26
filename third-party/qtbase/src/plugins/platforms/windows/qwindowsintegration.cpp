@@ -144,7 +144,7 @@ bool parseIntOption(const QString &parameter,const QLatin1StringView &option,
     const auto valueRef = QStringView{parameter}.right(valueLength);
     const int value = valueRef.toInt(&ok);
     if (ok) {
-        if (value >= int(minimumValue) && value <= int(maximumValue))
+        if (value >= minimumValue && value <= maximumValue)
             *target = static_cast<IntType>(value);
         else {
             qWarning() << "Value" << value << "for option" << option << "out of range"
@@ -161,7 +161,7 @@ using DarkModeHandling = QNativeInterface::Private::QWindowsApplication::DarkMod
 
 static inline unsigned parseOptions(const QStringList &paramList,
                                     int *tabletAbsoluteRange,
-                                    QtWindows::DpiAwareness *dpiAwareness,
+                                    QtWindows::ProcessDpiAwareness *dpiAwareness,
                                     DarkModeHandling *darkModeHandling)
 {
     unsigned options = 0;
@@ -192,8 +192,7 @@ static inline unsigned parseOptions(const QStringList &paramList,
             options |= QWindowsIntegration::DontPassOsMouseEventsSynthesizedFromTouch;
         } else if (parseIntOption(param, "verbose"_L1, 0, INT_MAX, &QWindowsContext::verbose)
             || parseIntOption(param, "tabletabsoluterange"_L1, 0, INT_MAX, tabletAbsoluteRange)
-            || parseIntOption(param, "dpiawareness"_L1, QtWindows::DpiAwareness::Invalid,
-                    QtWindows::DpiAwareness::PerMonitorVersion2, dpiAwareness)) {
+            || parseIntOption(param, "dpiawareness"_L1, QtWindows::ProcessDpiUnaware, QtWindows::ProcessPerMonitorV2DpiAware, dpiAwareness)) {
         } else if (param == u"menus=native") {
             options |= QWindowsIntegration::AlwaysUseNativeMenus;
         } else if (param == u"menus=none") {
@@ -223,7 +222,7 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
 
     static bool dpiAwarenessSet = false;
     // Default to per-monitor-v2 awareness (if available)
-    QtWindows::DpiAwareness dpiAwareness = QtWindows::DpiAwareness::PerMonitorVersion2;
+    QtWindows::ProcessDpiAwareness dpiAwareness = QtWindows::ProcessPerMonitorV2DpiAware;
 
     int tabletAbsoluteRange = -1;
     DarkModeHandling darkModeHandling = DarkModeHandlingFlag::DarkModeWindowFrames
@@ -242,9 +241,22 @@ void QWindowsIntegrationPrivate::parseOptions(QWindowsIntegration *q, const QStr
 
     if (!dpiAwarenessSet) { // Set only once in case of repeated instantiations of QGuiApplication.
         if (!QCoreApplication::testAttribute(Qt::AA_PluginApplication)) {
-            m_context.setProcessDpiAwareness(dpiAwareness);
-            qCDebug(lcQpaWindow) << "DpiAwareness=" << dpiAwareness
-                << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
+            if (dpiAwareness == QtWindows::ProcessPerMonitorV2DpiAware) {
+                // DpiAwareV2 requires using new API
+                if (m_context.setProcessDpiV2Awareness()) {
+                    qCDebug(lcQpaWindow, "DpiAwareness: DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2");
+                    dpiAwarenessSet = true;
+                } else {
+                    // fallback to old API
+                    dpiAwareness = QtWindows::ProcessPerMonitorDpiAware;
+                }
+            }
+
+            if (!dpiAwarenessSet) {
+                m_context.setProcessDpiAwareness(dpiAwareness);
+                qCDebug(lcQpaWindow) << "DpiAwareness=" << dpiAwareness
+                    << "effective process DPI awareness=" << QWindowsContext::processDpiAwareness();
+            }
         }
         dpiAwarenessSet = true;
     }

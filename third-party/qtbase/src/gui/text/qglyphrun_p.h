@@ -15,7 +15,6 @@
 // We mean it.
 //
 
-#include <QtCore/qshareddata.h>
 #include <QtGui/private/qtguiglobal_p.h>
 #include "qglyphrun.h"
 #include "qrawfont.h"

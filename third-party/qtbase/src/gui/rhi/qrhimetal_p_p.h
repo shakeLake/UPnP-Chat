@@ -283,7 +283,7 @@ struct QMetalCommandBuffer : public QRhiCommandBuffer
     QPair<float, float> currentDepthBiasValues;
 
     const QRhiNativeHandles *nativeHandles();
-    void resetState(double lastGpuTime = 0);
+    void resetState();
     void resetPerPassState();
     void resetPerPassCachedState();
 };
@@ -308,7 +308,6 @@ struct QMetalSwapChain : public QRhiSwapChain
     virtual QRhiSwapChainHdrInfo hdrInfo() override;
 
     void chooseFormats();
-    void waitUntilCompleted(int slot);
 
     QWindow *window = nullptr;
     QSize pixelSize;
@@ -418,7 +417,6 @@ public:
     const QRhiNativeHandles *nativeHandles(QRhiCommandBuffer *cb) override;
     void beginExternal(QRhiCommandBuffer *cb) override;
     void endExternal(QRhiCommandBuffer *cb) override;
-    double lastCompletedGpuTime(QRhiCommandBuffer *cb) override;
 
     QList<int> supportedSampleCounts() const override;
     int ubufAlignment() const override;

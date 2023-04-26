@@ -74,7 +74,7 @@ bool QTestTable::isEmpty() const
 QTestData *QTestTable::newData(const char *tag)
 {
     if (d->hasRow(tag))
-        qWarning("Duplicate data tag \"%s\" - please rename.", tag);
+        qWarning() << "Duplicate data tag" << tag << "- please rename.";
 
     QTestData *dt = new QTestData(tag, this);
     d->addRow(dt);

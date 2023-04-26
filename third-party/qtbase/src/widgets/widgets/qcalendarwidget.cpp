@@ -2528,11 +2528,6 @@ void QCalendarWidget::setMinimumDate(QDate date)
     }
 }
 
-void QCalendarWidget::clearMinimumDate()
-{
-    setMinimumDate(QDate::fromJulianDay(1));
-}
-
 /*!
     \property QCalendarWidget::maximumDate
     \brief the maximum date of the currently specified date range.
@@ -2582,11 +2577,6 @@ void QCalendarWidget::setMaximumDate(QDate date)
         d->m_navigator->setDate(newDate);
         emit selectionChanged();
     }
-}
-
-void QCalendarWidget::clearMaximumDate()
-{
-    setMaximumDate(QDate(9999, 12, 31));
 }
 
 /*!
@@ -2873,7 +2863,7 @@ QMap<QDate, QTextCharFormat> QCalendarWidget::dateTextFormat() const
 }
 
 /*!
-    Returns a QTextCharFormat for \a date. The char format can be
+    Returns a QTextCharFormat for \a date. The char format can be be
     empty if the date is not renderd specially.
 */
 QTextCharFormat QCalendarWidget::dateTextFormat(QDate date) const

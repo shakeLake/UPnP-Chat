@@ -8125,7 +8125,7 @@ class Qtbug25280Server : public MiniHttpServer
 public:
     Qtbug25280Server(QByteArray qba) : MiniHttpServer(qba, false) {}
     QSet<QTcpSocket*> receivedSockets;
-    void reply() override
+    virtual void reply()
     {
         // Save sockets in a list
         receivedSockets.insert((QTcpSocket*)sender());

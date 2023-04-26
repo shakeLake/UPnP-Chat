@@ -8,7 +8,6 @@
 #include "qabstracteventdispatcher.h"
 #include "qcoreapplication.h"
 #include "qcoreapplication_p.h"
-#include "qdeadlinetimer.h"
 #include "qmetaobject_p.h"
 #include "qobject_p.h"
 #include "qproperty_p.h"
@@ -189,7 +188,7 @@ void QTimer::start()
     Q_D(QTimer);
     if (d->id != QTimerPrivate::INV_TIMER) // stop running timer
         stop();
-    d->id = QObject::startTimer(std::chrono::milliseconds{d->inter}, d->type);
+    d->id = QObject::startTimer(d->inter, d->type);
     d->isActiveData.notify();
 }
 
@@ -250,13 +249,11 @@ void QTimer::timerEvent(QTimerEvent *e)
 class QSingleShotTimer : public QObject
 {
     Q_OBJECT
-    int timerId = -1;
+    int timerId;
 public:
     ~QSingleShotTimer();
     QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char * m);
     QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj);
-
-    void startTimerForReceiver(int msec, Qt::TimerType timerType, const QObject *receiver);
 
 Q_SIGNALS:
     void timeout();
@@ -267,20 +264,27 @@ protected:
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, const char *member)
     : QObject(QAbstractEventDispatcher::instance())
 {
+    timerId = startTimer(msec, timerType);
     connect(this, SIGNAL(timeout()), r, member);
-
-    startTimerForReceiver(msec, timerType, r);
 }
 
 QSingleShotTimer::QSingleShotTimer(int msec, Qt::TimerType timerType, const QObject *r, QtPrivate::QSlotObjectBase *slotObj)
     : QObject(QAbstractEventDispatcher::instance())
 {
+    timerId = startTimer(msec, timerType);
+
     int signal_index = QMetaObjectPrivate::signalOffset(&staticMetaObject);
     Q_ASSERT(QMetaObjectPrivate::signal(&staticMetaObject, signal_index).name() == "timeout");
     QObjectPrivate::connectImpl(this, signal_index, r ? r : this, nullptr, slotObj,
                                 Qt::AutoConnection, nullptr, &staticMetaObject);
 
-    startTimerForReceiver(msec, timerType, r);
+    // ### Why is this here? Why doesn't the case above need it?
+    if (r && thread() != r->thread()) {
+        // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
+        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
+        setParent(nullptr);
+        moveToThread(r->thread());
+    }
 }
 
 QSingleShotTimer::~QSingleShotTimer()
@@ -288,32 +292,6 @@ QSingleShotTimer::~QSingleShotTimer()
     if (timerId > 0)
         killTimer(timerId);
 }
-
-/*
-    Move the timer, and the dispatching and handling of the timer event, into
-    the same thread as where it will be handled, so that it fires reliably even
-    if the thread that set up the timer is busy.
-*/
-void QSingleShotTimer::startTimerForReceiver(int msec, Qt::TimerType timerType, const QObject *receiver)
-{
-    if (receiver && receiver->thread() != thread()) {
-        // Avoid leaking the QSingleShotTimer instance in case the application exits before the timer fires
-        connect(QCoreApplication::instance(), &QCoreApplication::aboutToQuit, this, &QObject::deleteLater);
-        setParent(nullptr);
-        moveToThread(receiver->thread());
-
-        QDeadlineTimer deadline(std::chrono::milliseconds{msec}, timerType);
-        QMetaObject::invokeMethod(this, [=]{
-            if (deadline.hasExpired())
-                emit timeout();
-            else
-                timerId = startTimer(std::chrono::milliseconds{deadline.remainingTime()}, timerType);
-        }, Qt::QueuedConnection);
-    } else {
-        timerId = startTimer(std::chrono::milliseconds{msec}, timerType);
-    }
-}
-
 
 void QSingleShotTimer::timerEvent(QTimerEvent *)
 {
@@ -723,7 +701,7 @@ void QTimer::setInterval(int msec)
     d->inter.setValue(msec);
     if (d->id != QTimerPrivate::INV_TIMER) { // create new timer
         QObject::killTimer(d->id);                        // restart timer
-        d->id = QObject::startTimer(std::chrono::milliseconds{msec}, d->type);
+        d->id = QObject::startTimer(msec, d->type);
         // No need to call markDirty() for d->isActiveData here,
         // as timer state actually does not change
     }

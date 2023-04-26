@@ -26,7 +26,3 @@
 //! [3]
 rcc -binary myresource.qrc -o myresource.rcc
 //! [3]
-
-//! [4]
-<file empty="true">Button.qml</file>
-//! [4]

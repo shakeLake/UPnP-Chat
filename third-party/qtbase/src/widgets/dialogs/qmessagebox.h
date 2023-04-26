@@ -34,7 +34,7 @@ class Q_WIDGETS_EXPORT QMessageBox : public QDialog
 
 public:
     enum Icon {
-        // keep this in sync with QMessageDialogOptions::StandardIcon
+        // keep this in sync with QMessageDialogOptions::Icon
         NoIcon = 0,
         Information = 1,
         Warning = 2,

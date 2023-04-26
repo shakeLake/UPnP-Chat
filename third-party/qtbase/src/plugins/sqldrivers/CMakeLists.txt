@@ -48,6 +48,10 @@ if(QT_FEATURE_sql_odbc)
     add_subdirectory(odbc)
 endif()
 
+if(QT_FEATURE_sql_tds)
+#     TODO add_subdirectory(tds)
+endif()
+
 if(QT_FEATURE_sql_oci)
     add_subdirectory(oci)
 endif()
@@ -60,12 +64,12 @@ if(QT_FEATURE_sql_sqlite)
     add_subdirectory(sqlite)
 endif()
 
-if(QT_FEATURE_sql_ibase)
-    add_subdirectory(ibase)
+if(QT_FEATURE_sql_sqlite2)
+#     TODO add_subdirectory(sqlite2)
 endif()
 
-if(QT_FEATURE_sql_mimer)
-    add_subdirectory(mimer)
+if(QT_FEATURE_sql_ibase)
+    add_subdirectory(ibase)
 endif()
 
 if(NOT CMAKE_PROJECT_NAME STREQUAL "QtBase" AND NOT CMAKE_PROJECT_NAME STREQUAL "Qt")

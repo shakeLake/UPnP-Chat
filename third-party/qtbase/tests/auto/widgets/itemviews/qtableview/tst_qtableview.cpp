@@ -4865,7 +4865,7 @@ void tst_QTableView::selectWithHeader()
 
     QVERIFY(QTest::qWaitForWindowExposed(&view));
 
-    QHeaderView *header = nullptr;
+    QHeaderView *header;
     QPoint clickPos;
     QModelIndex lastIndex;
 

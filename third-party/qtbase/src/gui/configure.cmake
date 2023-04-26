@@ -28,8 +28,7 @@ set_property(CACHE INPUT_libpng PROPERTY STRINGS undefined no qt system)
 
 
 #### Libraries
-qt_set01(X11_SUPPORTED LINUX OR HPUX OR FREEBSD OR NETBSD OR OPENBSD OR SOLARIS OR
-    HURD)
+qt_set01(X11_SUPPORTED LINUX OR HPUX OR FREEBSD OR NETBSD OR OPENBSD OR SOLARIS OR HURD) # special case
 qt_find_package(ATSPI2 PROVIDED_TARGETS PkgConfig::ATSPI2 MODULE_NAME gui QMAKE_LIB atspi)
 qt_find_package(DirectFB PROVIDED_TARGETS PkgConfig::DirectFB MODULE_NAME gui QMAKE_LIB directfb)
 qt_find_package(Libdrm PROVIDED_TARGETS Libdrm::Libdrm MODULE_NAME gui QMAKE_LIB drm)
@@ -58,8 +57,7 @@ qt_find_package(Mtdev PROVIDED_TARGETS PkgConfig::Mtdev MODULE_NAME gui QMAKE_LI
 qt_find_package(WrapOpenGL PROVIDED_TARGETS WrapOpenGL::WrapOpenGL MODULE_NAME gui QMAKE_LIB opengl)
 qt_find_package(GLESv2 PROVIDED_TARGETS GLESv2::GLESv2 MODULE_NAME gui QMAKE_LIB opengl_es2)
 qt_find_package(Tslib PROVIDED_TARGETS PkgConfig::Tslib MODULE_NAME gui QMAKE_LIB tslib)
-qt_find_package(WrapVulkanHeaders PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders
-    MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL)
+qt_find_package(WrapVulkanHeaders PROVIDED_TARGETS WrapVulkanHeaders::WrapVulkanHeaders MODULE_NAME gui QMAKE_LIB vulkan MARK_OPTIONAL) # special case
 if((LINUX) OR QT_FIND_ALL_PACKAGES_ALWAYS)
     qt_find_package(Wayland PROVIDED_TARGETS Wayland::Server MODULE_NAME gui QMAKE_LIB wayland_server)
 endif()
@@ -279,8 +277,8 @@ qt_config_compile_test(egl_viv
     LABEL "i.Mx6 EGL"
     LIBRARIES
         EGL::EGL
-    COMPILE_OPTIONS
-        "-DEGL_API_FB=1"
+    COMPILE_OPTIONS # special case
+        "-DEGL_API_FB=1" # special case
     CODE
 "#include <EGL/egl.h>
 #include <EGL/eglvivante.h>
@@ -408,9 +406,11 @@ ioctl(fd, FBIOGET_VSCREENINFO, &vinfo);
 ")
 
 # opengles3
+# special case begin
 if(WASM)
     set(extra_compiler_options "-s FULL_ES3=1")
 endif()
+# special case end
 
 set(test_libs GLESv2::GLESv2)
 if(INTEGRITY AND _qt_igy_gui_libs)
@@ -421,7 +421,9 @@ qt_config_compile_test(opengles3
     LABEL "OpenGL ES 3.0"
     LIBRARIES
         ${test_libs}
+# special case begin
     COMPILE_OPTIONS ${extra_compiler_options}
+# special case end
     CODE
 "#ifdef __APPLE__
 #  include <OpenGLES/ES3/gl.h>
@@ -551,6 +553,7 @@ libinput_event_pointer_get_scroll_value_v120(nullptr, LIBINPUT_POINTER_AXIS_SCRO
 }
 ")
 
+# special case begin
 # directwrite (assumes DirectWrite2)
 qt_config_compile_test(directwrite
     LABEL "WINDOWS directwrite"
@@ -612,6 +615,7 @@ int main(int, char **)
     return 0;
 }
 ")
+# special case end
 
 
 #### Features
@@ -629,21 +633,21 @@ qt_feature("directfb" PRIVATE
 )
 qt_feature("directwrite" PRIVATE
     LABEL "DirectWrite"
-    CONDITION TEST_directwrite
+    CONDITION TEST_directwrite # special case
     EMIT_IF WIN32
 )
 qt_feature("directwrite3" PRIVATE
     LABEL "DirectWrite 3"
-    CONDITION QT_FEATURE_directwrite AND TEST_directwrite3
+    CONDITION QT_FEATURE_directwrite AND TEST_directwrite3 # special case
     EMIT_IF WIN32
 )
 qt_feature("direct2d" PRIVATE
     LABEL "Direct 2D"
-    CONDITION WIN32 AND NOT WINRT AND TEST_d2d1
+    CONDITION WIN32 AND NOT WINRT AND TEST_d2d1 # special case
 )
 qt_feature("direct2d1_1" PRIVATE
     LABEL "Direct 2D 1.1"
-    CONDITION QT_FEATURE_direct2d AND TEST_d2d1_1
+    CONDITION QT_FEATURE_direct2d AND TEST_d2d1_1 # special case
 )
 qt_feature("evdev" PRIVATE
     LABEL "evdev"
@@ -1312,7 +1316,7 @@ qt_configure_end_summary_section() # end of "GL integrations" section
 qt_configure_end_summary_section() # end of "XCB" section
 qt_configure_add_summary_section(NAME "Windows")
 qt_configure_add_summary_entry(ARGS "direct2d")
-qt_configure_add_summary_entry(ARGS "direct2d1_1")
+qt_configure_add_summary_entry(ARGS "direct2d1_1") ### special case
 qt_configure_add_summary_entry(ARGS "directwrite")
 qt_configure_add_summary_entry(ARGS "directwrite3")
 qt_configure_end_summary_section() # end of "Windows" section

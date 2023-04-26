@@ -133,9 +133,16 @@ char *qstrcpy(char *dst, const char *src)
 char *qstrncpy(char *dst, const char *src, size_t len)
 {
     if (dst && len > 0) {
-        *dst = '\0';
-        if (src)
-            std::strncat(dst, src, len - 1);
+        if (!src) {
+            *dst = '\0';
+            return nullptr;
+        }
+#ifdef Q_CC_MSVC
+        strncpy_s(dst, len, src, len - 1);
+#else
+        strncpy(dst, src, len);
+#endif
+        dst[len-1] = '\0';
     }
     return src ? dst : nullptr;
 }
