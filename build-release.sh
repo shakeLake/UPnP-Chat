@@ -1,13 +1,16 @@
 echo -e "Qt Build"
-mkdir qt-dpndncy
-cd qt-dpndncy
 
-if [[ "$OSTYPE" == "linux" ]]; then
-	./../third-party/qtbase/configure -static -no-prefix
-	cmake --build . --parallel
-elif [[ "$OSTYPE" == "msys" ]]; then
-	./../third-party/qtbase/configure -static -platform "win32-g++" -no-prefix
-	cmake --build .
+if [[ ! -d qt-dpndncy ]]; then
+	mkdir qt-dpndncy
+	cd qt-dpndncy
+
+	if [[ "$OSTYPE" == "linux" ]]; then
+		./../third-party/qtbase/configure -static -no-prefix
+		cmake --build . --parallel
+	elif [[ "$OSTYPE" == "msys" ]]; then
+		./../third-party/qtbase/configure -static -platform "win32-g++" -no-prefix
+		cmake --build .
+	fi
 fi
 
 echo -e "Chat Build"
