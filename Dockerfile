@@ -4,19 +4,23 @@ RUN apt-get update \
 	&& apt-get install -y git \
 						  g++ \
 						  cmake \
-						  make
+						  make \
+						  libgl-dev \
+						  libvulkan-dev \
+						  libgl1-mesa-dev
 
-ADD . /upnp-chat
+ADD . /upnp-chat/
 WORKDIR /upnp-chat
 
 RUN mkdir qt-dpndncy
-RUN cd qt-dpndncy
-	
-RUN ./../third-party/qtbase/configure -static -no-prefix
 
-RUN cmake --build .
+WORKDIR /qt-dpndncy
 
-RUN cmake -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="../qt-dpndncy/lib/cmake"
+RUN /upnp-chat/third-party/qtbase/configure -static -prefix "/usr/local/lib/Qt"
 
-RUN cd build
-RUN cmake --build .
+RUN	cmake --build . --parallel 4
+RUN cmake --install .
+
+WORKDIR /upnp-chat
+
+RUN rm -R qt-dpndncy

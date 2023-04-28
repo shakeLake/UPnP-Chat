@@ -44,8 +44,10 @@ namespace SL_upnp
             char intPort[6];
             char duration[16];
 
-            // _WIN32
-            WSADATA wsaData;
+            #ifdef _WIN32
+				WSADATA wsaData;
+			#endif
+			
             int nResult;
 
             // ports
