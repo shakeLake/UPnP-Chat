@@ -1,13 +1,13 @@
 FROM ubuntu:latest
 
 RUN apt-get update \
-	&& apt-get install -y git \
-						  g++ \
-						  cmake \
-						  make \
-						  libgl-dev \
-						  libvulkan-dev \
-						  libgl1-mesa-dev
+	&& apt-get install -y 	git \
+				g++ \
+				cmake \
+				make \
+				libgl-dev \
+				libvulkan-dev \
+				libgl1-mesa-dev
 
 ADD . /upnp-chat/
 WORKDIR /upnp-chat
