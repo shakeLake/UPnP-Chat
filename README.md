@@ -40,3 +40,19 @@
 * Standalone Asio
 * miniupnp
 * CMake
+
+## How To Build
+
+### Install 3rd party
+* Download **CMake 3.2 and later** from https://cmake.org/download/
+* Download **Git** from https://git-scm.com/downloads
+
+### Clone project
+```
+git clone https://github.com/shakeLake/UPnP-Chat.git
+```
+
+### Start script
+```
+~/UPnP-Chat/build-release.sh
+```
