@@ -153,26 +153,6 @@ void UserInterface::CreateToolBar()
 }
 
 // slots
-void UserInterface::SendChatMessageSlot()
-{
-	msg_buffer = main_text_field->toPlainText();	
-	msg = msg_buffer.toStdString();
-
-	if (msg == " " || msg == "\n" || msg.size() == 0)
-	{
-		// clear
-		main_text_field->clear();
-	}
-	else
-	{
-		// clear
-		main_text_field->clear();
-
-		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
-
-		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
-	}
-}
 
 // delete all '\n' and ' '
 void UserInterface::RedundantSymbols(std::string& msg)
@@ -187,7 +167,32 @@ void UserInterface::RedundantSymbols(std::string& msg)
 			break;
 	}
 
-	msg.erase(msg.begin() + i, msg.end());
+	if (i > 0)
+		msg.erase(msg.begin() + i, msg.end());
+}
+
+void UserInterface::SendChatMessageSlot()
+{
+	msg_buffer = main_text_field->toPlainText();	
+	std::string msg = msg_buffer.toStdString();
+
+	if (msg == " " || msg == "\n" || msg.size() == 0)
+	{
+		// clear
+		main_text_field->clear();
+	}
+	else
+	{
+		// clear
+		main_text_field->clear();
+
+		// deletes redundant symbols
+		RedundantSymbols(msg);
+
+		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+
+		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
+	}
 }
 
 void UserInterface::SendServerMessageSlot()
