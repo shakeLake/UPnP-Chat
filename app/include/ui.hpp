@@ -66,7 +66,6 @@ private:
 
 	// chat widgets
 	QString msg_buffer;
-	std::string msg;
 
 	QLabel* info_label;
 	QHBoxLayout* input_field_layout;
@@ -105,6 +104,9 @@ private:
 
 	// disconnect
 	void Disconnect();
+
+	// deletes redundant symbols
+	void RedundantSymbols(std::string&);
 
 public:
 	UserInterface();

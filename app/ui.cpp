@@ -174,10 +174,26 @@ void UserInterface::SendChatMessageSlot()
 	}
 }
 
+// delete all '\n' and ' '
+void UserInterface::RedundantSymbols(std::string& msg)
+{
+	int i = msg.size();
+
+	while (msg[i] == '\n' || msg[i] == ' ')
+	{
+		i -= 1;
+
+		if (i == 0)
+			break;
+	}
+
+	msg.erase(msg.begin() + i, msg.end());
+}
+
 void UserInterface::SendServerMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
-	msg = msg_buffer.toStdString();
+	std::string msg = msg_buffer.toStdString();
 	
 	if (msg == " " || msg == "\n" || msg.size() == 0)
 	{
@@ -188,6 +204,9 @@ void UserInterface::SendServerMessageSlot()
 	{
 		// clear
 		main_text_field->clear();
+
+		// deletes redundant symbols
+		RedundantSymbols(msg);
 
 		chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 

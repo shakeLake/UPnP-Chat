@@ -5,7 +5,7 @@ void ucc::Client::Connect()
 	asio::connect(sckt, endpnt, error);
  	
 	if (error)
-    	{
+    {
 		user_data->Log(error.message());
 		
 		connection_status = false;	
