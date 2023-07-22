@@ -24,74 +24,74 @@
 
 namespace ucd
 {
-	class Data
-	{	
-	private:
-		// info
-		std::string msg_size;
-		asio::streambuf info_buffer;
-			
-		// main data
-		std::string message;
-		asio::streambuf msg_buffer;			
-			
-		// vector of messages
-		std::string vec_buf;
-		std::vector<std::string> msg_buffer_vec;
+class Data
+{	
+private:
+	// info
+	std::string msg_size;
+	asio::streambuf info_buffer;
 		
-		// notifying
-		std::mutex mx;
-		std::condition_variable cv;
-
-		// logs
-		std::ofstream log_file;
-
-		// status
-		bool socket_is_closed;
-		bool disconnected;
-
-	public:
-		Data()
-		{
-			socket_is_closed = 0;
-			disconnected = 0;
-		}
-
-		~Data();			
-			
-		// get new message
-		unsigned int GetMsgBufferSize();
-		std::string& GetMsgFromMsgBuffer(unsigned int index);
+	// main data
+	std::string message;
+	asio::streambuf msg_buffer;			
+		
+	// vector of messages
+	std::string vec_buf;
+	std::vector<std::string> msg_buffer_vec;
 	
-		// string to streambuf
-		asio::streambuf::const_buffers_type SetMessage(std::string&);
+	// notifying
+	std::mutex mx;
+	std::condition_variable cv;
 
-		// streambuf to string 
-		void GetMsg(asio::streambuf&, unsigned int message_size);
+	// logs
+	std::ofstream log_file;
 
-		// transfer data to client class
-		asio::streambuf::const_buffers_type GetInfoBuffer();	
+	// status
+	bool socket_is_closed;
+	bool disconnected;
 
-		// Clear
-		void ClearInfoBuf(std::size_t);
-		void ClearMsgBuf(std::size_t);
+public:
+	Data()
+	{
+		socket_is_closed = 0;
+		disconnected = 0;
+	}
 
-		// wait for getting message
-		void Wait();
-
-		// log
-		void Log(std::string);
-
-		// Notify
-		void NotifyOne();
-
-		// Set Status
-		void StatusSocketIsClosed();
-		void StatusDisconnected();
+	~Data();			
 		
-		// status check
-		bool StatusChecking();
-	};
+	// get new message
+	unsigned int GetMsgBufferSize();
+	std::string& GetMsgFromMsgBuffer(unsigned int index);
+
+	// string to streambuf
+	asio::streambuf::const_buffers_type SetMessage(std::string&);
+
+	// streambuf to string 
+	void GetMsg(asio::streambuf&, unsigned int message_size);
+
+	// transfer data to client class
+	asio::streambuf::const_buffers_type GetInfoBuffer();	
+
+	// Clear
+	void ClearInfoBuf(std::size_t);
+	void ClearMsgBuf(std::size_t);
+
+	// wait for getting message
+	void Wait();
+
+	// log
+	void Log(std::string);
+
+	// Notify
+	void NotifyOne();
+
+	// Set Status
+	void StatusSocketIsClosed();
+	void StatusDisconnected();
+	
+	// status check
+	bool StatusChecking();
+};
 }
 
 #endif /* DATA_HPP_ */

@@ -204,7 +204,7 @@ void UserInterface::SendChatMessageSlot()
 		// clear
 		main_text_field->clear();
 
-		//chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
 		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
 	}
@@ -215,6 +215,9 @@ void UserInterface::SendServerMessageSlot()
 	msg_buffer = main_text_field->toPlainText();	
 	std::string msg = msg_buffer.toStdString();
 	
+	// deletes redundant symbols
+	RedundantSymbols(msg);
+
 	if (msg == " " || msg == "\n" || msg.size() == 0)
 	{
 		// clear
@@ -224,9 +227,6 @@ void UserInterface::SendServerMessageSlot()
 	{
 		// clear
 		main_text_field->clear();
-
-		// deletes redundant symbols
-		RedundantSymbols(msg);
 
 		chat_server->SendTo( client_or_server_data.SetMessage(msg) );
 
