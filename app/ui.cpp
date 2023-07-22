@@ -98,6 +98,9 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
+
+	// dev
+	//connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
 }
 
 void UserInterface::CreateToolBar()
@@ -157,24 +160,39 @@ void UserInterface::CreateToolBar()
 // delete all '\n' and ' '
 void UserInterface::RedundantSymbols(std::string& msg)
 {
-	int i = msg.size();
-
+	int i = 0;
 	while (msg[i] == '\n' || msg[i] == ' ')
 	{
-		i -= 1;
-
-		if (i == 0)
+		if (i + 1 < msg.size())
+			i += 1;
+		else
 			break;
 	}
 
-	if (i > 0)
-		msg.erase(msg.begin() + i, msg.end());
+	msg.erase(msg.begin(), msg.begin() + i);	
+
+	if (!msg.empty())
+	{
+		i = msg.size() - 1;
+		while (msg[i] == '\n' || msg[i] == ' ')
+		{
+			if (i - 1 >= 0)
+				i -= 1;
+			else
+				break;
+		}
+
+		msg.erase(msg.begin() + i, msg.end());	
+	}
 }
 
 void UserInterface::SendChatMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
 	std::string msg = msg_buffer.toStdString();
+
+	// deletes redundant symbols
+	RedundantSymbols(msg);
 
 	if (msg == " " || msg == "\n" || msg.size() == 0)
 	{
@@ -186,10 +204,7 @@ void UserInterface::SendChatMessageSlot()
 		// clear
 		main_text_field->clear();
 
-		// deletes redundant symbols
-		RedundantSymbols(msg);
-
-		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
+		//chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
 		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
 	}

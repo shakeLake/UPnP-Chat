@@ -11,7 +11,7 @@ AlreadyOpenedDialog::AlreadyOpenedDialog()
 	main_widget->setStyleSheet("background-color: white");
 			
 	// init
-	main_label = new QLabel("Enter the port which you opened on your router.\nProgram will listening this port.");
+	main_label = new QLabel("Enter the open port on your router.\nUchat will listen this port.");
 	style.SetNunitoLabelFont(main_label);	
 
 	port_label = new QLabel("Port:");
