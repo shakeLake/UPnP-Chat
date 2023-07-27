@@ -5,7 +5,7 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
 	Log("Set Message");
 
 	msg_size = std::to_string(msg.size());
-	msg_size += '*';	
+	msg_size += '\r\n';	
 
 	message += msg;
 

@@ -16,6 +16,8 @@
 // data
 #include "data.hpp"
 
+namespace CCore
+{
 class ClientCore
 {
 protected:
@@ -65,9 +67,12 @@ protected:
 	/* this function receives data */
 	void ReceiveFrom(int);
 
+	
+
 public:
 	/* this function sends message to connected ip */
 	void SendTo(asio::streambuf::const_buffers_type);
 };
+}
 
 #endif /* SEND_RECEIVE_HPP_ */

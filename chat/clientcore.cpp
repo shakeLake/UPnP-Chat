@@ -25,7 +25,7 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 
 	if (info_message_status)
 	{
-    		asio::async_write(sckt, msg, asio::transfer_all(), 
+		asio::async_write(sckt, msg, asio::transfer_all(), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
 				if (e)
@@ -47,7 +47,7 @@ void ClientCore::ReceiveFrom(int enum_action)
 	
 	if (enum_action == 1)
 	{
-		asio::async_read_until(sckt, received_message, '*', 
+		asio::async_read_until(sckt, received_message, '\r\n', 
 			[this](const asio::error_code& e, std::size_t size)
 			{
 				if (e)
@@ -86,7 +86,7 @@ void ClientCore::ReceiveFrom(int enum_action)
 	}
 	else if (enum_action == 0)
 	{	
-    		asio::async_read(sckt, received_message, asio::transfer_exactly(message_size), 
+		asio::async_read(sckt, received_message, asio::transfer_exactly(message_size), 
 			[this](const asio::error_code& e, std::size_t size)
 			{
 				if (e)
