@@ -5,7 +5,7 @@
 
 namespace ucc
 {
-class Client : public ClientCore
+class Client : public CCore::ClientCore
 {
 private:
 	// .resolve

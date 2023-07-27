@@ -20,6 +20,6 @@ void ucs::Server::Listening()
 
 		//std::string ip = endpnt.address().to_string();
 
-		ReceiveFrom(action);
+		ReceiveFrom();
     }
 }

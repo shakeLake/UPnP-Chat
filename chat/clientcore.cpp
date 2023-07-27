@@ -1,6 +1,6 @@
 #include "include/clientcore.hpp"
 
-void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
+void CCore::ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 {
 	user_data->Log("Sending");
 
@@ -19,11 +19,11 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 	);
 }
 
-void ClientCore::ReceiveFrom(int enum_action)
+void CCore::ClientCore::ReceiveFrom()
 {
 	user_data->Log("Receiving");
 	
-	asio::async_read_until(sckt, received_message, '\r\n', 
+	asio::async_read_until(sckt, received_message, "\r\n", 
 		[this](const asio::error_code& e, std::size_t size)
 		{
 			if (e)
@@ -34,7 +34,7 @@ void ClientCore::ReceiveFrom(int enum_action)
 			}
 			else
 			{
-				user_data->GetMsg(received_message, message_size);
+				user_data->GetMsg(received_message);
 
 				received_message.consume(size);
 			}

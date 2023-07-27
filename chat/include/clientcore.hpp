@@ -25,20 +25,6 @@ protected:
 	asio::streambuf received_message;	
 
 	// data
-	unsigned int message_size;
-	std::string message_size_buf;
-
-	// status buffers
-	asio::streambuf error_buf;
-	bool info_message_status;
-
-	// actions
-	enum message_info_status_action
-	{
-		message, info
-	} action;
-
-	// data
 	ucd::Data* user_data;
 
 	// socket
@@ -47,8 +33,6 @@ protected:
 protected:
 	ClientCore(asio::io_context& io_c, ucd::Data* u_d) : sckt(io_c)
 	{
-		action = info;
-
 		user_data = u_d;		
 	}
 
@@ -65,9 +49,7 @@ protected:
 	}
 
 	/* this function receives data */
-	void ReceiveFrom(int);
-
-	
+	void ReceiveFrom();
 
 public:
 	/* this function sends message to connected ip */

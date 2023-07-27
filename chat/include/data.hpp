@@ -32,11 +32,9 @@ private:
 	asio::streambuf info_buffer;
 		
 	// main data
-	std::string message;
 	asio::streambuf msg_buffer;			
 		
 	// vector of messages
-	std::string vec_buf;
 	std::vector<std::string> msg_buffer_vec;
 	
 	// notifying
@@ -64,10 +62,10 @@ public:
 	std::string& GetMsgFromMsgBuffer(unsigned int index);
 
 	// string to streambuf
-	asio::streambuf::const_buffers_type SetMessage(std::string&);
+	asio::streambuf::const_buffers_type SetMessage(std::string);
 
 	// streambuf to string 
-	void GetMsg(asio::streambuf&, unsigned int message_size);
+	void GetMsg(asio::streambuf&);
 
 	// transfer data to client class
 	asio::streambuf::const_buffers_type GetInfoBuffer();	

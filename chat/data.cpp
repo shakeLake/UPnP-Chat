@@ -1,39 +1,30 @@
 #include "include/data.hpp"
 
-asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
+asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string msg)
 {
 	Log("Set Message");
 
-	msg_size = std::to_string(msg.size());
-	msg_size += '\r\n';	
-
-	message += msg;
-
-	// saves info about message to streambuffer
-	std::ostream os_info(&info_buffer);
-	os_info << msg_size;
-
     // saves message to streambuffer
     std::ostream os_msg(&msg_buffer);
-    os_msg << message;
+    os_msg << msg;
 
     return msg_buffer.data();
 }
 
-void ucd::Data::GetMsg(asio::streambuf& str, unsigned int message_size)
+void ucd::Data::GetMsg(asio::streambuf& str)
 {
 	Log("Get Message");
 
-	vec_buf.resize(message_size);
+	std::string vec_buf;
+	vec_buf.resize(str.size());
+
 	std::istream is(&str);
 	
-	for (int i = 0; i < message_size; i++)
+	for (int i = 0; i < str.size(); i++)
 		is.get(vec_buf[i]);
 
 	msg_buffer_vec.push_back(vec_buf);
 
-	vec_buf.clear();
-	
 	NotifyOne();
 }
 
@@ -53,7 +44,6 @@ void ucd::Data::ClearMsgBuf(std::size_t size)
 {
 	Log("Clear message buffer");
 
-	message.clear();
 	msg_buffer.consume(size);
 }
 

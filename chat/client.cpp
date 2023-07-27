@@ -16,6 +16,6 @@ void ucc::Client::Connect()
 				
 		connection_status = true;
 
-		ReceiveFrom(action);
+		ReceiveFrom();
 	}
 }

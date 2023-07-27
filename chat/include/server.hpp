@@ -5,7 +5,7 @@
 
 namespace ucs
 {
-class Server : public ClientCore
+class Server : public CCore::ClientCore
 {
 private:
 	asio::error_code error;
