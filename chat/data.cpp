@@ -49,21 +49,6 @@ std::string& ucd::Data::GetMsgFromMsgBuffer(unsigned int index)
 	return msg_buffer_vec[index];
 }
 
-asio::streambuf::const_buffers_type ucd::Data::GetInfoBuffer()
-{
-	Log("Get info buffer");
-
-	return info_buffer.data();
-}
-
-void ucd::Data::ClearInfoBuf(std::size_t size)
-{
-	Log("Clear info buffer");
-
-	msg_size.clear();
-	info_buffer.consume(size);
-}
-
 void ucd::Data::ClearMsgBuf(std::size_t size)
 {
 	Log("Clear message buffer");

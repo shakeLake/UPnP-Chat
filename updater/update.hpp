@@ -1,6 +1,12 @@
 #ifndef UPDATER_HPP_
 #define UPDATER_HPP_
 
+// I / O
+#include <iostream>
+
+// Net
+#include "../third-pary/asio-1.24.0/include/asio.hpp"
+
 namespace UUpdater
 {
 class Update
