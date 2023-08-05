@@ -4,6 +4,10 @@ project(chat_ui)
 
 add_subdirectory("../chat" "chat-build")
 
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(CMAKE_WIN32_EXECUTABLE TRUE)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 

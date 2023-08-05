@@ -20,7 +20,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 fi
 
 echo -e "Chat Build"
-cmake -B "build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=prefixVar
+cmake -B "build" -DCMAKE_BUILD_TYPE=$1 -DCMAKE_PREFIX_PATH=prefixVar
 
 cd build
 cmake --build .

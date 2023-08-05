@@ -36,7 +36,6 @@ private:
 	asio::streambuf msg_buffer;			
 		
 	// vector of messages
-	std::string vec_buf;
 	std::vector<std::string> msg_buffer_vec;
 	
 	// notifying

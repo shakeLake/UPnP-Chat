@@ -24,16 +24,16 @@ void ucd::Data::GetMsg(asio::streambuf& str, unsigned int message_size)
 {
 	Log("Get Message");
 
+	std::string vec_buf;
 	vec_buf.resize(message_size);
+
 	std::istream is(&str);
 	
 	for (int i = 0; i < message_size; i++)
 		is.get(vec_buf[i]);
 
-	msg_buffer_vec.push_back(vec_buf);
+	msg_buffer_vec.push_back(std::move(vec_buf));
 
-	vec_buf.clear();
-	
 	NotifyOne();
 }
 
