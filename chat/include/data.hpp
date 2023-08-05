@@ -10,8 +10,7 @@
 #include <vector>
 
 // multithreading
-#include <condition_variable>
-#include <mutex>
+#include <semaphore>
 
 /*  
     asio
@@ -28,19 +27,16 @@ class Data
 {	
 private:
 	// info
-	std::string msg_size;
 	asio::streambuf info_buffer;
 		
 	// main data
-	std::string message;
 	asio::streambuf msg_buffer;			
 		
 	// vector of messages
 	std::vector<std::string> msg_buffer_vec;
 	
-	// notifying
-	std::mutex mx;
-	std::condition_variable cv;
+	// synch. to thread
+	std::binary_semaphore notify;
 
 	// logs
 	std::ofstream log_file;
@@ -50,7 +46,7 @@ private:
 	bool disconnected;
 
 public:
-	Data()
+	Data() : notify(0)
 	{
 		socket_is_closed = 0;
 		disconnected = 0;
@@ -63,7 +59,7 @@ public:
 	std::string& GetMsgFromMsgBuffer(unsigned int index);
 
 	// string to streambuf
-	asio::streambuf::const_buffers_type SetMessage(std::string&);
+	asio::streambuf::const_buffers_type SetMessage(std::string);
 
 	// streambuf to string 
 	void GetMsg(asio::streambuf&, unsigned int message_size);

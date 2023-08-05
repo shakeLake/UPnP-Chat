@@ -1,17 +1,18 @@
 #include "include/data.hpp"
 
-asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string& msg)
+asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string msg)
 {
 	Log("Set Message");
 
+	std::string msg_size;
 	msg_size = std::to_string(msg.size());
 	msg_size += '*';	
-
-	message += msg;
 
 	// saves info about message to streambuffer
 	std::ostream os_info(&info_buffer);
 	os_info << msg_size;
+
+	std::string message(std::move(msg));
 
     // saves message to streambuffer
     std::ostream os_msg(&msg_buffer);
@@ -60,7 +61,6 @@ void ucd::Data::ClearInfoBuf(std::size_t size)
 {
 	Log("Clear info buffer");
 
-	msg_size.clear();
 	info_buffer.consume(size);
 }
 
@@ -68,7 +68,6 @@ void ucd::Data::ClearMsgBuf(std::size_t size)
 {
 	Log("Clear message buffer");
 
-	message.clear();
 	msg_buffer.consume(size);
 }
 
@@ -76,8 +75,7 @@ void ucd::Data::Wait()
 {
 	Log("Waiting");
 
-	std::unique_lock<std::mutex> lk(mx);
-	cv.wait(lk);
+	notify.acquire();
 
 	Log("Waiting finished");
 }
@@ -90,8 +88,10 @@ void ucd::Data::Log(std::string log_msg)
 }
 
 void ucd::Data::NotifyOne()
-{	
-	cv.notify_one();
+{
+	Log("Release");
+
+	notify.release();
 }
 
 void ucd::Data::StatusSocketIsClosed()
