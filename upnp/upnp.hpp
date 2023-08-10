@@ -21,54 +21,54 @@
 
 namespace SL_upnp
 {
-	class Upnp
-	{
-	private:
-		struct UPNPUrls urls;
-		struct IGDdatas data;
+class Upnp
+{
+private:
+	struct UPNPUrls urls;
+	struct IGDdatas data;
 
-		int error;
+	int error;
 
-		// upnpDiscover
-		struct UPNPDev* devlist;
-		int localport;
-            
-		// UPNP_GetValidIGD 
-		char LAN_addr[64] = "unset";
-
-		// UPNP_GetExternalIPAddress
-		char externalIPAddress[40];
-
-		// UPNP_GetSpecificPortMappingEntry
-		char intClient[40];
-		char intPort[6];
-		char duration[16];
-
-		#ifdef _WIN32
-			WSADATA wsaData;
-		#endif
-			
-		int nResult;
-
-		// ports
-		char* external_port;
-		char* internal_port;
+	// upnpDiscover
+	struct UPNPDev* devlist;
+	int localport;
 		
-	private:
-		// deletes redirected port
-		void DeletePortForwarding();
+	// UPNP_GetValidIGD 
+	char LAN_addr[64] = "unset";
 
-	public:
-		// internal port and external port
-		Upnp(std::string&, std::string&);
-		~Upnp();
+	// UPNP_GetExternalIPAddress
+	char externalIPAddress[40];
 
-		// redirects port
-		bool PortForwarding();
-			
-		// get ip address
-		char* GetLanAddress();
-	};
+	// UPNP_GetSpecificPortMappingEntry
+	char intClient[40];
+	char intPort[6];
+	char duration[16];
+
+	#ifdef _WIN32
+		WSADATA wsaData;
+	#endif
+		
+	int nResult;
+
+	// ports
+	char* external_port;
+	char* internal_port;
+	
+private:
+	// deletes redirected port
+	void DeletePortForwarding();
+
+public:
+	// internal port and external port
+	Upnp(std::string&, std::string&);
+	~Upnp();
+
+	// redirects port
+	bool PortForwarding();
+		
+	// get ip address
+	char* GetLanAddress();
+};
 }
 
 #endif /* UPNP_HPP_ */
