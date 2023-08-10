@@ -29,8 +29,8 @@ ErrorDialog::ErrorDialog(const std::string& er_msg)
 	okay_button = new QPushButton("Okay");
 	okay_button->setFixedSize(125, 24);
 	okay_button->setStyleSheet("background-color: #161C32;"
-				   "color: white;"
-				   "border-radius: 5px");
+								"color: white;"
+								"border-radius: 5px");
 
 	button_layout->addWidget(okay_button);
 

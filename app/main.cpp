@@ -10,5 +10,5 @@ int main(int argc, char** argv)
 
 	main_ui.show();
 
-    return app.exec();
+	return app.exec();
 }

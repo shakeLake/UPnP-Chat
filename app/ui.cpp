@@ -34,23 +34,24 @@ UserInterface::UserInterface()
 	send_button->setIconSize(QSize(40, 40));	
 	
 	main_text_field = new QTextEdit();
-	main_text_field->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
-							    "{"
-							   	 "border: none;"
-							    "}"
-							    "QScrollBar::sub-line"
-							    "{"
-							   	 "border: none;"
-							    "}"
-							    "QScrollBar::handle:vertical"
-							    "{"
-							   	 "background: #161C32;"
-							   	 "border-radius: 2px;"
-							    "}"
-							    "QScrollBar:vertical"
-							    "{"
-							   	 "width: 4px;"
-							    "}");
+	main_text_field->verticalScrollBar()->setStyleSheet(
+								"QScrollBar::add-line" 
+								"{"
+									"border: none;"
+								"}"
+								"QScrollBar::sub-line"
+								"{"
+									"border: none;"
+								"}"
+								"QScrollBar::handle:vertical"
+								"{"
+									"background: #161C32;"
+									"border-radius: 2px;"
+								"}"
+								"QScrollBar:vertical"
+								"{"
+									"width: 4px;"
+								"}");
 
 	style.SetTextEditFont(main_text_field);
 	main_text_field->setFrameStyle(QFrame::NoFrame);
@@ -70,7 +71,8 @@ UserInterface::UserInterface()
 	message_layout_widget->setLayout(message_layout);
 
 	scroll_area = new QScrollArea;	
-	scroll_area->verticalScrollBar()->setStyleSheet("QScrollBar::add-line" 
+	scroll_area->verticalScrollBar()->setStyleSheet(
+							"QScrollBar::add-line" 
 							"{"
 								"border: none;"
 							"}"

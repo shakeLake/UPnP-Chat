@@ -10,3 +10,7 @@ qt-dpndncy/
 *.swn
 *.swp
 *.swo
+
+# flds
+
+updater/

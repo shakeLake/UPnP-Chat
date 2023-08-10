@@ -116,6 +116,6 @@ ucd::Data::~Data()
 {
 	Log("Data Destructor");
 
-    msg_buffer.consume( msg_buffer.size() );
+	msg_buffer.consume( msg_buffer.size() );
 	info_buffer.consume( info_buffer.size() );
 }
