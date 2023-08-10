@@ -184,7 +184,7 @@ void UserInterface::RedundantSymbols(std::string& msg)
 				break;
 		}
 
-		msg.erase(msg.begin() + i, msg.end());	
+		msg.erase(msg.begin() + i + 1, msg.end());	
 	}
 }
 

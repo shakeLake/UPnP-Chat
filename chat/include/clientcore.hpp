@@ -28,7 +28,6 @@ protected:
 
 	// status buffers
 	asio::streambuf error_buf;
-	bool info_message_status;
 
 	// actions
 	enum message_info_status_action
