@@ -5,12 +5,12 @@ app/build/
 chat/build/
 qt-dpndncy/
 
+# flds
+
+updater/
+
 # vim swap files
 
 *.swn
 *.swp
 *.swo
-
-# flds
-
-updater/
