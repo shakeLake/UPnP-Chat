@@ -67,6 +67,7 @@ protected:
 public:
 	/* this function sends message to connected ip */
 	void SendTo(asio::streambuf::const_buffers_type);
+	
 };
 
 #endif /* SEND_RECEIVE_HPP_ */

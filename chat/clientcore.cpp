@@ -29,7 +29,9 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 
 void ClientCore::ReceiveFrom(int enum_action)
 {
-	user_data->Log("Receiving");
+	std::string status_msg = "Receiving ";
+	status_msg += std::to_string(enum_action);
+	user_data->Log(status_msg);
 	
 	if (enum_action)
 	{

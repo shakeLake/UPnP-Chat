@@ -83,7 +83,7 @@ void ucd::Data::Wait()
 void ucd::Data::Log(std::string log_msg)
 {
 	log_file.open("logs.txt", std::ios::app);
-	log_file << log_msg + '\n';
+	log_file << "PID: " << getpid() << ' ' << log_msg + '\n';
 	log_file.close();
 }
 

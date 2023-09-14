@@ -9,6 +9,9 @@
 #include <cstring>
 #include <vector>
 
+// pid
+#include <unistd.h>
+
 // multithreading
 #include <semaphore>
 

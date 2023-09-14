@@ -54,5 +54,5 @@ git clone https://github.com/shakeLake/UPnP-Chat.git
 
 ### Start script
 ```
-~/UPnP-Chat/build-release.sh
+~/UPnP-Chat/build.sh Release
 ```
