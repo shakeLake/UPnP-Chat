@@ -19,16 +19,16 @@ find_package(Qt6 REQUIRED COMPONENTS Gui)
 set(APP_SOURCE
 	ui.cpp
 	"include/ui.hpp"
-	connectiondialog.cpp
-	"include/connectiondialog.hpp"
-	makeconnectiondialog.cpp
-	"include/makeconnectiondialog.hpp"
-	alreadyopened.cpp
-	"include/alreadyopened.hpp"
+	"dialogs/connectiondialog.cpp"
+	"dialogs/include/connectiondialog.hpp"
+	"dialogs/makeconnectiondialog.cpp"
+	"dialogs/include/makeconnectiondialog.hpp"
+	"dialogs/alreadyopened.cpp"
+	"dialogs/include/alreadyopened.hpp"
 	design.cpp
 	"include/design.hpp"
-	errordialog.cpp
-	"include/errordialog.hpp"
+	"dialogs/errordialog.cpp"
+	"dialogs/include/errordialog.hpp"
 )
 
 add_library(app-lib STATIC ${APP_SOURCE})

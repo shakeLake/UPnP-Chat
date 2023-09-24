@@ -1,11 +1,11 @@
-#ifndef ALREADYOPENED_HPP_
-#define ALREADYOPENED_HPP_
+#ifndef CDIALOG_HPP_
+#define CDIALOG_HPP_
 
 // i / o
 #include <iostream>
 
 // design
-#include "design.hpp"
+#include "../../include/design.hpp"
 
 // qt / application
 #include <QApplication>
@@ -23,7 +23,7 @@
 #include <QString>
 #include <QToolBar>
 
-class AlreadyOpenedDialog : public QDialog
+class ConnectionDialog : public QDialog
 {
 	Q_OBJECT
 	
@@ -40,8 +40,11 @@ private:
 	QPushButton* listen_to;	
 		
 	// input
+	QFormLayout* label_line_edit_ip;
 	QFormLayout* label_line_edit_port;
+	QLabel* ip_label;
 	QLabel* port_label;
+	QLineEdit* edit_ip;
 	QLineEdit* edit_port;
 		
 	// button layout
@@ -49,18 +52,25 @@ private:
 	QPushButton* cancel_button;
 	QPushButton* task_button;			
 
-	// for line edit
-	QString port_str;
+	// for IP line edit
+	QString ip_str;
 		
-public:
-	std::string port;
-	
-public slots:
-	void GetPort();
+	// for IP line edit
+	QString port_str;
 
 public:
-	AlreadyOpenedDialog();
-	~AlreadyOpenedDialog() = default;
+	std::string ip_address;
+	std::string port;
+
+private slots:
+	void GetIpAddressAndPort();
+
+private:
+	void CreateToolBar();
+
+public:
+	ConnectionDialog();
+	~ConnectionDialog() = default;
 };
 
-#endif /* ALREADYOPENED_HPP_  */
+#endif /* CDIALOG_HPP_ */

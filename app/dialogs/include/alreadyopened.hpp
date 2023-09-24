@@ -1,11 +1,11 @@
-#ifndef MCDIALOG_HPP_
-#define MCDIALOG_HPP_
+#ifndef ALREADYOPENED_HPP_
+#define ALREADYOPENED_HPP_
 
 // i / o
 #include <iostream>
 
 // design
-#include "design.hpp"
+#include "../../include/design.hpp"
 
 // qt / application
 #include <QApplication>
@@ -23,7 +23,7 @@
 #include <QString>
 #include <QToolBar>
 
-class MakeConnectionDialog : public QDialog
+class AlreadyOpenedDialog : public QDialog
 {
 	Q_OBJECT
 	
@@ -59,8 +59,8 @@ public slots:
 	void GetPort();
 
 public:
-	MakeConnectionDialog();
-	~MakeConnectionDialog() = default;
+	AlreadyOpenedDialog();
+	~AlreadyOpenedDialog() = default;
 };
 
-#endif /* MCDIALOG_HPP_ */
+#endif /* ALREADYOPENED_HPP_  */

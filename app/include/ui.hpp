@@ -11,10 +11,10 @@
 #include "design.hpp"
 
 // dialogs
-#include "connectiondialog.hpp"
-#include "makeconnectiondialog.hpp"
-#include "alreadyopened.hpp"
-#include "errordialog.hpp"
+#include "../dialogs/include/connectiondialog.hpp"
+#include "../dialogs/include/makeconnectiondialog.hpp"
+#include "../dialogs/include/alreadyopened.hpp"
+#include "../dialogs/include/errordialog.hpp"
 
 class UserInterface : public QMainWindow
 {

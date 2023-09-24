@@ -4,12 +4,19 @@ echo -e "Qt Build"
 
 prefixVar="../qt-dpndncy/lib/cmake"
 
-if [[ ! -d qt-dpndncy ]]; then
-	mkdir qt-dpndncy
-	cd qt-dpndncy
+qtDir="qt-dpndncy"
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    qtDir="qt-dpndncy-linux"
+    prefixVar="../qt-dpndncy-linux/lib/cmake/Qt6"
+fi
+
+if [[ ! -d $qtDir ]]; then
+	mkdir $qtDir
+	cd $qtDir
 
 	if [[ "$OSTYPE" == "linux-gnu" ]]; then
-		./../third-party/qtbase/configure -static -prefix "/usr/local/lib/Qt"
+		./../third-party/qtbase/configure -static -prefix $prefixVar
 		cmake --build . --parallel 4
 	elif [[ "$OSTYPE" == "msys" ]]; then
 		./../third-party/qtbase/configure -static -platform "win32-g++" -no-prefix
@@ -17,14 +24,10 @@ if [[ ! -d qt-dpndncy ]]; then
 	fi
 fi
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then 
-	prefixVar="/usr/local/lib/Qt"
-fi
-
 echo -e "Chat Build"
 
 buildFolder="$2"
-cmake -B $buildFolder -DCMAKE_BUILD_TYPE=$1 -DCMAKE_PREFIX_PATH=prefixVar
+cmake -B $buildFolder -DCMAKE_BUILD_TYPE=$1 -DCMAKE_PREFIX_PATH=$prefixVar
 
-cd build
+cd $buildFolder
 cmake --build .

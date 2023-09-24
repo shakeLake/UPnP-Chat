@@ -1,11 +1,11 @@
-#ifndef CDIALOG_HPP_
-#define CDIALOG_HPP_
+#ifndef MCDIALOG_HPP_
+#define MCDIALOG_HPP_
 
 // i / o
 #include <iostream>
 
 // design
-#include "design.hpp"
+#include "../../include/design.hpp"
 
 // qt / application
 #include <QApplication>
@@ -23,7 +23,7 @@
 #include <QString>
 #include <QToolBar>
 
-class ConnectionDialog : public QDialog
+class MakeConnectionDialog : public QDialog
 {
 	Q_OBJECT
 	
@@ -40,11 +40,8 @@ private:
 	QPushButton* listen_to;	
 		
 	// input
-	QFormLayout* label_line_edit_ip;
 	QFormLayout* label_line_edit_port;
-	QLabel* ip_label;
 	QLabel* port_label;
-	QLineEdit* edit_ip;
 	QLineEdit* edit_port;
 		
 	// button layout
@@ -52,25 +49,18 @@ private:
 	QPushButton* cancel_button;
 	QPushButton* task_button;			
 
-	// for IP line edit
-	QString ip_str;
-		
-	// for IP line edit
+	// for line edit
 	QString port_str;
-
+		
 public:
-	std::string ip_address;
 	std::string port;
-
-private slots:
-	void GetIpAddressAndPort();
-
-private:
-	void CreateToolBar();
+	
+public slots:
+	void GetPort();
 
 public:
-	ConnectionDialog();
-	~ConnectionDialog() = default;
+	MakeConnectionDialog();
+	~MakeConnectionDialog() = default;
 };
 
-#endif /* CDIALOG_HPP_ */
+#endif /* MCDIALOG_HPP_ */

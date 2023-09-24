@@ -2,7 +2,7 @@
 #define ERRORDIALOG_HPP_
 
 // design
-#include "design.hpp"
+#include "../../include/design.hpp"
 
 // qt
 #include <QDialog>
