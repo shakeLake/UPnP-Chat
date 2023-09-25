@@ -26,6 +26,7 @@
 
 namespace ucd
 {
+
 class Data
 {	
 private:
@@ -43,6 +44,8 @@ private:
 
 	// logs
 	std::ofstream log_file;
+	std::string log_file_name;
+	std::string PID;
 
 	// status
 	bool socket_is_closed;
@@ -53,6 +56,10 @@ public:
 	{
 		socket_is_closed = 0;
 		disconnected = 0;
+
+		PID = std::to_string(getpid());
+		log_file_name = PID;
+		log_file_name += "(PID)logs.txt";
 	}
 
 	~Data();			
@@ -90,6 +97,7 @@ public:
 	// status check
 	bool StatusChecking();
 };
+
 }
 
 #endif /* DATA_HPP_ */

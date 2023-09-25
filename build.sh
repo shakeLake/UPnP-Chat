@@ -8,7 +8,7 @@ qtDir="qt-dpndncy"
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     qtDir="qt-dpndncy-linux"
-    prefixVar="../qt-dpndncy-linux/lib/cmake/Qt6"
+    prefixVar="../qt-dpndncy-linux/lib/cmake"
 fi
 
 if [[ ! -d $qtDir ]]; then

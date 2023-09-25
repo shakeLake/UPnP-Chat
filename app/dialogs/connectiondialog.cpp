@@ -85,8 +85,11 @@ void ConnectionDialog::GetIpAddressAndPort()
 	port_str = edit_port->text();	
 	port = port_str.toStdString();
 
-	std::cout << ip_address << std::endl;
-	std::cout << port << std::endl;
-	
-	accept();
+	if (!ip_address.empty() && !port.empty())
+	{
+		std::cout << ip_address << std::endl;
+		std::cout << port << std::endl;
+		
+		accept();
+	}
 }

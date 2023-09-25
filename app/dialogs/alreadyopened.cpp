@@ -63,7 +63,9 @@ void AlreadyOpenedDialog::GetPort()
 	port_str = edit_port->text();	
 	port = port_str.toStdString();
 
-	std::cout << port << std::endl;
-	
-	accept();
+	if (!port.empty())
+	{
+		std::cout << port << std::endl;
+		accept();
+	}
 }
