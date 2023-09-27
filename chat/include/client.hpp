@@ -5,6 +5,7 @@
 
 namespace ucc
 {
+
 class Client : public ClientCore
 {
 private:
@@ -45,6 +46,7 @@ public:
 	bool isConnected();
 
 };
+
 }
 
 #endif /* CLIENT_HPP_ */

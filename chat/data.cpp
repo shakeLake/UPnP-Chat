@@ -8,14 +8,12 @@ asio::streambuf::const_buffers_type ucd::Data::SetMessage(std::string msg)
 	msg_size = std::to_string(msg.size());
 	msg_size += '*';	
 
-	Log("Info Buffer");
 	// saves message info to streambuffer
 	std::ostream os_info(&info_buffer);
 	os_info << msg_size;
 
 	std::string message(std::move(msg));
 
-	Log("Message Buffer");
     // saves message to streambuffer
     std::ostream os_msg(&msg_buffer);
     os_msg << message;
