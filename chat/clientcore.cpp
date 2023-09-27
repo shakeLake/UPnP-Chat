@@ -8,7 +8,9 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 		[this, msg](const asio::error_code& e, std::size_t size)
 		{
 			if (e)
+			{
 				user_data->Log(e.message());
+			}
 			else
 			{
 				user_data->ClearInfoBuf(size);
@@ -17,7 +19,9 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 					[this](const asio::error_code& e, std::size_t size)
 					{
 						if (e)
+						{
 							user_data->Log(e.message());
+						}
 						else
 							user_data->ClearMsgBuf(size);
 					}
@@ -25,6 +29,8 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 			}
 		}
 	);
+
+	user_data->Log("Sending finished");
 }
 
 void ClientCore::ReceiveFrom(int enum_action)

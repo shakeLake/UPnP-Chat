@@ -14,10 +14,9 @@ private:
 	// endpoint
 	asio::ip::tcp::resolver::results_type endpnt;
 		
-// error code			
+	// error code			
 	asio::error_code error;
 
-public:
 	// connection status
 	bool connection_status;
 
@@ -42,6 +41,9 @@ public:
 	{
 		user_data->Log("Client Core destructor");
 	}
+
+	bool isConnected();
+
 };
 }
 

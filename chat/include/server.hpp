@@ -5,6 +5,7 @@
 
 namespace ucs
 {
+
 class Server : public ClientCore
 {
 private:
@@ -37,7 +38,11 @@ public:
 	{
 		user_data->Log("Client Core destructor");
 	}
+
+	bool isConnected();
+
 };
+
 }
 
 #endif /* SERVER_HPP */

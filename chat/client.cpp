@@ -19,3 +19,8 @@ void ucc::Client::Connect()
 		ReceiveFrom(action);
 	}
 }
+
+bool ucc::Client::isConnected()
+{
+	return connection_status;
+}

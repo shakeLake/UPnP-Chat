@@ -14,6 +14,7 @@
 
 // multithreading
 #include <semaphore>
+#include <mutex>
 
 /*  
     asio
@@ -41,6 +42,7 @@ private:
 	
 	// synch. to thread
 	std::binary_semaphore notify;
+	std::mutex mtx;
 
 	// logs
 	std::ofstream log_file;

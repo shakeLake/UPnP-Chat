@@ -32,6 +32,9 @@ private:
 
 	asio::io_context io_c;
 
+	// synch
+	std::mutex mtx;
+
 	// client chat
 	ucc::Client* chat_client;
 

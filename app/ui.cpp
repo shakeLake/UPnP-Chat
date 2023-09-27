@@ -100,9 +100,6 @@ UserInterface::UserInterface()
 	main_layout->addWidget(info_label);
 	main_layout->addWidget(scroll_area);
 	main_layout->addLayout(input_field_layout);		
-
-	// dev
-	//connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
 }
 
 void UserInterface::CreateToolBar()
@@ -191,6 +188,10 @@ void UserInterface::RedundantSymbols(std::string& msg)
 void UserInterface::SendChatMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
+
+	if (msg_buffer.isEmpty())
+		return;
+
 	std::string msg = msg_buffer.toStdString();
 
 	// deletes redundant symbols
@@ -208,6 +209,7 @@ void UserInterface::SendChatMessageSlot()
 
 		chat_client->SendTo( client_or_server_data.SetMessage(msg) );
 
+		std::unique_lock<std::mutex> lck(mtx);
 		message_layout->addLayout( style.MessageEstablishing(msg, false, scroll_area) );	
 	}
 }
@@ -215,6 +217,10 @@ void UserInterface::SendChatMessageSlot()
 void UserInterface::SendServerMessageSlot()
 {
 	msg_buffer = main_text_field->toPlainText();	
+
+	if (msg_buffer.isEmpty())
+		return;
+
 	std::string msg = msg_buffer.toStdString();
 	
 	// deletes redundant symbols
@@ -248,20 +254,20 @@ void UserInterface::ConnectionDialogSlot()
 		// init
 		chat_client = new ucc::Client(io_c, cdialog.ip_address, cdialog.port, &client_or_server_data);
 
-		if (chat_client->connection_status)
+		if (chat_client->isConnected())
 		{
-			// activate disconnect button
+			// activates disconnect button
 			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
 
 			info_label->setText("Connected");
 			info_label->repaint();
 
-			// Start client
+			// Starts client
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
 			connect(send_button, &QPushButton::released, this, &UserInterface::SendChatMessageSlot);
 
-			// Start data checking
+			// Starts data checking
 			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
 			data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 		}
@@ -299,20 +305,20 @@ void UserInterface::MakeConnectionDialogSlot()
 			// init
 			chat_server = new ucs::Server(io_c, mcdialog.port, &client_or_server_data);
 
-			if (chat_server->connection_status)
+			if (chat_server->isConnected())
 			{
-				// activate disconnect button
+				// activates disconnect button
 				connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
 
 				info_label->setText("Connected");
 				info_label->repaint();
 
-				// Start server
+				// Starts server
 				client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
 				connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
-				// Start data checking
+				// Starts data checking
 				connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
 				data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 			}
@@ -349,20 +355,20 @@ void UserInterface::AlreadyOpenedDialogSlot()
 		// init
 		chat_server = new ucs::Server(io_c, adialog.port, &client_or_server_data);
 
-		if (chat_server->connection_status)
+		if (chat_server->isConnected())
 		{
-			// activate disconnect button
+			// activates disconnect button
 			connect(disconnect, &QPushButton::released, this, &UserInterface::Disconnect);
 
 			info_label->setText("Connected");
 			info_label->repaint();
 
-			// Start server
+			// Starts server
 			client_or_server_thread = std::thread( [this](){ io_c.run(); } );
 
 			connect(send_button, &QPushButton::released, this, &UserInterface::SendServerMessageSlot);
 
-			// Start data checking
+			// Starts data checking
 			connect(this, &UserInterface::DataReceived, this, &UserInterface::AddMessage);
 			data_checking_thread = std::thread(&UserInterface::DataChecking, this);	
 		}
@@ -393,11 +399,14 @@ void UserInterface::DataChecking()
 
 void UserInterface::AddMessage()
 {
+	std::unique_lock<std::mutex> lck(mtx);
+
 	client_or_server_data.Log("emit Data Receiving");
 
 	try
 	{
-		message_layout->addLayout(style.MessageEstablishing(client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
+		message_layout->addLayout(style.MessageEstablishing(
+									client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
 								    true, 
 								    scroll_area)
 		);	
