@@ -1,9 +1,13 @@
-#include "../../chat/include/server.hpp"
+#include "../chat/include/server.hpp"
+#include "../chat/include/data.hpp"
 #include <fstream>
+
+// gtest
+#include <gtest/gtest.h>
 
 class ServerTest : public ::testing::Test
 {
-private:
+protected:
     asio::io_context io_c;
 
     ucs::Server* srv;
@@ -21,15 +25,16 @@ protected:
         count = -1;
         cin.open("testcases/messages.txt");
 
-        srv = new ucs::Server(io_c, "1000", &server_data);        
+        std::string port = "1000";
+        srv = new ucs::Server(io_c, port, &server_data);        
 
         int quant;
-        cin << quant;
+        cin >> quant;
 
         for (int i = 0; i < quant; ++i)
         {
             std::string msg;
-            cin << msg;
+            cin >> msg;
 
             test_msg.push_back(std::move(msg));
         }

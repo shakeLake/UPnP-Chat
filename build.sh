@@ -27,7 +27,14 @@ fi
 echo -e "Chat Build"
 
 buildFolder="$2"
-cmake -B $buildFolder -DCMAKE_BUILD_TYPE=$1 -DCMAKE_PREFIX_PATH=$prefixVar
+
+testIsOn="$3"
+cmake -B $buildFolder -DCMAKE_BUILD_TYPE=$1 -DCMAKE_PREFIX_PATH=$prefixVar -DIS_TESTING=$testIsOn
 
 cd $buildFolder
 cmake --build .
+
+if [[ $testIsOn = "TESTON" ]]; then
+	cd test-build
+	./srv.exe
+fi
