@@ -1,6 +1,7 @@
 #include "../chat/include/server.hpp"
 #include "../chat/include/data.hpp"
 #include <fstream>
+#include <chrono>
 
 // gtest
 #include <gtest/gtest.h>
@@ -11,7 +12,7 @@ protected:
     asio::io_context io_c;
 
     ucs::Server* srv;
-    ucd::Data server_data;
+    ucd::Data _data;
 
     int count;
     std::vector<std::string> test_msg;
@@ -26,7 +27,7 @@ protected:
         cin.open("testcases/messages.txt");
 
         std::string port = "1000";
-        srv = new ucs::Server(io_c, port, &server_data);        
+        srv = new ucs::Server(io_c, port, &_data);        
 
         int quant;
         cin >> quant;
@@ -55,6 +56,9 @@ protected:
         }
 
         current_test = std::move(test_msg[count]);
+        
+        srv->SendTo( _data.SetMessage(current_test) );
+
         count += 1;
     }
 
@@ -63,6 +67,14 @@ protected:
 TEST_F(ServerTest, isConnected)
 {
     ASSERT_EQ(srv->isConnected(), true);   
+}   
+
+TEST_F(ServerTest, DoesMessage)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+    ASSERT_GE(count, 1);
+    EXPECT_EQ(current_test, _data.GetMsgFromMsgBuffer(count - 1));   
 }   
 
 int main(int argc, char **argv) 
