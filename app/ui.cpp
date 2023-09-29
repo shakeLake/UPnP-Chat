@@ -407,8 +407,8 @@ void UserInterface::AddMessage()
 	{
 		message_layout->addLayout(style.MessageEstablishing(
 									client_or_server_data.GetMsgFromMsgBuffer(size_of_msg_buffer), 
-								    true, 
-								    scroll_area)
+									true, 
+									scroll_area)
 		);	
 
 	}

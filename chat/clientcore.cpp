@@ -52,6 +52,8 @@ void ClientCore::ReceiveFrom(int enum_action)
 				}
 				else
 				{
+					user_data->Log("Info Received");
+
 					std::istream is(&received_message);	
 					is >> message_size_buf;
 
@@ -89,6 +91,8 @@ void ClientCore::ReceiveFrom(int enum_action)
 				}
 				else
 				{
+					user_data->Log("Message Received");
+
 					user_data->GetMsg(received_message, message_size);
 
 					received_message.consume(size);

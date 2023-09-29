@@ -1,6 +1,7 @@
 #include "../chat/include/client.hpp"
 #include "../chat/include/data.hpp"
 #include <fstream>
+#include <chrono>
 
 // gtest
 #include <gtest/gtest.h>
@@ -15,15 +16,18 @@ protected:
 
     int quant = 0;
     std::vector<std::string> test_msg;
+    std::thread thrd;
 
 public:
     ClientTest()
     {
-        std::ifstream cin("/testcases/messagesclient.txt");
+        std::ifstream cin("messages.txt");
 
         std::string ip = "localhost";
         std::string port = "1000";
         cli = new ucc::Client(io_c, ip, port, &_data);        
+
+        thrd = std::thread( [this](){ io_c.run(); } );
 
         cin >> quant;
 
@@ -35,12 +39,14 @@ public:
             test_msg.push_back(std::move(msg));
 
             cli->SendTo( _data.SetMessage(test_msg[i]) );
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 
     ~ClientTest()
     {
         delete cli;
+        thrd.join();
     }
 
 };
@@ -59,7 +65,12 @@ TEST(ClientConnectionTest, isConnected)
 
 TEST_F(ClientTest, DoesMessage)
 {
+    // file is open
     ASSERT_GT(quant, 0);
+    ASSERT_EQ(test_msg.size(), quant);
+
+    // data received
+    ASSERT_GT(_data.GetMsgBufferSize(), 0);
 
     for (int element = 0; element < quant; ++element)
         EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));

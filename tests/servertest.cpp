@@ -1,6 +1,7 @@
 #include "../chat/include/server.hpp"
 #include "../chat/include/data.hpp"
 #include <fstream>
+#include <chrono>
 
 // gtest
 #include <gtest/gtest.h>
@@ -15,14 +16,17 @@ protected:
 
     int quant;
     std::vector<std::string> test_msg;
+    std::thread thrd;
 
 protected:
     ServerTest()
     {
-        std::ifstream cin("/testcases/messagesserver.txt");
+        std::ifstream cin("messages.txt");
 
         std::string port = "1000";
         srv = new ucs::Server(io_c, port, &_data); 
+
+        thrd = std::thread( [this](){ io_c.run(); } );
 
         cin >> quant;
 
@@ -34,6 +38,7 @@ protected:
             test_msg.push_back(std::move(msg));
 
             srv->SendTo( _data.SetMessage(test_msg[i]) );
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
 
         cin.close();
@@ -42,6 +47,7 @@ protected:
     ~ServerTest()
     {
         delete srv;
+        thrd.join();
     }
 
 };
@@ -59,14 +65,16 @@ TEST(ServerConnectionTest, isConnected)
 
 TEST_F(ServerTest, DoesMessage)
 {
+    // file is open
     ASSERT_GT(quant, 0);
+    ASSERT_EQ(test_msg.size(), quant);
+
+    // data received
+    ASSERT_GT(_data.GetMsgBufferSize(), 0);
 
     for (int element = 0; element < quant; ++element)
         EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
 }   
-
-// for (int element = 0; element < quant; ++element)
-//     srv->SendTo( _data.SetMessage(test_msg[element]) );
 
 int main(int argc, char **argv) 
 {
