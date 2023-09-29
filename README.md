@@ -40,6 +40,7 @@
 * Standalone Asio
 * miniupnp
 * CMake
+* Google Test
 
 ## How To Build
 
@@ -54,5 +55,5 @@ git clone https://github.com/shakeLake/UPnP-Chat.git
 
 ### Start script
 ```
-~/UPnP-Chat/build.sh Release [or Debug] build [Directory] TESTOFF [or TESTON] 
+~/UPnP-Chat/build.sh Release [Debug] build [Directory] TESTOFF [TESTON] 
 ```
