@@ -17,7 +17,11 @@
 #include "../third-party/miniupnpc-2.2.4/include/upnpcommands.h"
 #include "../third-party/miniupnpc-2.2.4/include/upnperrors.h"
 
-#include "../build/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+#if __has_include ("../build/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h")
+	#include "../build/app-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+#else
+	#include "../build/test-build/chat-build/upnp-build/miniupnpc-build/miniupnpcstrings.h"
+#endif
 
 namespace SL_upnp
 {

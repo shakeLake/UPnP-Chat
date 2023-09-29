@@ -65,12 +65,31 @@ TEST(ClientConnectionTest, isConnected)
 
 TEST_F(ClientTest, DoesMessage)
 {
+    // connection
+    ASSERT_EQ(cli.isConnected(), true);   
+
     // file is open
     ASSERT_GT(quant, 0);
     ASSERT_EQ(test_msg.size(), quant);
 
     // data received
-    ASSERT_GT(_data.GetMsgBufferSize(), 0);
+    ASSERT_EQ(_data.GetMsgBufferSize(), quant);
+
+    for (int element = 0; element < quant; ++element)
+        EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
+}   
+
+TEST_F(ClientTest, SecondPass)
+{
+    // connection
+    ASSERT_EQ(cli.isConnected(), true);   
+
+    // file is open
+    ASSERT_GT(quant, 0);
+    ASSERT_EQ(test_msg.size(), quant);
+
+    // data received
+    ASSERT_EQ(_data.GetMsgBufferSize(), quant);
 
     for (int element = 0; element < quant; ++element)
         EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
