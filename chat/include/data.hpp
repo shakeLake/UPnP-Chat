@@ -8,7 +8,6 @@
 // data
 #include <cstring>
 #include <vector>
-#include <string>
 
 // pid
 #include <unistd.h>

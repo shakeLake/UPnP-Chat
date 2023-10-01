@@ -4,7 +4,7 @@ project(nettesting)
 
 add_subdirectory("../chat" "chat-build")
 
-file(COPY "testcases/messages.txt" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ )
+file(COPY "testcases/" DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ )
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

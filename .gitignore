@@ -1,6 +1,7 @@
 # build
  
 build/
+tests/testcases/testfiles/
 linux-build/
 app/build/
 chat/build/

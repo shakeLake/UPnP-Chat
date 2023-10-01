@@ -16,6 +16,8 @@ set(CHAT_SERVER_SOURCE
 	"include/default.hpp"
 	data.cpp
 	"include/data.hpp"
+	filehandler.cpp
+	"include/filehandler.hpp"
 	server.cpp
 	"include/server.hpp"
 	client.cpp

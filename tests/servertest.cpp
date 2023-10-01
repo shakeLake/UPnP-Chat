@@ -14,34 +14,17 @@ protected:
     ucs::Server* srv;
     ucd::Data _data;
 
-    int quant;
+    int quant = 0;
     std::vector<std::string> test_msg;
     std::thread thrd;
 
 protected:
     ServerTest()
     {
-        std::ifstream cin("messages.txt");
-
         std::string port = "1000";
-        srv = new ucs::Server(io_c, port, &_data); 
+        srv = new ucs::Server(io_c, port, &_data);        
 
         thrd = std::thread( [this](){ io_c.run(); } );
-
-        cin >> quant;
-
-        for (int i = 0; i < quant; ++i)
-        {
-            std::string msg;
-            cin >> msg;
-
-            test_msg.push_back(std::move(msg));
-
-            srv->SendTo( _data.SetMessage(test_msg[i]) );
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-
-        cin.close();
     }
 
     ~ServerTest()
@@ -57,8 +40,23 @@ TEST_F(ServerTest, DoesMessage)
     // connection
     ASSERT_EQ(srv->isConnected(), true);   
 
-    // file is open
+    std::ifstream cin("messages.txt");
+
+    cin >> quant;
     ASSERT_GT(quant, 0);
+
+    for (int i = 0; i < quant; ++i)
+    {
+        std::string msg;
+        cin >> msg;
+
+        test_msg.push_back(std::move(msg));
+
+        srv->SendTo( _data.SetMessage(test_msg[i]) );
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+    // file is open
     ASSERT_EQ(test_msg.size(), quant);
 
     // data received

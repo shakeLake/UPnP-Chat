@@ -8,7 +8,7 @@ fh::FileHandler::FileHandler(std::string file_path)
 
     SeparateFilename(file_path);
 
-    file_properties = '#' + filename + '#' + length + '*';
+    file_properties = '#' + filename + '#' + std::to_string(length) + '*';
 
     Serialization();
 
@@ -43,11 +43,11 @@ void fh::FileHandler::SeparateFilename(std::string& path)
     filename = path.substr(begin, path.size() - begin + 1);
 }
 
-void fh::FileHandler::GetLength()
+void fh::FileHandler::SetLength()
 {
-    fin.seekg(0, file_prop.fin.end);
-    length = file_prop.fin.tellg();
-    fin.seekg(0, file_prop.fin.beg);
+    fin.seekg(0, fin.end);
+    length = fin.tellg();
+    fin.seekg(0, fin.beg);
 }
 
 void fh::FileHandler::Serialization()
@@ -60,10 +60,10 @@ void fh::FileHandler::Serialization()
 
 void fh::FileHandler::Packaging()
 {
-    std::ofstream prop(&file_properties_stream_buf);
+    std::ostream prop(&file_properties_stream_buf);
     prop << file_properties;
 
-    std::ofstream fl(&file_stream_buf);
+    std::ostream fl(&file_stream_buf);
     prop << file;
 }
 
@@ -75,4 +75,14 @@ asio::streambuf::const_buffers_type fh::FileHandler::GetFileProperties()
 asio::streambuf::const_buffers_type fh::FileHandler::GetFile()
 {
     return file_stream_buf.data();
+}
+
+std::string fh::FileHandler::GetFileName()
+{
+    return filename;
+}
+
+unsigned fh::FileHandler::GetLength()
+{
+    return length;
 }

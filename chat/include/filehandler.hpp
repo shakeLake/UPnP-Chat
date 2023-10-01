@@ -9,6 +9,9 @@
 #include <fstream>
 #include <string>
 
+// unique_ptr
+#include <memory>
+
 namespace fh
 {
 
@@ -27,7 +30,7 @@ private:
 	asio::streambuf file_properties_stream_buf;			
 
 private:
-    void SeparateFilename(std::string);
+    void SeparateFilename(std::string&);
     void SetLength();
     void Serialization();
     void Packaging();
@@ -38,6 +41,10 @@ public:
 
     asio::streambuf::const_buffers_type GetFileProperties();
     asio::streambuf::const_buffers_type GetFile();
+
+    // Testing functons
+    std::string GetFileName();
+    unsigned GetLength();
 
 };
 
