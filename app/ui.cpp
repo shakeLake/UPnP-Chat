@@ -120,6 +120,7 @@ void UserInterface::CreateToolBar()
 	connect_to = new QPushButton;
 	make_connection = new QPushButton;
 	alr_opn_make_connection = new QPushButton;
+	settings = new QPushButton;
 	disconnect = new QPushButton;
 
 	// widgets design
@@ -142,6 +143,11 @@ void UserInterface::CreateToolBar()
 	alr_opn_make_connection->setIconSize(QSize(44, 64));	
 	connect(alr_opn_make_connection, &QPushButton::released, this, &UserInterface::AlreadyOpenedDialogSlot);
 
+	settings->setIcon(QIcon(":/Resources/pics/settings.png"));
+	settings->setStyleSheet("border: none");
+	settings->setIconSize(QSize(36, 54));
+	// connect(alr_opn_make_connection, &QPushButton::released, this, &UserInterface::SettingsSlot);
+
 	disconnect->setIcon(QIcon(":/Resources/pics/disconnect.png"));
 	disconnect->setStyleSheet("border: none");
 	disconnect->setIconSize(QSize(40, 60));
@@ -151,10 +157,9 @@ void UserInterface::CreateToolBar()
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
 	tool_bar->addWidget(alr_opn_make_connection);
+	tool_bar->addWidget(settings);
 	tool_bar->addWidget(disconnect);
 }
-
-// slots
 
 // delete all '\n' and ' '
 void UserInterface::RedundantSymbols(std::string& msg)
@@ -435,6 +440,9 @@ void UserInterface::Disconnect()
 	data_checking_thread.join();
 
 	delete upnp;
+
+	info_label->setText("Disconnected");
+	info_label->repaint();
 }
 
 UserInterface::~UserInterface()

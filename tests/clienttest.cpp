@@ -51,38 +51,10 @@ public:
 
 };
 
-TEST(ClientConnectionTest, isConnected)
-{
-    asio::io_context io_c;
-    ucd::Data _data;
-
-    std::string ip = "localhost";
-    std::string port = "1000";
-    ucc::Client cli(io_c, ip, port, &_data);        
-
-    ASSERT_EQ(cli.isConnected(), true);   
-}   
-
 TEST_F(ClientTest, DoesMessage)
 {
     // connection
-    ASSERT_EQ(cli.isConnected(), true);   
-
-    // file is open
-    ASSERT_GT(quant, 0);
-    ASSERT_EQ(test_msg.size(), quant);
-
-    // data received
-    ASSERT_EQ(_data.GetMsgBufferSize(), quant);
-
-    for (int element = 0; element < quant; ++element)
-        EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
-}   
-
-TEST_F(ClientTest, SecondPass)
-{
-    // connection
-    ASSERT_EQ(cli.isConnected(), true);   
+    ASSERT_EQ(cli->isConnected(), true);   
 
     // file is open
     ASSERT_GT(quant, 0);

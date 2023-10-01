@@ -59,6 +59,8 @@ private:
 
 	QPushButton* alr_opn_make_connection;
 
+	QPushButton* settings;
+
 	QPushButton* disconnect;
 			
 	// dialogs

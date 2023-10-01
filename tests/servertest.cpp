@@ -52,32 +52,11 @@ protected:
 
 };
 
-TEST(ServerConnectionTest, isConnected)
-{
-    asio::io_context io_c;
-    ucd::Data _data;
-
-    std::string port = "1000";
-    ucs::Server srv(io_c, port, &_data);        
-
-    ASSERT_EQ(srv.isConnected(), true);   
-}   
-
 TEST_F(ServerTest, DoesMessage)
 {
-    // file is open
-    ASSERT_GT(quant, 0);
-    ASSERT_EQ(test_msg.size(), quant);
+    // connection
+    ASSERT_EQ(srv->isConnected(), true);   
 
-    // data received
-    ASSERT_EQ(_data.GetMsgBufferSize(), quant);
-
-    for (int element = 0; element < quant; ++element)
-        EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
-}   
-
-TEST_F(ServerTest, SecondPass)
-{
     // file is open
     ASSERT_GT(quant, 0);
     ASSERT_EQ(test_msg.size(), quant);

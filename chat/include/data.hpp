@@ -8,6 +8,7 @@
 // data
 #include <cstring>
 #include <vector>
+#include <string>
 
 // pid
 #include <unistd.h>
@@ -15,6 +16,9 @@
 // multithreading
 #include <semaphore>
 #include <mutex>
+
+// file handler
+#include "filehandler.hpp"
 
 /*  
     asio

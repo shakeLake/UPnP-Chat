@@ -4,7 +4,9 @@ RUN apt-get update \
 	&& apt-get install -y 	git \
 				g++ \
 				cmake \
-				make 
+				make \
+				iputils-ping \
+				iproute2 
 
 ADD . /upnp_chat
 WORKDIR /upnp_chat
