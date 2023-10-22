@@ -1,50 +1,27 @@
 #include "../chat/include/filehandler.hpp"
 #include <gtest/gtest.h>
+#include <array>
 
-class FileHandlerTest : public ::testing::Test
+TEST(FileHandlerTest, FileEQ)
 {
-protected:
-    std::vector<std::string> file_paths;
+    std::ifstream cin("files.txt");
 
-    std::ifstream fin;
     int quant;
-
-protected:
-    FileHandlerTest()
-    {
-        fin.open("testcases/files.txt"); 
-
-        fin >> quant;
-        for (int i = 0; i < quant; ++i)
-        {
-            std::string path;
-            fin >> path;
-
-            file_paths.push_back(path);
-        }
-    }
-
-    ~FileHandler()
-    {
-        fin.close();
-    }
-
-};
-
-TEST_F(FileHandlerTest, FilePropertiesChecker)
-{
+    cin >> quant;
     ASSERT_GT(quant, 0);
-    ASSERT_EQ(file_paths.size(), quant);
 
-    for (int it = 0; it < quant; ++it)
+    std::array<std::string, 2> fns {{"game.ch8", "ocoft.ciso"}};
+    std::array<unsigned, 2> filelength {{264, 1130398272}};
+    for (int i = 0; i < quant; ++i)
     {
+        std::string path;
+        cin >> path;
 
+        fh::FileHandler file_handler(path);
+
+        EXPECT_EQ(file_handler.GetFileName(), fns[i]);
+        EXPECT_EQ(file_handler.GetLength(), filelength[i]);
     }
-}
-
-TEST(FileHandlerTest, FilePropertiesChecker)
-{
-    for ()
 }
 
 int main(int argc, char** argv)

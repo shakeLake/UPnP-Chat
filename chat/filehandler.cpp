@@ -1,6 +1,6 @@
 #include "include/filehandler.hpp"
 
-fh::FileHandler::FileHandler(std::string file_path)
+fh::FileHandler::FileHandler(std::string& file_path)
 {
     fin.open(file_path);
 

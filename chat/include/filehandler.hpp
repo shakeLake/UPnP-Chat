@@ -30,13 +30,20 @@ private:
 	asio::streambuf file_properties_stream_buf;			
 
 private:
+    // input
     void SeparateFilename(std::string&);
     void SetLength();
     void Serialization();
     void Packaging();
 
+    // output
+    void SeparateProperties(std::string&);
+    void Deserialization();
+    void Unpackaging();
+
 public:
-    FileHandler(std::string);
+    FileHandler(std::string&);
+    FileHandler(std::string&, bool);
     ~FileHandler();
 
     asio::streambuf::const_buffers_type GetFileProperties();

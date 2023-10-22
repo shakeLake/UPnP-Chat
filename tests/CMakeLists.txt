@@ -29,5 +29,11 @@ add_executable(cli clienttest.cpp)
 target_link_libraries(cli PRIVATE GTest::gtest_main)
 target_link_libraries(cli PRIVATE upnp_chat-static)
 
+add_executable(fh filehandlertest.cpp)
+target_link_libraries(fh PRIVATE GTest::gtest_main)
+target_link_libraries(fh PRIVATE upnp_chat-static)
+
 include(GoogleTest)
 gtest_discover_tests(srv)
+gtest_discover_tests(cli)
+gtest_discover_tests(fh)
