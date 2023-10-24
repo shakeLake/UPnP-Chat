@@ -22,6 +22,7 @@ private:
     unsigned int length;
 
     std::ifstream fin;
+    std::ofstream fout;
 
     std::string file;
     std::string file_properties;
@@ -38,12 +39,12 @@ private:
 
     // output
     void SeparateProperties(std::string&);
-    void Deserialization();
-    void Unpackaging();
+    void Deserialization(asio::streambuf&);
 
 public:
     FileHandler(std::string&);
-    FileHandler(std::string&, bool);
+    FileHandler(std::string&, asio::streambuf&);
+
     ~FileHandler();
 
     asio::streambuf::const_buffers_type GetFileProperties();
@@ -52,6 +53,7 @@ public:
     // Testing functons
     std::string GetFileName();
     unsigned GetLength();
+    asio::streambuf& GetFileUnpack();
 
 };
 

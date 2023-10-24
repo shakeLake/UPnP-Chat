@@ -10,8 +10,8 @@ TEST(FileHandlerTest, FileEQ)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    std::array<std::string, 2> fns {{"game.ch8", "ocoft.ciso"}};
-    std::array<unsigned, 2> filelength {{264, 1130398272}};
+    std::array<std::string, 3> fns {{"game.ch8", "ocoft.ciso", "background.png"}};
+    std::array<unsigned, 3> filelength {{264, 1130398272, 1565098}};
     for (int i = 0; i < quant; ++i)
     {
         std::string path;
@@ -21,6 +21,28 @@ TEST(FileHandlerTest, FileEQ)
 
         EXPECT_EQ(file_handler.GetFileName(), fns[i]);
         EXPECT_EQ(file_handler.GetLength(), filelength[i]);
+    }
+}
+
+TEST(FileHandlerTes, FileUnpackaging)
+{
+    std::ifstream cin("files.txt");
+
+    int quant;
+    cin >> quant;
+    ASSERT_GT(quant, 0);
+
+    std::array<std::string, 3> fns {{"game.ch8", "ocoft.ciso", "background.png"}};
+    std::array<std::string, 3> prop {{"#game.ch8#264*", "#ocoft.ciso#1130398272*", "#background.png#1565098*"}};
+    std::array<unsigned, 3> filelength {{264, 1130398272, 1565098}};
+    for (int i = 0; i < quant; ++i)
+    {
+        std::string path;
+        cin >> path;
+
+        fh::FileHandler file_handler(path);
+
+        fh::FileHandler backToNormal(prop[i], file_handler.GetFileUnpack());
     }
 }
 

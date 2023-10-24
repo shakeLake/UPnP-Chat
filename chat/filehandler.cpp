@@ -15,6 +15,12 @@ fh::FileHandler::FileHandler(std::string& file_path)
     Packaging();
 }
 
+fh::FileHandler::FileHandler(std::string& prop, asio::streambuf& strbuffile)
+{
+    SeparateProperties(prop);
+    Deserialization(strbuffile);
+}
+
 fh::FileHandler::~FileHandler()
 {
     fin.close();
@@ -67,6 +73,33 @@ void fh::FileHandler::Packaging()
     prop << file;
 }
 
+void fh::FileHandler::SeparateProperties(std::string& prop)
+{
+    for (unsigned let = 1; let < prop.size(); ++let)
+    {
+        if (prop[let] == '#')
+            filename = prop.substr(1, let - 1);
+        else if (prop[let] == '*')
+            length = stoi(prop.substr(filename.size() + 2, let - 1));
+    }
+}
+
+void fh::FileHandler::Deserialization(asio::streambuf& strbuffile)
+{
+    std::istream is(&strbuffile);
+
+    file.resize(length);
+    for (int i = 0; i < length; ++i)
+        is.get(file[i]);
+
+    std::string path = "folder/" + filename;
+
+    fout.open(path);
+    fout.write(file.c_str(), length);
+
+    fout.close();
+}
+
 asio::streambuf::const_buffers_type fh::FileHandler::GetFileProperties()
 {
     return file_properties_stream_buf.data();
@@ -85,4 +118,9 @@ std::string fh::FileHandler::GetFileName()
 unsigned fh::FileHandler::GetLength()
 {
     return length;
+}
+
+asio::streambuf& fh::FileHandler::GetFileUnpack()
+{
+    return file_stream_buf;
 }
