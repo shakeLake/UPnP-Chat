@@ -53,6 +53,8 @@ public:
     // Testing functons
     std::string GetFileName();
     unsigned GetLength();
+    unsigned GetStreamBufSize();
+    std::string& GetFilePropertiesStr();
     asio::streambuf& GetFileUnpack();
 
 };

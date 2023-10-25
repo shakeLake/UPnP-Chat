@@ -2,7 +2,7 @@
 
 fh::FileHandler::FileHandler(std::string& file_path)
 {
-    fin.open(file_path);
+    fin.open(file_path, std::ios_base::binary);
 
     SetLength();
 
@@ -70,7 +70,7 @@ void fh::FileHandler::Packaging()
     prop << file_properties;
 
     std::ostream fl(&file_stream_buf);
-    prop << file;
+    fl << file;
 }
 
 void fh::FileHandler::SeparateProperties(std::string& prop)
@@ -94,7 +94,7 @@ void fh::FileHandler::Deserialization(asio::streambuf& strbuffile)
 
     std::string path = "folder/" + filename;
 
-    fout.open(path);
+    fout.open(path, std::ios_base::binary);
     fout.write(file.c_str(), length);
 
     fout.close();
@@ -123,4 +123,14 @@ unsigned fh::FileHandler::GetLength()
 asio::streambuf& fh::FileHandler::GetFileUnpack()
 {
     return file_stream_buf;
+}
+
+unsigned fh::FileHandler::GetStreamBufSize()
+{
+    return file_stream_buf.size();
+}
+
+std::string& fh::FileHandler::GetFilePropertiesStr()
+{
+    return file_properties;
 }
