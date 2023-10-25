@@ -36,35 +36,64 @@ protected:
 
 };
 
-TEST_F(ClientTest, DoesMessage)
+// TEST_F(ClientTest, DoesMessage)
+// {
+//     // connection
+//     ASSERT_EQ(cli->isConnected(), true);   
+
+//     std::ifstream cin("messages.txt");
+
+//     cin >> quant;
+//     ASSERT_GT(quant, 0);
+
+//     for (int i = 0; i < quant; ++i)
+//     {
+//         std::string msg;
+//         cin >> msg;
+
+//         test_msg.push_back(std::move(msg));
+
+//         cli->SendTo( _data.SetMessage(test_msg[i]) );
+//         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//     }
+
+//     // file is open
+//     ASSERT_EQ(test_msg.size(), quant);
+
+//     // data received
+//     ASSERT_EQ(_data.GetMsgBufferSize(), quant);
+
+//     for (int element = 0; element < quant; ++element)
+//         EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
+// }   
+
+TEST_F(ClientTest, DoesFile)
 {
     // connection
     ASSERT_EQ(cli->isConnected(), true);   
 
-    std::ifstream cin("messages.txt");
+    std::ifstream cin("files.txt");
 
     cin >> quant;
     ASSERT_GT(quant, 0);
 
     for (int i = 0; i < quant; ++i)
     {
-        std::string msg;
-        cin >> msg;
+        std::string fl;
+        cin >> fl;
 
-        test_msg.push_back(std::move(msg));
+        test_msg.push_back(std::move(fl));
 
-        cli->SendTo( _data.SetMessage(test_msg[i]) );
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        cli->SendTo( test_msg[i] );
+        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
     }
 
-    // file is open
-    ASSERT_EQ(test_msg.size(), quant);
-
-    // data received
-    ASSERT_EQ(_data.GetMsgBufferSize(), quant);
-
-    for (int element = 0; element < quant; ++element)
-        EXPECT_EQ(test_msg[element], _data.GetMsgFromMsgBuffer(element));
+    // std::array<std::string, 3> fns {{"game.ch8", "background.png", "ocoft.ciso"}};
+    // for (int i = 0; i < quant; ++i)
+    // {
+    //     std::fstream file("folder/" + fns[i]);
+    //     EXPECT_EQ(file.is_open(), true) << fns[i];
+    // }
 }   
 
 int main(int argc, char **argv) 

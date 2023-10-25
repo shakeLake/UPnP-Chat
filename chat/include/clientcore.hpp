@@ -25,6 +25,11 @@ protected:
 	// data
 	unsigned int message_size;
 	std::string message_size_buf;
+	bool ack_flag;
+
+	// file data
+	bool file_receive_flag;
+	std::string file_prop;
 
 	// status buffers
 	asio::streambuf error_buf;
@@ -47,6 +52,8 @@ protected:
 		action = info;
 
 		user_data = u_d;		
+
+		ack_flag = true;
 	}
 
 	~ClientCore()
@@ -63,6 +70,9 @@ protected:
 
 	/* this function receives data */
 	void ReceiveFrom(int);
+
+	/* check if ack_flag is true */
+	void CanWeSendSomething();
 
 public:
 	/* this function sends message to connected ip */

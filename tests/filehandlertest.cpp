@@ -10,9 +10,9 @@ TEST(FileHandlerTest, FileEQ)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    std::array<std::string, 2> fns {{"game.ch8", "background.png"}};
-    std::array<std::string, 2> prop {{"#game.ch8#264*", "#background.png#1565098*"}};
-    std::array<unsigned, 2> filelength {{264, 1565098}};
+    std::array<std::string, 3> fns {{"game.ch8", "background.png", "ocoft.ciso"}};
+    std::array<std::string, 3> prop {{"#game.ch8#264*", "#background.png#1565098*", "#ocoft.ciso#1130398272*"}};
+    std::array<unsigned, 3> filelength {{264, 1565098, 1130398272}};
 
     for (int i = 0; i < quant; ++i)
     {
@@ -36,10 +36,9 @@ TEST(FileHandlerTes, FileUnpackaging)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    std::array<std::string, 2> fns {{"game.ch8", "background.png"}};
-    std::array<std::string, 2> prop {{"#game.ch8#264*", "#background.png#1565098*"}};
-    std::array<unsigned, 2> filelength {{264, 1565098}};
-    // "#ocoft.ciso#1130398272*", "ocoft.ciso", 1130398272, 
+    std::array<std::string, 3> fns {{"game.ch8", "background.png", "ocoft.ciso"}};
+    std::array<std::string, 3> prop {{"#game.ch8#264*", "#background.png#1565098*", "#ocoft.ciso#1130398272*"}};
+    std::array<unsigned, 3> filelength {{264, 1565098, 1130398272}};
 
     for (int i = 0; i < quant; ++i)
     {

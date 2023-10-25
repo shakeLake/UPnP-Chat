@@ -33,47 +33,66 @@ void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 	user_data->Log("Sending finished");
 }
 
-// void ClientCore::SendTo(std::string& file_path)
-// {
-// 	fh::FileHandler* file_handler = new fh::FileHandler(fir_path);
+void ClientCore::SendTo(std::string& file_path)
+{
+	user_data->Log("Sending file");
 
-// 	asio::async_write(sckt, file_handler->GetFileProperties(), asio::transfer_all(), 
-// 		[this](const asio::error_code& er, std::size_t size)
-// 		{
-// 			if (e)
-// 				user_data->Log(e.message());
-// 			else
-// 			{
-// 				asio::async_write(sckt, file_handler->GetFile(), asio::transfer_all(),
-// 					[this](const asio::error_code& er, std::size_t size)
-// 					{
-// 						if (er)
-// 							user_data->Log(er.message());
-// 						else
-// 						{
-// 							delete file_handler;
-// 						}
-// 					}
-// 				);
-// 			}
-// 		}
-// 	);
+	fh::FileHandler* file_handler = new fh::FileHandler(file_path);
 
-// 	delete file_handler;
-// }
+	asio::async_write(sckt, file_handler->GetFileProperties(), asio::transfer_all(), 
+		[&](const asio::error_code& er, std::size_t size)
+		{
+			if (er)
+				user_data->Log(er.message());
+			else
+			{
+				asio::async_write(sckt, file_handler->GetFile(), asio::transfer_all(),
+					[&](const asio::error_code& er, std::size_t size)
+					{
+						if (er)
+							user_data->Log(er.message());
+						else
+						{
+							user_data->Log("File was sent");
+						}
+					}
+				);
+			}
+		}
+	);
 
-// void ClientCore::ReceiveFile(std::string& file_properties)
-// {
-// 	user_data->Log("File is receiving");
+	delete file_handler;
+}
 
-// 	asio::async_read(sckt, 
+void ClientCore::SendACK()
+{
+	user_data->Log("ACK");
 
-// 	);
-// }
+	asio::async_write(sckt, , asio::transfer_all(),
+		[this](const asio::error_code& er, std:;size_t size)
+		{
+			if (er)
+				user_data->Log(er.message());
+			else
+			{
+				user_data->Log("ACK was sent");
+			}
+		}
+	);
+}
+
+void ClientCore::CanWeSendSomething()
+{
+	if (ack_flag != true)
+		// wait
+}
 
 void ClientCore::ReceiveFrom(int enum_action)
 {
-	std::string status_msg = "Receiving ";
+	std::string status_msg = "Receiving: ";
+	status_msg += "Flag: ";
+	status_msg += std::to_string(file_receive_flag);
+	status_msg += " : ";
 	status_msg += std::to_string(enum_action);
 	user_data->Log(status_msg);
 	
@@ -95,26 +114,48 @@ void ClientCore::ReceiveFrom(int enum_action)
 					std::istream is(&received_message);	
 					is >> message_size_buf;
 
+					if (message_size_buf == "ack*")
+					{
+						user_data->Log("ACK was received");
+
+						message_size_buf.clear();
+						received_message.consume(size);
+
+						ack_flag = true;
+
+						action = info;		
+						ReceiveFrom(action);
+					}
+
 					// Get the File
-					// if (message_size_buf[0] == '#')
-					// {
-						// Starts File Receiving
-						// ReceiveFile(message_size_buf);
-
-						// message_size_buf.clear();
-						// received_message.consume(size);
-
-						// action = message;
-						// ReceiveFrom(action);
-					// }
+					file_receive_flag = false;
+					if (message_size_buf[0] == '#')
+						file_receive_flag = true;
 
 					try
 					{
-						message_size = stoi(message_size_buf);
+						if (file_receive_flag == false)
+							message_size = stoi(message_size_buf);
+						else
+						{
+							file_prop = message_size_buf;
+
+							for (unsigned let = 1; let < message_size_buf.size(); ++let)
+							{
+								if (message_size_buf[let] == '#')
+								{
+									message_size = stoi(message_size_buf.substr(let + 1, message_size_buf.size() - 1));
+									break;
+								}
+							}
+						}
 					}
 					catch(const std::exception& e)
 					{
 						user_data->Log(e.what());
+
+						message_size_buf.clear();
+						received_message.consume(size);
 
 						action = info;		
 						ReceiveFrom(action);
@@ -144,7 +185,10 @@ void ClientCore::ReceiveFrom(int enum_action)
 				{
 					user_data->Log("Message Received");
 
-					user_data->GetMsg(received_message, message_size);
+					if (file_receive_flag == false)
+						user_data->GetMsg(received_message, message_size);
+					else
+						fh::FileHandler file(file_prop, received_message); 
 
 					received_message.consume(size);
 
