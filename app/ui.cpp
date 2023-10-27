@@ -107,7 +107,7 @@ void UserInterface::CreateToolBar()
 	tool_bar = new QToolBar();
 	tool_bar->setFixedWidth(60);
 	tool_bar->setStyleSheet("background-color: #161C32;"
-				"spacing: 15px;");
+							"spacing: 15px;");
 
 	// set toolbar
 	addToolBar(Qt::LeftToolBarArea, tool_bar);
@@ -143,9 +143,9 @@ void UserInterface::CreateToolBar()
 	alr_opn_make_connection->setIconSize(QSize(44, 64));	
 	connect(alr_opn_make_connection, &QPushButton::released, this, &UserInterface::AlreadyOpenedDialogSlot);
 
-	settings->setIcon(QIcon(":/Resources/pics/settings.png"));
-	settings->setStyleSheet("border: none");
-	settings->setIconSize(QSize(36, 54));
+	// settings->setIcon(QIcon(":/Resources/pics/settings.png"));
+	// settings->setStyleSheet("border: none");
+	// settings->setIconSize(QSize(36, 54));
 	// connect(alr_opn_make_connection, &QPushButton::released, this, &UserInterface::SettingsSlot);
 
 	disconnect->setIcon(QIcon(":/Resources/pics/disconnect.png"));
@@ -157,7 +157,7 @@ void UserInterface::CreateToolBar()
 	tool_bar->addWidget(connect_to);
 	tool_bar->addWidget(make_connection);
 	tool_bar->addWidget(alr_opn_make_connection);
-	tool_bar->addWidget(settings);
+	// tool_bar->addWidget(settings);
 	tool_bar->addWidget(disconnect);
 }
 

@@ -10,6 +10,7 @@
 #include <QIcon>
 #include <QFont>
 #include <QFontDatabase>
+#include <QMovie>
 
 // layouts
 #include <QVBoxLayout>

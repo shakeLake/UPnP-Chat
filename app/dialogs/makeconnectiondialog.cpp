@@ -2,17 +2,23 @@
 
 MakeConnectionDialog::MakeConnectionDialog()
 {
+	const int height = 141;
+	const int width = 350;
+
 	setWindowTitle("Make Connection");
-	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);	
-	resize(385, 141);	
+	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::FramelessWindowHint);	
+	setAttribute(Qt::WA_TranslucentBackground);
+	resize(width, height);	
 
 	QWidget* main_widget = new QWidget(this);
-	main_widget->setFixedSize(385, 141);
-	main_widget->setStyleSheet("background-color: white");
+	main_widget->setFixedSize(width, height);
+	main_widget->setStyleSheet("background-color: white;"
+								"border-radius: 10px;");
 			
 	// init
-	main_label = new QLabel("This menu will open the port on your router by UPNP!\nbe sure UPNP is on. If your router doesn't support UPNP\nyou can use Port Forwarding");
+	main_label = new QLabel("This menu opens the port");
 	style.SetNunitoLabelFont(main_label);	
+	main_label->setStyleSheet("font-size: 18px");
 
 	port_label = new QLabel("Port:");
 	style.SetNunitoLabelFont(port_label);

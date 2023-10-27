@@ -37,17 +37,19 @@ void ClientCore::SendTo(std::string& file_path)
 {
 	user_data->Log("Sending file");
 
-	fh::FileHandler* file_handler = new fh::FileHandler(file_path);
+	fh::FileHandler file_handler(file_path);
 
-	asio::async_write(sckt, file_handler->GetFileProperties(), asio::transfer_all(), 
-		[&](const asio::error_code& er, std::size_t size)
+	assert(file_handler.isGood());
+
+	asio::async_write(sckt, file_handler.GetFileProperties(), asio::transfer_all(), 
+		[this](const asio::error_code& er, std::size_t size)
 		{
 			if (er)
 				user_data->Log(er.message());
 			else
 			{
-				asio::async_write(sckt, file_handler->GetFile(), asio::transfer_all(),
-					[&](const asio::error_code& er, std::size_t size)
+				asio::async_write(sckt, file_handler.GetFile(), asio::transfer_all(),
+					[this](const asio::error_code& er, std::size_t size)
 					{
 						if (er)
 							user_data->Log(er.message());
@@ -60,16 +62,14 @@ void ClientCore::SendTo(std::string& file_path)
 			}
 		}
 	);
-
-	delete file_handler;
 }
 
 void ClientCore::SendACK()
 {
 	user_data->Log("ACK");
 
-	asio::async_write(sckt, , asio::transfer_all(),
-		[this](const asio::error_code& er, std:;size_t size)
+	asio::async_write(sckt, ack_message.data(), asio::transfer_all(),
+		[this](const asio::error_code& er, std::size_t size)
 		{
 			if (er)
 				user_data->Log(er.message());
@@ -79,12 +79,6 @@ void ClientCore::SendACK()
 			}
 		}
 	);
-}
-
-void ClientCore::CanWeSendSomething()
-{
-	if (ack_flag != true)
-		// wait
 }
 
 void ClientCore::ReceiveFrom(int enum_action)
@@ -114,18 +108,16 @@ void ClientCore::ReceiveFrom(int enum_action)
 					std::istream is(&received_message);	
 					is >> message_size_buf;
 
-					if (message_size_buf == "ack*")
-					{
-						user_data->Log("ACK was received");
+					// if (message_size_buf == "ack*")
+					// {
+					// 	user_data->Log("ACK was received");
 
-						message_size_buf.clear();
-						received_message.consume(size);
+					// 	message_size_buf.clear();
+					// 	received_message.consume(size);
 
-						ack_flag = true;
-
-						action = info;		
-						ReceiveFrom(action);
-					}
+					// 	action = info;		
+					// 	ReceiveFrom(action);
+					// }
 
 					// Get the File
 					file_receive_flag = false;

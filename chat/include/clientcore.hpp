@@ -25,7 +25,7 @@ protected:
 	// data
 	unsigned int message_size;
 	std::string message_size_buf;
-	bool ack_flag;
+	asio::streambuf ack_message;
 
 	// file data
 	bool file_receive_flag;
@@ -53,7 +53,9 @@ protected:
 
 		user_data = u_d;		
 
-		ack_flag = true;
+		std::string ack_msg = "ack*";
+		std::ostream os(&ack_message);
+		os << ack_msg;
 	}
 
 	~ClientCore()
@@ -71,13 +73,11 @@ protected:
 	/* this function receives data */
 	void ReceiveFrom(int);
 
-	/* check if ack_flag is true */
-	void CanWeSendSomething();
-
 public:
 	/* this function sends message to connected ip */
 	void SendTo(asio::streambuf::const_buffers_type);
 	void SendTo(std::string&);
+	void SendACK();
 	
 };
 

@@ -76,18 +76,9 @@ TEST_F(ServerTest, DoesFile)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    for (int i = 0; i < quant; ++i)
-    {
-        std::string fl;
-        cin >> fl;
+    std::this_thread::sleep_for(std::chrono::seconds(45));
 
-        test_msg.push_back(std::move(fl));
-
-        // srv->SendTo( test_msg[i] );
-        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
-    }
-
-    std::array<std::string, 3> fns {{"game.ch8", "background.png", "ocoft.ciso"}};
+    std::array<std::string, 3> fns {{"background.png", "game.ch8", "ocoft.ciso"}};
     for (int i = 0; i < quant; ++i)
     {
         std::fstream file("folder/" + fns[i]);

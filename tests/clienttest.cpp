@@ -82,17 +82,16 @@ TEST_F(ClientTest, DoesFile)
         std::string fl;
         cin >> fl;
 
-        test_msg.push_back(std::move(fl));
-
-        cli->SendTo( test_msg[i] );
-        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
+        cli->SendTo( fl );
+        asio::steady_timer t(io_c, std::chrono::seconds(10));
+        t.wait();
     }
 
-    // std::array<std::string, 3> fns {{"game.ch8", "background.png", "ocoft.ciso"}};
+    // std::array<std::string, 3> fns {{"background.png", "game.ch8", "ocoft.ciso"}};
     // for (int i = 0; i < quant; ++i)
     // {
     //     std::fstream file("folder/" + fns[i]);
-    //     EXPECT_EQ(file.is_open(), true) << fns[i];
+    //     EXPECT_EQ(file.is_open(), true);
     // }
 }   
 

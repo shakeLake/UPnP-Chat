@@ -1,4 +1,4 @@
-1
-testfiles/game.ch8
+3
 testfiles/background.png
+testfiles/game.ch8
 testfiles/ocoft.ciso

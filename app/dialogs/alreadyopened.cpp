@@ -2,17 +2,23 @@
 
 AlreadyOpenedDialog::AlreadyOpenedDialog()
 {
+	const int height = 120;
+	const int width = 350;
+
 	setWindowTitle("Make Connection");
-	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);	
-	resize(365, 120);	
+	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::FramelessWindowHint);	
+	resize(width, height);	
+	setAttribute(Qt::WA_TranslucentBackground);
 
 	QWidget* main_widget = new QWidget(this);
-	main_widget->setFixedSize(365, 120);
-	main_widget->setStyleSheet("background-color: white");
+	main_widget->setFixedSize(width, height);
+	main_widget->setStyleSheet("background-color: white;"
+								"border-radius: 10px;");
 			
 	// init
-	main_label = new QLabel("Enter the open port on your router.\nUchat will listen this port.");
+	main_label = new QLabel("Uchat listens this port");
 	style.SetNunitoLabelFont(main_label);	
+	main_label->setStyleSheet("font-size: 18px");
 
 	port_label = new QLabel("Port:");
 	style.SetNunitoLabelFont(port_label);

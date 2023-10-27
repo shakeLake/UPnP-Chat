@@ -2,13 +2,19 @@
 
 ConnectionDialog::ConnectionDialog()
 {
+	const int height = 150;
+	const int width = 350;
+
 	setWindowTitle("Connect");
-	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);	
-	resize(350, 150);	
+	setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::FramelessWindowHint);	
+	setAttribute(Qt::WA_TranslucentBackground);
+
+	resize(width, height);	
 
 	QWidget* main_widget = new QWidget(this);
-	main_widget->setFixedSize(350, 150);
-	main_widget->setStyleSheet("background-color: white");
+	main_widget->setFixedSize(width, height);
+	main_widget->setStyleSheet("background-color: white;"
+								"border-radius: 10px;");
 			
 	// init
 	main_label = new QLabel("Where to connect?");

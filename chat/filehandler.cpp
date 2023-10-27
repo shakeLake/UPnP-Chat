@@ -4,6 +4,11 @@ fh::FileHandler::FileHandler(std::string& file_path)
 {
     fin.open(file_path, std::ios_base::binary);
 
+    if (fin.is_open())
+        good = true;
+    else  
+        good = false;
+
     SetLength();
 
     SeparateFilename(file_path);
@@ -95,6 +100,12 @@ void fh::FileHandler::Deserialization(asio::streambuf& strbuffile)
     std::string path = "folder/" + filename;
 
     fout.open(path, std::ios_base::binary);
+
+    if (fout.is_open())
+        good = true;
+    else  
+        good = false;
+
     fout.write(file.c_str(), length);
 
     fout.close();
@@ -133,4 +144,9 @@ unsigned fh::FileHandler::GetStreamBufSize()
 std::string& fh::FileHandler::GetFilePropertiesStr()
 {
     return file_properties;
+}
+
+bool fh::FileHandler::isGood()
+{
+    return good;
 }

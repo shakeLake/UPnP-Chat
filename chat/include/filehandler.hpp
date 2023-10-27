@@ -23,6 +23,7 @@ private:
 
     std::ifstream fin;
     std::ofstream fout;
+    bool good;
 
     std::string file;
     std::string file_properties;
@@ -49,6 +50,7 @@ public:
 
     asio::streambuf::const_buffers_type GetFileProperties();
     asio::streambuf::const_buffers_type GetFile();
+    bool isGood();
 
     // Testing functons
     std::string GetFileName();
