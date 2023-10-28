@@ -9,6 +9,9 @@
 #include <fstream>
 #include <string>
 
+// data
+#include "data.hpp"
+
 // unique_ptr
 #include <memory>
 
@@ -31,6 +34,9 @@ private:
 	asio::streambuf file_stream_buf;			
 	asio::streambuf file_properties_stream_buf;			
 
+    // logs
+    ucd::Data* user_data;
+
 private:
     // input
     void SeparateFilename(std::string&);
@@ -43,8 +49,8 @@ private:
     void Deserialization(asio::streambuf&);
 
 public:
-    FileHandler(std::string&);
-    FileHandler(std::string&, asio::streambuf&);
+    FileHandler(std::string&, ucd::Data*);
+    FileHandler(std::string&, asio::streambuf&, ucd::Data*);
 
     ~FileHandler();
 

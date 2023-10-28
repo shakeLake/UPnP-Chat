@@ -16,6 +16,9 @@
 // data
 #include "data.hpp"
 
+// filehandler
+#include "filehandler.hpp"
+
 class ClientCore
 {
 protected:

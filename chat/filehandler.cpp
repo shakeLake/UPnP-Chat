@@ -1,7 +1,9 @@
 #include "include/filehandler.hpp"
 
-fh::FileHandler::FileHandler(std::string& file_path)
+fh::FileHandler::FileHandler(std::string& file_path, ucd::Data* u_d)
 {
+    user_data = u_d;
+
     fin.open(file_path, std::ios_base::binary);
 
     if (fin.is_open())
@@ -16,23 +18,27 @@ fh::FileHandler::FileHandler(std::string& file_path)
     file_properties = '#' + filename + '#' + std::to_string(length) + '*';
 
     Serialization();
-
     Packaging();
 }
 
-fh::FileHandler::FileHandler(std::string& prop, asio::streambuf& strbuffile)
+fh::FileHandler::FileHandler(std::string& prop, asio::streambuf& strbuffile, ucd::Data* u_d)
 {
+    user_data = u_d;
+
     SeparateProperties(prop);
     Deserialization(strbuffile);
 }
 
 fh::FileHandler::~FileHandler()
 {
+	user_data->Log("File Handler destroyed");
     fin.close();
 }
 
 void fh::FileHandler::SeparateFilename(std::string& path)
 {
+	user_data->Log("Separate Filename");
+
     int begin = -1;
     for (unsigned symbol = path.size() - 1; symbol > 0; --symbol)
     {
@@ -56,6 +62,8 @@ void fh::FileHandler::SeparateFilename(std::string& path)
 
 void fh::FileHandler::SetLength()
 {
+	user_data->Log("Set Length");
+
     fin.seekg(0, fin.end);
     length = fin.tellg();
     fin.seekg(0, fin.beg);
@@ -63,6 +71,8 @@ void fh::FileHandler::SetLength()
 
 void fh::FileHandler::Serialization()
 {
+	user_data->Log("Serialization");
+
     std::stringstream str_stream;
     str_stream << fin.rdbuf();
 
@@ -71,6 +81,8 @@ void fh::FileHandler::Serialization()
 
 void fh::FileHandler::Packaging()
 {
+	user_data->Log("Packaging");
+
     std::ostream prop(&file_properties_stream_buf);
     prop << file_properties;
 
@@ -80,6 +92,8 @@ void fh::FileHandler::Packaging()
 
 void fh::FileHandler::SeparateProperties(std::string& prop)
 {
+	user_data->Log("Separate Properties");
+
     for (unsigned let = 1; let < prop.size(); ++let)
     {
         if (prop[let] == '#')
@@ -91,6 +105,8 @@ void fh::FileHandler::SeparateProperties(std::string& prop)
 
 void fh::FileHandler::Deserialization(asio::streambuf& strbuffile)
 {
+	user_data->Log("Deserialization");
+
     std::istream is(&strbuffile);
 
     file.resize(length);
@@ -109,6 +125,8 @@ void fh::FileHandler::Deserialization(asio::streambuf& strbuffile)
     fout.write(file.c_str(), length);
 
     fout.close();
+
+	user_data->Log("Deserialization finished");
 }
 
 asio::streambuf::const_buffers_type fh::FileHandler::GetFileProperties()

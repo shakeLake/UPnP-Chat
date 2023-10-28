@@ -76,7 +76,7 @@ TEST_F(ServerTest, DoesFile)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    std::this_thread::sleep_for(std::chrono::seconds(45));
+    std::this_thread::sleep_for(std::chrono::seconds(10));
 
     std::array<std::string, 3> fns {{"background.png", "game.ch8", "ocoft.ciso"}};
     for (int i = 0; i < quant; ++i)

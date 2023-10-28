@@ -37,19 +37,21 @@ void ClientCore::SendTo(std::string& file_path)
 {
 	user_data->Log("Sending file");
 
-	fh::FileHandler file_handler(file_path);
+	fh::FileHandler file_handler_only_info(file_path, user_data, false);
 
-	assert(file_handler.isGood());
+	assert(file_handler_only_info.isGood());
 
-	asio::async_write(sckt, file_handler.GetFileProperties(), asio::transfer_all(), 
-		[this](const asio::error_code& er, std::size_t size)
+	asio::async_write(sckt, file_handler_only_info.GetFileProperties(), asio::transfer_all(), 
+		[&](const asio::error_code& er, std::size_t size)
 		{
 			if (er)
 				user_data->Log(er.message());
 			else
 			{
+				fh::FileHandler file_handler(file_path, user_data, true);
+
 				asio::async_write(sckt, file_handler.GetFile(), asio::transfer_all(),
-					[this](const asio::error_code& er, std::size_t size)
+					[&](const asio::error_code& er, std::size_t size)
 					{
 						if (er)
 							user_data->Log(er.message());
@@ -180,7 +182,7 @@ void ClientCore::ReceiveFrom(int enum_action)
 					if (file_receive_flag == false)
 						user_data->GetMsg(received_message, message_size);
 					else
-						fh::FileHandler file(file_prop, received_message); 
+						fh::FileHandler file(file_prop, received_message, user_data); 
 
 					received_message.consume(size);
 

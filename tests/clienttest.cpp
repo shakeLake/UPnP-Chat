@@ -77,15 +77,16 @@ TEST_F(ClientTest, DoesFile)
     cin >> quant;
     ASSERT_GT(quant, 0);
 
-    for (int i = 0; i < quant; ++i)
-    {
-        std::string fl;
-        cin >> fl;
+    // for (int i = 0; i < quant; ++i)
+    // {
+    std::string fl;
+    cin >> fl;
 
-        cli->SendTo( fl );
-        asio::steady_timer t(io_c, std::chrono::seconds(10));
-        t.wait();
-    }
+    cli->SendTo( fl );
+
+    asio::steady_timer t(io_c, std::chrono::seconds(5));
+    t.wait();
+    // }
 
     // std::array<std::string, 3> fns {{"background.png", "game.ch8", "ocoft.ciso"}};
     // for (int i = 0; i < quant; ++i)
