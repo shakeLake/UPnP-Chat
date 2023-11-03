@@ -2,7 +2,7 @@
 
 void ucc::Client::Connect()
 {
-	asio::connect(sckt, endpnt, error);
+	asio::connect(sckt.lowest_layer(), endpnt, error);
  	
 	if (error)
 	{

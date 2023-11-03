@@ -27,7 +27,7 @@ private:
 
 public:
 	Client(asio::io_context& io_c, std::string& ip, std::string& port, ucd::Data* u_d) 
-	:	rslvr(io_c), 
+	:	rslvr(io_c),
 		ClientCore(io_c, u_d)
 	{				
 		endpnt = rslvr.resolve(ip, port, error);

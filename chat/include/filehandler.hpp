@@ -49,7 +49,7 @@ private:
     void Deserialization(asio::streambuf&);
 
 public:
-    FileHandler(std::string&, ucd::Data*);
+    FileHandler(std::string, ucd::Data*);
     FileHandler(std::string&, asio::streambuf&, ucd::Data*);
 
     ~FileHandler();

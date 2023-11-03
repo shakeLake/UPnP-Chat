@@ -19,6 +19,10 @@
 // filehandler
 #include "filehandler.hpp"
 
+// ssl
+#include "sslinitclient.hpp"
+// #include "sslinitserver.hpp"
+
 class ClientCore
 {
 protected:
@@ -47,10 +51,10 @@ protected:
 	ucd::Data* user_data;
 
 	// socket
-	asio::ip::tcp::socket sckt;
+	asio::ssl::stream<asio::ip::tcp::socket> sckt;
 
 protected:
-	ClientCore(asio::io_context& io_c, ucd::Data* u_d) : sckt(io_c)
+	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server) : sckt(io_c, SSLContext(client_or_server)())
 	{
 		action = info;
 
@@ -77,9 +81,8 @@ protected:
 	void ReceiveFrom(int);
 
 public:
-	/* this function sends message to connected ip */
 	void SendTo(asio::streambuf::const_buffers_type);
-	void SendTo(std::string&);
+	void SendTo(std::string);
 	void SendACK();
 	
 };

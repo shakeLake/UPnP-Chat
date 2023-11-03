@@ -1,8 +1,10 @@
 #include "include/filehandler.hpp"
 
-fh::FileHandler::FileHandler(std::string& file_path, ucd::Data* u_d)
+fh::FileHandler::FileHandler(std::string file_path, ucd::Data* u_d)
 {
     user_data = u_d;
+
+	user_data->Log("Init");
 
     fin.open(file_path, std::ios_base::binary);
 
@@ -18,6 +20,7 @@ fh::FileHandler::FileHandler(std::string& file_path, ucd::Data* u_d)
     file_properties = '#' + filename + '#' + std::to_string(length) + '*';
 
     Serialization();
+
     Packaging();
 }
 
