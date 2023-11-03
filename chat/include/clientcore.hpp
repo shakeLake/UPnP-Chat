@@ -65,7 +65,7 @@ protected:
 
 protected:
 	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server) 
-	:	sslcontext(ctx(client_or_server)),	
+	:	sslcontext(std::move(ctx(client_or_server))),	
 		sckt(io_c, sslcontext)
 	{
 		cli_or_srv = client_or_server;
@@ -99,7 +99,7 @@ protected:
 	/* this function receives data */
 	void ReceiveFrom(int);
 
-	void Handshake(bool);
+	void Handshake();
 
 public:
 	void SendTo(asio::streambuf::const_buffers_type);

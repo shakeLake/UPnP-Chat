@@ -4,7 +4,7 @@ void ucs::Server::Listening()
 {
 	user_data->Log("Listening");	
 		
-	accptr.accept(sckt.next_layer(), endpnt, error);
+	accptr.accept(sckt.lowest_layer(), endpnt, error);
 
 	if (error)
 	{
@@ -18,7 +18,7 @@ void ucs::Server::Listening()
 
 		connection_status = true;
 
-		Handshake(false);
+		Handshake();
 	}
 }
 

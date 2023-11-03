@@ -1,10 +1,8 @@
 #include "include/clientcore.hpp"
 
-void ClientCore::Handshake(bool client_or_server)
+void ClientCore::Handshake()
 {
-	action = info;		
-
-	if (client_or_server == CLIENT)
+	if (cli_or_srv == CLIENT)
 	{
 		sckt.async_handshake(asio::ssl::stream_base::client,
 			[this](const asio::error_code& er)
@@ -16,7 +14,7 @@ void ClientCore::Handshake(bool client_or_server)
 			}
 		);
 	}
-	else if (client_or_server == SERVER)
+	else if (cli_or_srv == SERVER)
 	{
 		sckt.async_handshake(asio::ssl::stream_base::server,
 			[this](const asio::error_code& er)
@@ -119,6 +117,7 @@ void ClientCore::ReceiveFrom(int enum_action)
 	status_msg += std::to_string(file_receive_flag);
 	status_msg += " : ";
 	status_msg += std::to_string(enum_action);
+
 	user_data->Log(status_msg);
 	
 	if (enum_action)
