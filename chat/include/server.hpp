@@ -27,7 +27,7 @@ private:
 
 public:
 	Server(asio::io_context& io_c, std::string& port, ucd::Data* u_d) 
-	:	ClientCore(io_c, u_d),
+	:	ClientCore(io_c, u_d, false),
 		endpnt(asio::ip::tcp::v4(), stoi(port)), 
 		accptr(io_c, endpnt)
 	{

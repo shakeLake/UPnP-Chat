@@ -4,7 +4,7 @@ void ucs::Server::Listening()
 {
 	user_data->Log("Listening");	
 		
-	accptr.accept(sckt, endpnt, error);
+	accptr.accept(sckt.next_layer(), endpnt, error);
 
 	if (error)
 	{
@@ -16,11 +16,9 @@ void ucs::Server::Listening()
 	{
 		user_data->Log("Connected");
 
-		connection_status = true;		
+		connection_status = true;
 
-		//std::string ip = endpnt.address().to_string();
-
-		ReceiveFrom(action);
+		Handshake(false);
 	}
 }
 

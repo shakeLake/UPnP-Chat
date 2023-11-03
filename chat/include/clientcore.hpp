@@ -20,12 +20,17 @@
 #include "filehandler.hpp"
 
 // ssl
-#include "sslinitclient.hpp"
-// #include "sslinitserver.hpp"
+#include "sslinit.hpp"
+
+// std::bind
+#include <functional>
 
 class ClientCore
 {
 protected:
+	const bool CLIENT = true;
+	const bool SERVER = false;
+
 	// buffer
 	asio::streambuf received_message;	
 
@@ -49,13 +54,27 @@ protected:
 
 	// data
 	ucd::Data* user_data;
+	bool cli_or_srv;
 
 	// socket
 	asio::ssl::stream<asio::ip::tcp::socket> sckt;
 
+	// ssl
+	SSLContext ctx;
+	asio::ssl::context sslcontext;
+
 protected:
-	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server) : sckt(io_c, SSLContext(client_or_server)())
+	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server) 
+	:	sslcontext(ctx(client_or_server)),	
+		sckt(io_c, sslcontext)
 	{
+		cli_or_srv = client_or_server;
+
+		using namespace std::placeholders;
+
+		sckt.set_verify_mode(asio::ssl::verify_peer);
+		sckt.set_verify_callback(std::bind(&SSLContext::VerifyCertificate, ctx, _1, _2));
+
 		action = info;
 
 		user_data = u_d;		
@@ -74,11 +93,13 @@ protected:
 		// data checking reset
 		user_data->NotifyOne();
 
-		sckt.close();
+		// sckt.close();
 	}
 
 	/* this function receives data */
 	void ReceiveFrom(int);
+
+	void Handshake(bool);
 
 public:
 	void SendTo(asio::streambuf::const_buffers_type);

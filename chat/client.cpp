@@ -2,7 +2,7 @@
 
 void ucc::Client::Connect()
 {
-	asio::connect(sckt.lowest_layer(), endpnt, error);
+	asio::connect(sckt.next_layer(), endpnt, error);
  	
 	if (error)
 	{
@@ -13,10 +13,10 @@ void ucc::Client::Connect()
 	else
 	{
 		user_data->Log("Connected");
-				
-		connection_status = true;
 
-		ReceiveFrom(action);
+		connection_status = true;
+				
+		Handshake(true);
 	}
 }
 

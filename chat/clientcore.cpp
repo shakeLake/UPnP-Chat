@@ -1,5 +1,35 @@
 #include "include/clientcore.hpp"
 
+void ClientCore::Handshake(bool client_or_server)
+{
+	action = info;		
+
+	if (client_or_server == CLIENT)
+	{
+		sckt.async_handshake(asio::ssl::stream_base::client,
+			[this](const asio::error_code& er)
+			{
+				if (!er)
+					ReceiveFrom(action);
+				else
+					user_data->Log("Handshake Finished");
+			}
+		);
+	}
+	else if (client_or_server == SERVER)
+	{
+		sckt.async_handshake(asio::ssl::stream_base::server,
+			[this](const asio::error_code& er)
+			{
+				if (!er)
+					ReceiveFrom(action);
+				else
+					user_data->Log("Handshake Finished");
+			}
+		);
+	}
+}
+
 void ClientCore::SendTo(asio::streambuf::const_buffers_type msg)
 {
 	user_data->Log("Sending");

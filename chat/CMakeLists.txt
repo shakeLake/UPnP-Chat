@@ -16,8 +16,7 @@ target_compile_definitions(asio INTERFACE ASIO_STANDALONE ASIO_NO_DEPRECATED)
 target_link_libraries(asio INTERFACE Threads::Threads)
 
 set(CHAT_SERVER_SOURCE 
-	"include/sslinitclient.hpp"
-	sslinitclient.cpp
+	"include/sslinit.hpp"
 	"include/default.hpp"
 	data.cpp
 	"include/data.hpp"
