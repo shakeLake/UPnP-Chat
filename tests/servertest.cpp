@@ -25,6 +25,8 @@ protected:
         srv = new ucs::Server(io_c, port, &_data);        
 
         thrd = std::thread( [this](){ io_c.run(); } );
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     ~ServerTest()

@@ -21,8 +21,8 @@ asio::ssl::context SSLContext::operator()(bool client_or_server)
                         | asio::ssl::context::single_dh_use);
 
         ctx.set_password_callback(std::bind(&SSLContext::GetPassword, this));
-        ctx.use_certificate_chain_file("server.pem");
-        ctx.use_private_key_file("serverKey.pem", asio::ssl::context::pem);
+        ctx.use_certificate_chain_file("ca.pem");
+        ctx.use_private_key_file("caKey.pem", asio::ssl::context::pem);
         ctx.use_tmp_dh_file("dh4096.pem");
     }
 

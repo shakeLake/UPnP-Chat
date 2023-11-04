@@ -8,9 +8,15 @@ void ClientCore::Handshake()
 			[this](const asio::error_code& er)
 			{
 				if (!er)
+				{
 					ReceiveFrom(action);
-				else
 					user_data->Log("Handshake Finished");
+				}
+				else
+				{
+					user_data->Log(er.message());
+					sckt.shutdown();
+				}
 			}
 		);
 	}
@@ -20,9 +26,15 @@ void ClientCore::Handshake()
 			[this](const asio::error_code& er)
 			{
 				if (!er)
+				{
 					ReceiveFrom(action);
-				else
 					user_data->Log("Handshake Finished");
+				}
+				else
+				{
+					user_data->Log(er.message());
+					sckt.shutdown();
+				}
 			}
 		);
 	}

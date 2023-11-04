@@ -26,6 +26,8 @@ protected:
         cli = new ucc::Client(io_c, ip, port, &_data);        
 
         thrd = std::thread( [this](){ io_c.run(); } );
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 
     ~ClientTest()

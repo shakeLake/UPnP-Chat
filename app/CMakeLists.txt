@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.2...3.5)
 
 project(chat_ui)
 
+file(COPY "../certificates/ca.pem" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+file(COPY "../certificates/caKey.pem" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+file(COPY "../certificates/dh4096.pem" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}" )
+
 add_subdirectory("../chat" "chat-build")
 
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
