@@ -17,6 +17,7 @@ target_link_libraries(asio INTERFACE Threads::Threads)
 
 set(CHAT_SERVER_SOURCE 
 	"include/sslinit.hpp"
+	sslinit.cpp
 	"include/default.hpp"
 	data.cpp
 	"include/data.hpp"

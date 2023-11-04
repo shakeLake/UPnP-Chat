@@ -56,24 +56,27 @@ protected:
 	ucd::Data* user_data;
 	bool cli_or_srv;
 
-	// socket
-	asio::ssl::stream<asio::ip::tcp::socket> sckt;
-
 	// ssl
 	SSLContext ctx;
 	asio::ssl::context sslcontext;
 
+	// socket
+	asio::ssl::stream<asio::ip::tcp::socket> sckt;
+
 protected:
-	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server) 
-	:	sslcontext(std::move(ctx(client_or_server))),	
-		sckt(io_c, sslcontext)
+	ClientCore(asio::io_context& io_c, ucd::Data* u_d, bool client_or_server)
+	:	sslcontext(std::move(ctx(client_or_server))),
+		sckt(io_c, sslcontext)	
 	{
 		cli_or_srv = client_or_server;
 
 		using namespace std::placeholders;
 
-		sckt.set_verify_mode(asio::ssl::verify_peer);
-		sckt.set_verify_callback(std::bind(&SSLContext::VerifyCertificate, ctx, _1, _2));
+		if (client_or_server == CLIENT)
+		{
+			sckt.set_verify_mode(asio::ssl::verify_peer);
+			sckt.set_verify_callback(std::bind(&SSLContext::VerifyCertificate, ctx, _1, _2));
+		}
 
 		action = info;
 
