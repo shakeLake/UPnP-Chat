@@ -1,39 +1,20 @@
-# UPnP Chat
+# UChat
 
-**UPnP Chat** makes peer-to-peer connection between two computers
+**UChat** provides peer-to-peer **TLS** connection
 
 <kbd>
-    <img src="https://user-images.githubusercontent.com/99725123/230795307-2b1e081d-2aa9-4325-ae0d-04c25fab71b8.png"/>
+    <img src="https://github.com/shakeLake/UPnP-Chat/assets/99725123/27eed671-f5bb-46c7-8d4b-3b1e0a73c87e"/>
 </kbd>
 
-**UPnP Chat** uses [miniupnp](https://github.com/miniupnp/miniupnp) to opens port
+## How to use
 
-## How To Use
+To become a **Host** you need to open a port on your router
 
-### Computer as Server
-* Turn on **UPnP** and **NAT Traversal** on your router
-* Click **UPnP button** and enter **the Port** you need
-* Wait **the Client**
-<details>
-    <summary>Screenshot</summary>
-    <kbd>
-        <img src="https://user-images.githubusercontent.com/99725123/230796605-ee5fc252-29b0-4f1d-b96a-d4329d48972e.png"/>
-    </kbd>
-</details>
+Use **NAT button** or **UPnP button** to start the connection
 
-### Computer as Client 
-* Click **Connect button**
-* Enter **Server Ip** and **Server Port** 
-<details>
-    <summary>Screenshot</summary>
-    <kbd>
-        <img src="https://user-images.githubusercontent.com/99725123/230796588-77cb8035-e45f-4273-b9bc-cf7dcb896e6e.png"/>
-    </kbd>
-</details>
+## How to connect
 
-### Router Doesn't Support UPnP
-* Click **NAT button** and enter **opened port** on your router
-* Wait **the Client**
+To connect, enter the **Host** **IP** and **Port**
 
 ## Third Party
 * Qt 6 
@@ -55,5 +36,5 @@ git clone https://github.com/shakeLake/UPnP-Chat.git
 
 ### Start script
 ```
-~/UPnP-Chat/build.sh Release [Debug] build [Directory] TESTOFF [TESTON] 
+~/UPnP-Chat/build.sh Release build TESTOFF
 ```
